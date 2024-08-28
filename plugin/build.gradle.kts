@@ -1,6 +1,6 @@
 plugins {
     `java-gradle-plugin`
-    alias(libs.plugins.kotlin.jvm)
+    kotlin("jvm") version "2.0.0"
 }
 
 repositories {
@@ -8,6 +8,7 @@ repositories {
 }
 
 dependencies {
+    implementation("de.undercouch:gradle-download-task:5.6.0")
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
