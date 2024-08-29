@@ -4,7 +4,10 @@ plugins {
 }
 
 jextract {
-    generator = file(System.getProperty("user.home")).resolve("bin")
+    generator {
+        javaVersion(JavaLanguageVersion.of(21))
+    }
+    useSystemLoadLibrary = true
     libraries {
         create("bass") {
             header = layout.projectDirectory.file("bass.h")

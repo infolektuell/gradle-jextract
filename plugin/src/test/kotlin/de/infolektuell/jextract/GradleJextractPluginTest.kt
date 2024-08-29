@@ -14,6 +14,6 @@ class GradleJextractPluginTest {
         project.plugins.apply("de.infolektuell.jextract")
 
         // Verify the result
-        assertNotNull(project.tasks.findByName("greeting"))
+        assertNotNull(project.tasks.findByName("linux_x64Download"))
     }
 }

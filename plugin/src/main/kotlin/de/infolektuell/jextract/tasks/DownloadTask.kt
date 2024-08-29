@@ -1,56 +1,46 @@
 package de.infolektuell.jextract.tasks
 
+import de.infolektuell.jextract.services.JextractDownloadClient
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.file.ArchiveOperations
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
-import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.gradle.api.provider.Provider
+import org.gradle.api.services.ServiceReference
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import java.net.URI
-import java.nio.file.Files
-import java.security.DigestOutputStream
-import java.security.MessageDigest
 import javax.inject.Inject
 
-abstract class DownloadTask @Inject constructor(private val fileSystem: FileSystemOperations, private val archive: ArchiveOperations) : DefaultTask() {
+abstract class DownloadTask @Inject constructor(objects: ObjectFactory, private val fileSystem: FileSystemOperations, private val archive: ArchiveOperations) : DefaultTask() {
+    @get:ServiceReference("download")
+    abstract val jextractDownloadClient: Property<JextractDownloadClient>
     @get:Input
-    abstract val src: Property<URI>
+    abstract val url: Property<URI>
     @get:Input
-    abstract val checksum: Property<String>
+    val checksum: Property<String> = objects.property(String::class.java)
     @get:Input
     abstract val algorithm: Property<String>
+
     @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
-    @get:Optional
-    @get:OutputFile
-    abstract val script: RegularFileProperty
-    @OptIn(ExperimentalStdlibApi::class)
+    val outputDirectory: DirectoryProperty = objects.directoryProperty()
+    @get:OutputDirectory
+    val distributionDirectory: Provider<Directory> = outputDirectory.dir(checksum.map { it.substring(0, 8) })
+
     @TaskAction
     fun execute() {
         fileSystem.delete { spec ->
-            spec.delete(outputDirectory)
+            spec.delete(distributionDirectory)
         }
-        Files.createDirectories(outputDirectory.get().asFile.toPath())
-        val archiveFile  = outputDirectory.get().file(ARCHIVE_NAME)
-        src.get().toURL().openStream().use { input ->
-            val md = MessageDigest.getInstance(algorithm.get())
-            val output = DigestOutputStream(Files.newOutputStream(archiveFile.asFile.toPath()), md)
-            input.copyTo(output)
-            val calculatedChecksum = output.messageDigest.digest().toHexString()
-            if (calculatedChecksum != checksum.get()) {
-                throw GradleException("Checksum verification failed")
-            }
-        }
+        val archiveFile = jextractDownloadClient.get().download(url.get(), checksum.get(), algorithm.get())
         val tree = archive.tarTree(archiveFile)
         fileSystem.copy { spec ->
             spec.from(tree)
-            spec.into(outputDirectory)
+            spec.into(distributionDirectory)
         }
-    }
-    companion object {
-        const val ARCHIVE_NAME = "jextract.tgz"
     }
 }
