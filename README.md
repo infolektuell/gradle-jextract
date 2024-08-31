@@ -100,5 +100,9 @@ jextract {
 }
 ```
 
+## License
+
+[MIT License](LICENSE.txt)
+
 [jextract]: https://jdk.java.net/jextract/
 [ffm]: https://openjdk.org/jeps/454
