@@ -1,8 +1,10 @@
 package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
@@ -24,8 +26,15 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
 
     @get:Optional
     @get:Input
+    abstract val includes: ListProperty<Directory>
+
+    @get:Optional
+    @get:Input
     abstract val whitelist: MapProperty<String, List<String>>
 
+    @get:Optional
+    @get:Input
+    abstract val libraries: ListProperty<String>
     @get:Optional
     @get:Input
     abstract val useSystemLoadLibrary: Property<Boolean>
@@ -43,10 +52,12 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
                 args("--output", outputDirectory.get())
                 targetPackage.orNull?.let { args("-t", it) }
                 headerClassName.orNull?.let { args("--header-class-name", it) }
+                includes.orNull?.forEach { args("-I", it.asFile.absolutePath) }
                 whitelist.orNull?.forEach { (k, v) ->
                     v.forEach { args("--include-$k", it) }
                 }
 
+                libraries.orNull?.forEach { args("-l", it) }
                 useSystemLoadLibrary.orNull?.let { if (it) args("--use-system-load-library") }
                 args(header.get())
             }
