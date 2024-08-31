@@ -1,4 +1,4 @@
-package de.infolektuell.jextract
+package de.infolektuell.gradle.jextract
 
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test

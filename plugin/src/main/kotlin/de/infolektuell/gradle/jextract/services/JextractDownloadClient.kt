@@ -1,4 +1,4 @@
-package de.infolektuell.jextract.services
+package de.infolektuell.gradle.jextract.services
 
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty

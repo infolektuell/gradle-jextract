@@ -1,6 +1,6 @@
-package de.infolektuell.jextract.tasks
+package de.infolektuell.gradle.jextract.tasks
 
-import de.infolektuell.jextract.services.JextractDownloadClient
+import de.infolektuell.gradle.jextract.services.JextractDownloadClient
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ArchiveOperations
 import org.gradle.api.file.Directory

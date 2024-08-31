@@ -1,4 +1,4 @@
-package de.infolektuell.jextract.extensions
+package de.infolektuell.gradle.jextract.extensions
 import org.gradle.api.provider.Property
 
 abstract class IntegrityHandler {

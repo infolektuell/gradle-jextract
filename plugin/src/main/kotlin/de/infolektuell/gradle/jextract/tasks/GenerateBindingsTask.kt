@@ -1,4 +1,4 @@
-package de.infolektuell.jextract.tasks
+package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty

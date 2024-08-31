@@ -1,9 +1,9 @@
-package de.infolektuell.jextract
+package de.infolektuell.gradle.jextract
 
-import de.infolektuell.jextract.extensions.JextractExtension
-import de.infolektuell.jextract.tasks.DownloadTask
-import de.infolektuell.jextract.tasks.GenerateBindingsTask
-import de.infolektuell.jextract.services.JextractDownloadClient
+import de.infolektuell.gradle.jextract.extensions.JextractExtension
+import de.infolektuell.gradle.jextract.tasks.DownloadTask
+import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
+import de.infolektuell.gradle.jextract.services.JextractDownloadClient
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
@@ -13,7 +13,7 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        val extension = project.extensions.create("jextract", JextractExtension::class.java)
+        val extension = project.extensions.create("jextract", de.infolektuell.gradle.jextract.extensions.JextractExtension::class.java)
         extension.generator.distribution.apply {
             register("linux_aarch64")
             register("linux_x64")

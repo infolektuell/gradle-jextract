@@ -1,6 +1,23 @@
 plugins {
-    `java-gradle-plugin`
     kotlin("jvm") version "2.0.0"
+    id("com.gradle.plugin-publish") version "1.2.2"
+}
+
+group = "de.infolektuell"
+version = "1.0"
+
+gradlePlugin {
+    website = "https://github.com/infolektuell/gradle-jextract"
+    vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
+    plugins {
+        create("jextractPlugin") {
+            id = "de.infolektuell.jextract"
+            displayName = "jextract gradle plugin"
+            description = "Generates Java bindings from native library headers using the Jextract tool"
+            tags = listOf("native", "FFM", "panama", "jextract")
+            implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
+        }
+    }
 }
 
 repositories {
@@ -8,23 +25,10 @@ repositories {
 }
 
 dependencies {
-    implementation("de.undercouch:gradle-download-task:5.6.0")
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-gradlePlugin {
-    val jextract by plugins.creating {
-        id = "de.infolektuell.jextract"
-        displayName = "jextract gradle plugin"
-        description = "Generates Java bindings from native library headers using the Jextract tool"
-        implementationClass = "de.infolektuell.jextract.GradleJextractPlugin"
-        website = "https://github.com/infolektuell/gradle-jextract"
-        vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
-        tags = listOf("native", "panama", "jextract")
-    }
 }
 
 // Add a source set for the functional test suite
