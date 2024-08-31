@@ -64,11 +64,25 @@ abstract class GeneratorHandler @Inject constructor(objects: ObjectFactory) {
                 )}
                 distribution.getByName("windows_x64") { it.setConventions(
                     "https://download.java.net/java/early_access/jextract/20/1/openjdk-20-jextract+1-2_windows-x64_bin.tar.gz",
-                    ""
+                    "9ad31b338ff8b94834869e6d865e2b986efcdaa0d76e28d4054f8b291b74019f"
+                )}
+            }
+            JavaLanguageVersion.of(19) -> {
+                distribution.getByName("linux_x64") { it.setConventions(
+                    "https://download.java.net/java/early_access/jextract/19/2/openjdk-19-jextract+2-3_linux-x64_bin.tar.gz",
+                    "5f97e63ed608e7a68e7995b8038e225b8beb2e9fb67216ba2bcd711453a6bb51",
+                )}
+                distribution.getByName("mac_x64") { it.setConventions(
+                    "https://download.java.net/java/early_access/jextract/19/2/openjdk-19-jextract+2-3_macos-x64_bin.tar.gz",
+                    "f2672332b5a4a8f07464472f74060e8fad9ab86c77bf3d4def8fb0fc4c6b4510",
+                )}
+                distribution.getByName("windows_x64") { it.setConventions(
+                    "https://download.java.net/java/early_access/jextract/19/2/openjdk-19-jextract+2-3_windows-x64_bin.tar.gz",
+                    "770723ae81a2ff48bfba6ec83c6fcbff6975a4dbb635b49bd5c3b7c042aefea2"
                 )}
             }
             else -> {
-                throw GradleException("Please supply a Java version of 20 or above.")
+                throw GradleException("This plugin does not support conventions for supplied Java version. Please select a version between 19 and 22.")
             }
         }
     }
