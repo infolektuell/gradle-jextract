@@ -38,7 +38,6 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.algorithm.set(resource.integrity.algorithm)
         }
 
-        val javaCompileTask = project.tasks.named("compileJava", JavaCompile::class.java)
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
             val jextractTask = project.tasks.register("${lib.name}Jextract", GenerateBindingsTask::class.java) { task ->
@@ -72,8 +71,8 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     }
                 }
             }
-            javaCompileTask.configure { task ->
-                task.dependsOn(jextractTask)
+            project.tasks.withType(JavaCompile::class.java) { j ->
+                j.dependsOn(jextractTask)
             }
         }
     }
