@@ -1,5 +1,7 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.20"
     id("com.gradle.plugin-publish") version "1.2.2"
 }
 
@@ -21,9 +23,11 @@ gradlePlugin {
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    toolchain.languageVersion = JavaLanguageVersion.of(22)
+    targetCompatibility = JavaVersion.VERSION_21
+}
+kotlin {
+    compilerOptions.jvmTarget = JvmTarget.JVM_21
 }
 
 repositories {
