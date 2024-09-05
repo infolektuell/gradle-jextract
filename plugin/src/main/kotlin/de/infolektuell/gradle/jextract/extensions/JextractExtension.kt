@@ -17,4 +17,7 @@ abstract class JextractExtension @Inject constructor(objects: ObjectFactory) {
     fun libraries(action: Action<in NamedDomainObjectContainer<LibraryHandler>>) {
         action.execute(libraries)
     }
+    companion object {
+        const val EXTENSION_NAME = "jextract"
+    }
 }

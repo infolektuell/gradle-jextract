@@ -12,6 +12,13 @@ gradlePlugin {
     website = "https://github.com/infolektuell/gradle-jextract"
     vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
     plugins {
+        create("downloadPlugin") {
+            id = "de.infolektuell.download"
+            displayName = "File download plugin"
+            description = "Downloads files from http or https URLs and verifies their integrity via checksum"
+            tags = listOf("download", "verify")
+            implementationClass = "de.infolektuell.gradle.download.GradleDownloadPlugin"
+        }
         create("jextractPlugin") {
             id = "de.infolektuell.jextract"
             displayName = "jextract gradle plugin"
