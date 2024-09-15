@@ -27,6 +27,9 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
     @get:Optional
     @get:InputFiles
     abstract val includes: ListProperty<Directory>
+    @get:Optional
+    @get:Input
+    abstract val definedMacros: ListProperty<String>
 
     @get:Optional
     @get:Input
@@ -53,6 +56,7 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
                 targetPackage.orNull?.let { args("-t", it) }
                 headerClassName.orNull?.let { args("--header-class-name", it) }
                 includes.orNull?.forEach { args("-I", it.asFile.absolutePath) }
+                definedMacros.orNull?.forEach { args("-D", it) }
                 whitelist.orNull?.forEach { (k, v) ->
                     v.forEach { args("--include-$k", it) }
                 }

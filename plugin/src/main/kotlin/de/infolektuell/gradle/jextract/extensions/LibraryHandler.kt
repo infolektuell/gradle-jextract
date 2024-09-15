@@ -11,6 +11,7 @@ import org.gradle.api.tasks.Nested
 abstract class LibraryHandler : Named {
     abstract val header: RegularFileProperty
     abstract val includes: ListProperty<Directory>
+    abstract val definedMacros: ListProperty<String>
     abstract val targetPackage: Property<String>
     abstract val headerClassName: Property<String>
     @get:Nested

@@ -52,6 +52,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                         generator.set(extractTask.get().target)
                     }
                     header.set(lib.header)
+                    definedMacros.set(lib.definedMacros)
                     whitelist.connect(lib.whitelist)
                     targetPackage.set(lib.targetPackage)
                     headerClassName.set(lib.headerClassName)
