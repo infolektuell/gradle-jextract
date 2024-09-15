@@ -25,7 +25,7 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
     abstract val headerClassName: Property<String>
 
     @get:Optional
-    @get:Input
+    @get:InputFiles
     abstract val includes: ListProperty<Directory>
 
     @get:Optional
