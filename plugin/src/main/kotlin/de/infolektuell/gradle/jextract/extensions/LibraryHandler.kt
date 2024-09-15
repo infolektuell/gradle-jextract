@@ -2,15 +2,19 @@ package de.infolektuell.gradle.jextract.extensions
 
 import org.gradle.api.Action
 import org.gradle.api.Named
-import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.file.SourceDirectorySet
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Nested
+import javax.inject.Inject
 
-abstract class LibraryHandler : Named {
+abstract class LibraryHandler @Inject constructor(objects: ObjectFactory) : Named {
     abstract val header: RegularFileProperty
-    abstract val includes: ListProperty<Directory>
+    val includes: SourceDirectorySet = objects.sourceDirectorySet("jextractIncludes", "Jextract Includes").apply {
+        include("*.h")
+    }
     abstract val definedMacros: ListProperty<String>
     abstract val targetPackage: Property<String>
     abstract val headerClassName: Property<String>

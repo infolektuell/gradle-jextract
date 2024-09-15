@@ -56,7 +56,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     whitelist.connect(lib.whitelist)
                     targetPackage.set(lib.targetPackage)
                     headerClassName.set(lib.headerClassName)
-                    includes.set(lib.includes)
+                    includes.from(lib.includes.sourceDirectories)
                     libraries.set(lib.libraries)
                     useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
                 }

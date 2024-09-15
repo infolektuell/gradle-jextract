@@ -1,7 +1,7 @@
 package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.Directory
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
@@ -26,7 +26,7 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
 
     @get:Optional
     @get:InputFiles
-    abstract val includes: ListProperty<Directory>
+    abstract val includes: ConfigurableFileCollection
     @get:Optional
     @get:Input
     abstract val definedMacros: ListProperty<String>
@@ -55,7 +55,7 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
                 args("--output", outputDirectory.get())
                 targetPackage.orNull?.let { args("-t", it) }
                 headerClassName.orNull?.let { args("--header-class-name", it) }
-                includes.orNull?.forEach { args("-I", it.asFile.absolutePath) }
+                includes.forEach { args("-I", it.absolutePath) }
                 definedMacros.orNull?.forEach { args("-D", it) }
                 whitelist.orNull?.forEach { (k, v) ->
                     v.forEach { args("--include-$k", it) }
