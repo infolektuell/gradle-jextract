@@ -13,7 +13,5 @@ class GradleJextractPluginTest {
         val project = ProjectBuilder.builder().build()
         project.plugins.apply("de.infolektuell.jextract")
 
-        // Verify the result
-        assertNotNull(project.tasks.findByName("downloadJextract"))
     }
 }

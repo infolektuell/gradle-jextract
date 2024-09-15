@@ -25,7 +25,7 @@ class GradleJextractPluginFunctionalTest {
         settingsFile.writeText("")
         buildFile.writeText("""
             plugins {
-                id('de.infolektuell.jextract')
+                id('de.infolektuell.jextract') version '1.0'
             }
         """.trimIndent())
 
