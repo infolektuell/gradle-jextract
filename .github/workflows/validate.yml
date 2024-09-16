@@ -1,0 +1,34 @@
+name: Plugin Validation
+
+# Controls when the workflow will run
+on:
+    # Triggers the workflow on push or pull request events but only for the "main" branch
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 22
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Validate Plugin
+        env:
+            GRADLE_PUBLISH_KEY: "${{ secrets.GRADLE_PUBLISH_KEY }}"
+            GRADLE_PUBLISH_SECRET: "${{ secrets.GRADLE_PUBLISH_SECRET }}"
+            ORG_GRADLE_PROJECT_signingKey: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}"
+            ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}"
+        run: ./gradlew publishPlugins --validate-only

@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm") version "2.0.20"
+    signing
     id("com.gradle.plugin-publish") version "1.2.2"
 }
 
@@ -28,6 +29,12 @@ gradlePlugin {
     }
 }
 
+signing {
+    // Get credentials from env variables for better CI compatibility
+    val signingKey: String? by project
+    val signingPassword: String? by project
+    useInMemoryPgpKeys(signingKey, signingPassword)
+}
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(22)
     targetCompatibility = JavaVersion.VERSION_21
