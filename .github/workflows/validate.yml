@@ -27,7 +27,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Validate Plugin
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORG_GRADLE_PROJECT_signingKey: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}"
           ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}"
           GRADLE_PUBLISH_KEY: "${{ secrets.GRADLE_PUBLISH_KEY }}"

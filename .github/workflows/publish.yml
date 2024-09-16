@@ -1,4 +1,4 @@
-name: Publish package
+name: Publish
 
 on:
   release:
@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish-gh-packages:
-    name: Publish to GitHub Packages
+  publish:
+    name: Publish to Gradle Plugin Portal
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,7 +26,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Publish Plugin
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORG_GRADLE_PROJECT_signingKey: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}"
           ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}"
-        run: ./gradlew publish
+          GRADLE_PUBLISH_KEY: "${{ secrets.GRADLE_PUBLISH_KEY }}"
+          GRADLE_PUBLISH_SECRET: "${{ secrets.GRADLE_PUBLISH_SECRET }}"
+        run: ./gradlew publishPlugins

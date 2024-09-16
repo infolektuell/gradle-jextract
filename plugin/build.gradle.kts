@@ -37,19 +37,6 @@ signing {
     useInMemoryPgpKeys(signingKey, signingPassword)
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = URI.create("https://maven.pkg.github.com/infolektuell/gradle-jextract")
-            credentials {
-                username = providers.environmentVariable("GITHUB_ACTOR").get()
-                password = providers.environmentVariable("GITHUB_TOKEN").get()
-            }
-        }
-    }
-}
-
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(22)
     targetCompatibility = JavaVersion.VERSION_21
