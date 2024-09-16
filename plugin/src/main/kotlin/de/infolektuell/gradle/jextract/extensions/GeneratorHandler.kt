@@ -10,15 +10,16 @@ import java.net.URI
 import javax.inject.Inject
 
 abstract class GeneratorHandler @Inject constructor(objects: ObjectFactory) {
-    /** Declares where JExtract can be downloaded */
+    /** Contains platform-specific locations where JExtract can be downloaded */
     val distribution: NamedDomainObjectContainer<ResourceHandler> = objects.domainObjectContainer(ResourceHandler::class.java)
+    /** Configures platform-specific locations where JExtract can be downloaded */
     fun distribution(action: Action<in NamedDomainObjectContainer<ResourceHandler>>) {
         action.execute(distribution)
     }
     /** A directory containing a JExtract installation */
     abstract val local: DirectoryProperty
 
-    /** Registers resources for a specific Java version */
+    /** Sets sensible defaults to download Jextract for a specific Java version */
     fun javaVersion(version: JavaLanguageVersion) {
         when(version) {
             JavaLanguageVersion.of(22) -> {
