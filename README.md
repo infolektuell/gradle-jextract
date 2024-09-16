@@ -25,7 +25,7 @@ After running `./gradlew build`, the generated code will be available in the mai
 ```
 plugins {
     id("application")
-    id("de.infolektuell.jextract") version "1.0.0"
+    id("de.infolektuell.jextract") version "0.1.0"
 }
 
 jextract.libraries {
@@ -50,7 +50,7 @@ The extension offers a helper method to select a version without relying on a Ja
 
 ```
 plugins {
-    id("de.infolektuell.jextract") version "1.0.0"
+    id("de.infolektuell.jextract") version "0.1.0"
 }
 
 jextract {
@@ -70,7 +70,7 @@ You have to add checksums for custom resources (SHA-256 by default).
 
 ```
 plugins {
-    id("de.infolektuell.jextract") version "1.0.0"
+    id("de.infolektuell.jextract") version "0.1.0"
 }
 
 jextract {
