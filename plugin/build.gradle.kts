@@ -5,20 +5,10 @@ plugins {
     id("com.gradle.plugin-publish") version "1.2.2"
 }
 
-group = "de.infolektuell"
-version = "1.0"
-
 gradlePlugin {
     website = "https://github.com/infolektuell/gradle-jextract"
     vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
     plugins {
-        create("downloadPlugin") {
-            id = "de.infolektuell.download"
-            displayName = "File download plugin"
-            description = "Downloads files from http or https URLs and verifies their integrity via checksum"
-            tags = listOf("download", "verify")
-            implementationClass = "de.infolektuell.gradle.download.GradleDownloadPlugin"
-        }
         create("jextractPlugin") {
             id = "de.infolektuell.jextract"
             displayName = "jextract gradle plugin"
@@ -26,6 +16,15 @@ gradlePlugin {
             tags = listOf("native", "FFM", "panama", "jextract")
             implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
         }
+        /*
+        create("downloadPlugin") {
+            id = "de.infolektuell.download"
+            displayName = "File download plugin"
+            description = "File download from http or https, integrity verification, archive extraction"
+            tags = listOf("download", "verify")
+            implementationClass = "de.infolektuell.gradle.download.GradleDownloadPlugin"
+        }
+         */
     }
 }
 

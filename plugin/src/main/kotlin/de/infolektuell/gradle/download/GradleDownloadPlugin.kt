@@ -21,4 +21,7 @@ abstract class GradleDownloadPlugin : Plugin<Project> {
             }
         }
     }
+    companion object {
+        const val PLUGIN_NAME = "de.infolektuell.download"
+    }
 }

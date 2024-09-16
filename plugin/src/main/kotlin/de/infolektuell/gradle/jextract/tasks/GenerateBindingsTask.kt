@@ -1,7 +1,7 @@
 package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
@@ -24,21 +24,16 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
     @get:Input
     abstract val headerClassName: Property<String>
 
-    @get:Optional
     @get:InputFiles
-    abstract val includes: ConfigurableFileCollection
-    @get:Optional
+    abstract val includes: ListProperty<Directory>
     @get:Input
     abstract val definedMacros: ListProperty<String>
 
-    @get:Optional
     @get:Input
     abstract val whitelist: MapProperty<String, List<String>>
 
-    @get:Optional
     @get:Input
     abstract val libraries: ListProperty<String>
-    @get:Optional
     @get:Input
     abstract val useSystemLoadLibrary: Property<Boolean>
     @get:OutputDirectory
@@ -49,22 +44,20 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
             val fileName = if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) "jextract.bat" else "jextract"
             spec.include("**/bin/$fileName")
         }.singleFile
-        execOperations.exec { action ->
-            action.run {
-                commandLine(cmdFile.absolutePath)
-                args("--output", outputDirectory.get())
-                targetPackage.orNull?.let { args("-t", it) }
-                headerClassName.orNull?.let { args("--header-class-name", it) }
-                includes.forEach { args("-I", it.absolutePath) }
-                definedMacros.orNull?.forEach { args("-D", it) }
-                whitelist.orNull?.forEach { (k, v) ->
-                    v.forEach { args("--include-$k", it) }
-                }
-
-                libraries.orNull?.forEach { args("-l", it) }
-                useSystemLoadLibrary.orNull?.let { if (it) args("--use-system-load-library") }
-                args(header.get())
+        execOperations.exec { spec ->
+            spec.executable(cmdFile.absolutePath)
+            spec.args("--output", outputDirectory.get())
+            targetPackage.orNull?.let { spec.args("-t", it) }
+            headerClassName.orNull?.let { spec.args("--header-class-name", it) }
+            includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
+            definedMacros.get().forEach { spec.args("-D", it) }
+            whitelist.get().forEach { (k, v) ->
+                if (v.isEmpty()) return@forEach
+                v.forEach { spec.args("--include-$k", it) }
             }
+            libraries.get().forEach { spec.args("-l", it) }
+            if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+            spec.args(header.get())
         }
     }
 }

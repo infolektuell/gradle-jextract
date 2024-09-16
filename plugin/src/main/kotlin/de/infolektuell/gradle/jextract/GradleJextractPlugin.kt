@@ -1,10 +1,10 @@
 package de.infolektuell.gradle.jextract
 
+import de.infolektuell.gradle.download.GradleDownloadPlugin
 import de.infolektuell.gradle.download.tasks.DownloadTask
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.ResourceHandler
-import de.infolektuell.gradle.jextract.extensions.WhitelistHandler
-import de.infolektuell.gradle.jextract.tasks.ExtractTask
+import de.infolektuell.gradle.download.tasks.ExtractTask
 import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
 import org.gradle.api.JavaVersion
 import org.gradle.api.NamedDomainObjectContainer
@@ -12,7 +12,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.provider.MapProperty
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.jvm.toolchain.JavaLanguageVersion
@@ -20,7 +19,7 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        project.plugins.apply("de.infolektuell.download")
+        project.plugins.apply(GradleDownloadPlugin::class.java)
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.distribution.registerPlatforms()
 
@@ -53,10 +52,10 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     }
                     header.set(lib.header)
                     definedMacros.set(lib.definedMacros)
-                    whitelist.connect(lib.whitelist)
+                    whitelist.set(lib.whitelist.mapProvider)
                     targetPackage.set(lib.targetPackage)
                     headerClassName.set(lib.headerClassName)
-                    includes.from(lib.includes.sourceDirectories)
+                    includes.set(lib.includes)
                     libraries.set(lib.libraries)
                     useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
                 }
@@ -104,12 +103,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             getByName("windows_x64")
         }
     }
-    private fun MapProperty<String, List<String>>.connect(whitelist: WhitelistHandler) {
-        put("constant", whitelist.constants)
-        put("function", whitelist.functions)
-        put("struct", whitelist.structs)
-        put("typedef", whitelist.typedefs)
-        put("union", whitelist.unions)
-        put("var", whitelist.variables)
+    companion object {
+        const val PLUGIN_NAME = "de.infolektuell.jextract"
     }
 }

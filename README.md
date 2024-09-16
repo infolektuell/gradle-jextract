@@ -12,6 +12,7 @@ The plugin generates Java bindings for native libraries using the FFM-related [J
 - [x] Alternately, use a local installation of Jextract.
 - [x] Generated code is available in main sourceset of Java projects.
 - [x] Configure multiple libs in one project
+- [x] Compatible with [Configuration Cache]
 
 ## Usage
 
@@ -106,3 +107,4 @@ jextract {
 
 [jextract]: https://jdk.java.net/jextract/
 [ffm]: https://openjdk.org/jeps/454
+[configuration cache]: https://docs.gradle.org/current/userguide/configuration_cache.html
