@@ -1,5 +1,7 @@
 # Gradle Jextract Plugin
 
+[![Gradle Plugin Portal Version](https://img.shields.io/gradle-plugin-portal/v/de.infolektuell.jextract)](https://plugins.gradle.org/plugin/de.infolektuell.jextract)
+
 This plugin enables developing Java code that makes use of native libraries using the new [Foreign Function & Memory API][ffm].
 FFM API can be considered as a more modern and secure alternative to JNI for native access in Java.
 The plugin generates Java bindings for native libraries using the FFM-related [Jextract] tool and makes them accessible in Gradle projects.

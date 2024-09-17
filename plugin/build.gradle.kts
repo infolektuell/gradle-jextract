@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.net.URI
 
 plugins {
     kotlin("jvm") version "2.0.20"
@@ -10,23 +9,12 @@ plugins {
 gradlePlugin {
     website = "https://github.com/infolektuell/gradle-jextract"
     vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
-    plugins {
-        create("jextractPlugin") {
-            id = "de.infolektuell.jextract"
-            displayName = "jextract gradle plugin"
-            description = "Generates Java bindings from native library headers using the Jextract tool"
-            tags = listOf("native", "FFM", "panama", "jextract")
-            implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
-        }
-        /*
-        create("downloadPlugin") {
-            id = "de.infolektuell.download"
-            displayName = "File download plugin"
-            description = "File download from http or https, integrity verification, archive extraction"
-            tags = listOf("download", "verify")
-            implementationClass = "de.infolektuell.gradle.download.GradleDownloadPlugin"
-        }
-         */
+    plugins.create("jextractPlugin") {
+        id = "de.infolektuell.jextract"
+        displayName = "jextract gradle plugin"
+        description = "Generates Java bindings from native library headers using the Jextract tool"
+        tags = listOf("native", "FFM", "panama", "jextract")
+        implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
     }
 }
 
