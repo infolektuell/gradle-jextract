@@ -24,7 +24,9 @@ After running `./gradlew build`, the generated code will be available in the mai
 
 ### Simple Example
 
-```
+In _build.gradle.kts_:
+
+```gradle kotlin dsl
 plugins {
     id("application")
     id("de.infolektuell.jextract") version "0.1.0"
@@ -50,7 +52,7 @@ java {
 
 The extension offers a helper method to select a version without relying on a Java plugin.
 
-```
+```gradle kotlin dsl
 plugins {
     id("de.infolektuell.jextract") version "0.1.0"
 }
@@ -70,7 +72,7 @@ jextract {
 You can select a preset before setting custom URLs to have sensible fallback conventions.
 You have to add checksums for custom resources (SHA-256 by default).
 
-```
+```gradle kotlin dsl
 plugins {
     id("de.infolektuell.jextract") version "0.1.0"
 }
