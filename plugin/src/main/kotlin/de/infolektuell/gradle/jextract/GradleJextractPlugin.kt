@@ -26,7 +26,6 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val userOutput = project.layout.projectDirectory.dir(project.gradle.gradleUserHomeDir.absolutePath)
         val resource: ResourceHandler = extension.generator.distribution.currentResource()
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
-            task.group = "download"
             task.description = "Downloads Jextract for ${resource.name} platform"
             task.source.set(resource.url)
             task.target.set(userOutput.dir("downloads").file(resource.url.map { it.path.replaceBeforeLast("/", "").trim('/') }))
