@@ -18,9 +18,9 @@ import java.security.MessageDigest
 abstract class DownloadClient : BuildService<BuildServiceParameters.None> {
     private val client: HttpClient = HttpClient.newHttpClient()
 
-    fun download(source: URI, target: RegularFile, integrity: Map<String, String>) {
+    fun download(source: URI, checksum: String, algorithm: String, target: RegularFile) {
         val targetPath = target.asFile.toPath()
-        val downloaded = integrity.entries.firstOrNull()?.let { verify(targetPath, it) } ?: false
+        val downloaded = verify(targetPath, checksum, algorithm)
         if (downloaded) return
         val request: HttpRequest = HttpRequest.newBuilder()
             .uri(source)
@@ -28,15 +28,11 @@ abstract class DownloadClient : BuildService<BuildServiceParameters.None> {
             .build()
         val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
         if (response.statusCode() != 200) throw GradleException("Downloading from $source failed with status code ${response.statusCode()}.")
-        val isValid = integrity.entries.firstOrNull()?.let { copyVerify(response.body(), targetPath, it) }
-        if (isValid == false) throw GradleException("Data integrity of downloaded file $source could not be verified, checksums do not match.")
-        if (isValid == null) {
-            Files.copy(response.body(), targetPath, StandardCopyOption.REPLACE_EXISTING)
-        }
+        val isValid = copyVerify(response.body(), targetPath, checksum, algorithm)
+        if (!isValid) throw GradleException("Data integrity of downloaded file $source could not be verified, checksums do not match.")
     }
     @OptIn(ExperimentalStdlibApi::class)
-    private fun copyVerify(from: InputStream, file: Path, integrity: Map.Entry<String, String>): Boolean {
-        val (algorithm, checksum) = integrity
+    private fun copyVerify(from: InputStream, file: Path, checksum: String, algorithm: String): Boolean {
         val md = MessageDigest.getInstance(algorithm)
         val input = DigestInputStream(from, md)
         Files.copy(input, file, StandardCopyOption.REPLACE_EXISTING)
@@ -45,8 +41,7 @@ abstract class DownloadClient : BuildService<BuildServiceParameters.None> {
         return calculatedChecksum == checksum
     }
     @OptIn(ExperimentalStdlibApi::class)
-    private fun verify(file: Path, integrity: Map.Entry<String, String>): Boolean {
-        val (algorithm, checksum) = integrity
+    private fun verify(file: Path, checksum: String, algorithm: String): Boolean {
         if (Files.notExists(file)) return false
         val md = MessageDigest.getInstance(algorithm)
         DigestInputStream(Files.newInputStream(file), md).use { input ->
