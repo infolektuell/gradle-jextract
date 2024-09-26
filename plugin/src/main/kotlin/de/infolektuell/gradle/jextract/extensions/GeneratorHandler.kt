@@ -22,7 +22,7 @@ abstract class GeneratorHandler @Inject constructor(objects: ObjectFactory) {
     /** Sets sensible defaults to download Jextract for a specific Java version */
     fun javaVersion(version: JavaLanguageVersion) {
         when(version) {
-            JavaLanguageVersion.of(22) -> {
+            JavaLanguageVersion.of(23), JavaLanguageVersion.of(22) -> {
                 distribution.getByName("linux_x64") { it.setConventions(
                         "https://download.java.net/java/early_access/jextract/22/5/openjdk-22-jextract+5-33_linux-x64_bin.tar.gz",
                         "53d66299cda8d079aeff42b2cc765314e44b384f3e0ec2a7eb994bae62b4b728",
