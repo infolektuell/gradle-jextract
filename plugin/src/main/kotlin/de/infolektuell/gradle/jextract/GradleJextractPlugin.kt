@@ -9,14 +9,16 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.internal.jvm.Jvm
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val serviceProvider = project.gradle.sharedServices.registerIfAbsent("${project.name}_${DownloadClient.SERVICE_NAME}", DownloadClient::class.java)
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
-        val javaExtension: JavaPluginExtension? = project.extensions.findByType(JavaPluginExtension::class.java)
+        extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
+        project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
         val sourceSets = project.extensions.findByType(SourceSetContainer::class.java)
-        javaExtension?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
         val resourceProvider: Provider<JextractResolver.Resource> = project.providers.of(DefaultJextractResolver::class.java) { spec ->
             spec.parameters.javaLanguageVersion.convention(extension.generator.javaLanguageVersion)
         }
