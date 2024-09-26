@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     kotlin("jvm") version "2.0.20"
     signing
@@ -26,11 +24,9 @@ signing {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(22)
-    targetCompatibility = JavaVersion.VERSION_21
-}
-kotlin {
-    compilerOptions.jvmTarget = JvmTarget.JVM_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 repositories {
