@@ -14,7 +14,6 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        val serviceProvider = project.gradle.sharedServices.registerIfAbsent("${project.name}_${DownloadClient.SERVICE_NAME}", DownloadClient::class.java)
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
@@ -26,8 +25,6 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val userOutput = project.layout.projectDirectory.dir(project.gradle.gradleUserHomeDir.absolutePath)
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
-            task.downloadClient.convention(serviceProvider)
-            task.usesService(serviceProvider)
             task.resource.convention(resourceProvider)
             task.target.convention(userOutput.dir("downloads").file(task.resource.map { it.fileName }))
         }
