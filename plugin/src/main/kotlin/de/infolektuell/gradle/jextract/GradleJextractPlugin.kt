@@ -5,6 +5,7 @@ import de.infolektuell.gradle.download.tasks.DownloadTask
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.ResourceHandler
 import de.infolektuell.gradle.download.tasks.ExtractTask
+import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
 import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
 import org.gradle.api.JavaVersion
 import org.gradle.api.NamedDomainObjectContainer
@@ -36,28 +37,31 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.source.set(downloadTask.get().target)
             task.target.set(userOutput.dir("jextract").dir(resource.integrity.checksum.map { it.substring(0, 8) }))
         }
+        extension.generator.local.convention(extractTask.flatMap { it.target })
 
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
             project.tasks.register("${lib.name}Jextract", GenerateBindingsTask::class.java) { task ->
-                task.run {
-                    group = "Build"
-                    outputDirectory.convention(project.layout.buildDirectory.dir("generated/sources/jextract/main/java"))
-                    description = "Generates bindings for the ${lib.name} library using Jextract"
-                    if (extension.generator.local.isPresent){
-                        generator.set(extension.generator.local)
-                    } else {
-                        generator.set(extractTask.get().target)
-                    }
-                    header.set(lib.header)
-                    definedMacros.set(lib.definedMacros)
-                    whitelist.set(lib.whitelist.mapProvider)
-                    targetPackage.set(lib.targetPackage)
-                    headerClassName.set(lib.headerClassName)
-                    includes.set(lib.includes)
-                    libraries.set(lib.libraries)
-                    useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
-                }
+                task.group = "Build"
+                task.description = "Generates bindings for the ${lib.name} library using Jextract"
+                task.outputDirectory.convention(project.layout.buildDirectory.dir("generated/sources/jextract/main/java"))
+                task.generator.location.set(extension.generator.local)
+                task.header.set(lib.header)
+                task.definedMacros.set(lib.definedMacros)
+                task.whitelist.set(lib.whitelist.mapProvider)
+                task.argFile.set(lib.whitelist.argFile)
+                task.targetPackage.set(lib.targetPackage)
+                task.headerClassName.set(lib.headerClassName)
+                task.includes.set(lib.includes)
+                task.libraries.set(lib.libraries)
+                task.useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
+            }
+            project.tasks.register("${lib.name}DumpIncludes", DumpIncludesTask::class.java) { task ->
+                task.group = "documentation"
+                task.description = "Generates a dump of all symbols encountered in a header file"
+                task.generator.location.set(extension.generator.local)
+                task.header.set(lib.header)
+                task.argFile.convention(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
             }
         }
         project.plugins.withType(JavaPlugin::class.java) { _ ->

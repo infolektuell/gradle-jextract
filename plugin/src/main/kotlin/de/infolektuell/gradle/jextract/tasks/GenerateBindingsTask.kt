@@ -3,18 +3,17 @@ package de.infolektuell.gradle.jextract.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.gradle.process.ExecOperations
 import javax.inject.Inject
 
-abstract class GenerateBindingsTask @Inject constructor(private var execOperations: ExecOperations) : DefaultTask() {
-    @get:InputDirectory
-    abstract val generator: DirectoryProperty
+abstract class GenerateBindingsTask @Inject constructor(private val fileSystemOperations: FileSystemOperations) : DefaultTask() {
+    @get:Nested
+    abstract val generator: Generator
     @get:InputFile
     abstract val header: RegularFileProperty
     @get:Optional
@@ -31,6 +30,9 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
 
     @get:Input
     abstract val whitelist: MapProperty<String, List<String>>
+    @get:Optional
+    @get:InputFile
+    abstract val argFile: RegularFileProperty
 
     @get:Input
     abstract val libraries: ListProperty<String>
@@ -40,12 +42,10 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
     abstract val outputDirectory: DirectoryProperty
     @TaskAction
     fun execute() {
-        val cmdFile = generator.asFileTree.matching { spec ->
-            val fileName = if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) "jextract.bat" else "jextract"
-            spec.include("**/bin/$fileName")
-        }.singleFile
-        execOperations.exec { spec ->
-            spec.executable(cmdFile.absolutePath)
+        fileSystemOperations.delete { spec ->
+            spec.delete(outputDirectory)
+        }
+        generator.execute { spec ->
             spec.args("--output", outputDirectory.get())
             targetPackage.orNull?.let { spec.args("-t", it) }
             headerClassName.orNull?.let { spec.args("--header-class-name", it) }
@@ -57,6 +57,7 @@ abstract class GenerateBindingsTask @Inject constructor(private var execOperatio
             }
             libraries.get().forEach { spec.args("-l", it) }
             if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+            argFile.orNull?.let { spec.args("@$it") }
             spec.args(header.get())
         }
     }
