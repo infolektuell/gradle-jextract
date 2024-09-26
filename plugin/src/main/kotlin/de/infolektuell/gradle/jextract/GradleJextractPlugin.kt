@@ -1,10 +1,10 @@
 package de.infolektuell.gradle.jextract
 
-import de.infolektuell.gradle.download.GradleDownloadPlugin
-import de.infolektuell.gradle.download.tasks.DownloadTask
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.ResourceHandler
-import de.infolektuell.gradle.download.tasks.ExtractTask
+import de.infolektuell.gradle.jextract.tasks.DownloadClient
+import de.infolektuell.gradle.jextract.tasks.DownloadTask
+import de.infolektuell.gradle.jextract.tasks.ExtractTask
 import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
 import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
 import org.gradle.api.JavaVersion
@@ -20,7 +20,11 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        project.plugins.apply(GradleDownloadPlugin::class.java)
+        val serviceProvider = project.gradle.sharedServices.registerIfAbsent("${project.name}_${DownloadClient.SERVICE_NAME}", DownloadClient::class.java)
+        project.tasks.withType(DownloadTask::class.java).configureEach { task ->
+            task.downloadClient.set(serviceProvider)
+            task.usesService(serviceProvider)
+        }
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.distribution.registerPlatforms()
 

@@ -1,4 +1,4 @@
-package de.infolektuell.gradle.download.tasks
+package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFile
