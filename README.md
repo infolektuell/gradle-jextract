@@ -4,7 +4,7 @@
 
 This plugin enables developing Java code that makes use of native libraries using the new [Foreign Function & Memory API][ffm].
 FFM API can be considered as a more modern and secure alternative to JNI for native access in Java.
-The plugin generates Java bindings for native libraries using the FFM-related [Jextract] tool and makes them accessible in Gradle projects.
+The plugin generates Java bindings for native libraries using the FFM-related [Jextract] tool and makes them accessible in java compilation.
 
 ## Features
 
@@ -13,13 +13,14 @@ The plugin generates Java bindings for native libraries using the FFM-related [J
 - [x] Download locations can be customized for more restrictive environments.
 - [x] Alternately, use a local installation of Jextract.
 - [x] Generated code is available in main sourceset of Java projects.
-- [x] Configure multiple libs in one project
-- [x] Compatible with [Configuration Cache]
+- [x] Multiple libs can be configured in one project and are built concurrently.
+- [x] Compatible with [Configuration Cache].
 
 ## Usage
 
 You might want to apply this plugin after one of the Java plugins.
-It tries to get the correct Java version from the toolchain extension or uses the build JDK.
+It tries to get the correct Java version from the toolchain extension or falls back to the JDK Gradle is running on.
+On JDk 23, Jextract 22 is used, because FFM has been finalized and a version 23 wouldn't make a difference effectively.
 After running `./gradlew build`, the generated code will be available in the main source set.
 
 ### Simple Example
@@ -29,7 +30,7 @@ In _build.gradle.kts_:
 ```gradle kotlin dsl
 plugins {
     id("application")
-    id("de.infolektuell.jextract") version "0.1.0"
+    id("de.infolektuell.jextract") version "0.2.0"
 }
 
 jextract.libraries {
@@ -48,18 +49,70 @@ java {
 }
 ```
 
-### Without Java Plugin
+### Filtering and arg files
 
-The extension offers a helper method to select a version without relying on a Java plugin.
+The plugin can dump includes encountered in the headers and use arg files.
+Running `gradlew dumpIncludes` produces a _<libname>-includes.txt_ file for each configured lib under _build/reports/jextract/_.
+To use this as an arg file for storing your whitelisted includes, you should copy, modify, and put it under source control.
+Add this copy to the plugin's extension.
+Instead of using an arg file, included symbols can also be configured directly in the whitelist extension via respective properties.
 
 ```gradle kotlin dsl
 plugins {
-    id("de.infolektuell.jextract") version "0.1.0"
+    id("application")
+    id("de.infolektuell.jextract") version "0.2.0"
+}
+
+jextract.libraries {
+    create("bass") {
+        header = layout.projectDirectory.file("bass.h")
+        targetPackage = "com.un4seen.bass"
+        headerClassName = "Bass"
+            whitelist {
+                argFile = layout.projectDirectory.file("src/main/includes/bass-includes.txt")
+                // Include more symbols via DSL extension
+                functions.addAll("bass_get_version")
+            }
+        libraries = listOf("bass")
+    }
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(22)
+```
+
+See [Filtering] section in the Jextract guide for more information.
+
+### Without Java Plugin
+
+The extension offers a property to select a version without relying on a Java plugin.
+
+```gradle kotlin dsl
+plugins {
+    id("de.infolektuell.jextract") version "0.2.0"
 }
 
 jextract {
     generator {
-        javaVersion(JavaLanguageVersion.of(21)
+        javaLanguageVersion = JavaLanguageVersion.of(21)
+    }
+    libraries {
+        ...
+    }
+}
+```
+
+### Local Installation
+
+Instead of downloading Jextract, a local installation directory can be configured.
+
+```gradle kotlin dsl
+plugins {
+    id("de.infolektuell.jextract") version "0.2.0"
+}
+
+jextract {
+    generator {
+        local = layout.projectDirectory.dir("/usr/local/opt/jextract-22/") 
     }
     libraries {
         ...
@@ -69,36 +122,24 @@ jextract {
 
 ### Custom Locations
 
-You can select a preset before setting custom URLs to have sensible fallback conventions.
-You have to add checksums for custom resources (SHA-256 by default).
+Jextract is downloaded from the [official page][jextract] by default.
+If custom locations are needed, the download task must be configured (url, checksum, and verification algorithm).
+The plugin implements its own decision logic to select apropriate values depending on the current build platform and JDK version.
 
 ```gradle kotlin dsl
+import de.infolektuell.gradle.jextract.tasks.DownloadTask
+
 plugins {
-    id("de.infolektuell.jextract") version "0.1.0"
+    id("de.infolektuell.jextract") version "0.2.0"
+}
+
+tasks.withType(DownloadTask::class).configureEach {
+    resource.url = uri("https://my-company.com/jextract/file.tgz")
+    resource.checksum = "xyz"
+    resource.algorithm = "SHA-512" // SHA-256 by default
 }
 
 jextract {
-    generator {
-        javaVersion(JavaLanguageVersion.of(21)
-        distribution {
-            getByName("linux_x64") {
-                url = "https://company.com/archives/jextract/21/jextract-linux-x64.tar.gz"
-                checksum = "..."
-            }
-            getByName("mac_aarch64") {
-                url = "https://company.com/archives/jextract/21/jextract-mac-aarch64.tar.gz"
-                checksum = "..."
-            }
-            getByName("mac_x64") {
-                url = "https://company.com/archives/jextract/21/jextract-mac-x64.tar.gz"
-                checksum = "..."
-            }
-            getByName("windows_x64") {
-                url = "https://company.com/archives/jextract/21/jextract-windows-x64.tar.gz"
-                checksum = "..."
-            }
-        }
-    }
     libraries {
         ...
     }
@@ -112,3 +153,4 @@ jextract {
 [jextract]: https://jdk.java.net/jextract/
 [ffm]: https://openjdk.org/jeps/454
 [configuration cache]: https://docs.gradle.org/current/userguide/configuration_cache.html
+[filtering]: https://github.com/openjdk/jextract/blob/master/doc/GUIDE.md#filtering
