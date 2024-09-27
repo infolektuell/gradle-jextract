@@ -35,34 +35,49 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         }
         extension.generator.local.convention(extractTask.flatMap { it.target })
 
+        val jextractTask = project.tasks.register("jextract", GenerateBindingsTask::class.java) { task ->
+            task.group = "Build"
+            task.description = "Generates bindings for all configured libraries"
+            task.generator.location.convention(extension.generator.local)
+        }
+        val dumpIncludesTask = project.tasks.register("dumpIncludes", DumpIncludesTask::class.java) { task ->
+            task.group = "documentation"
+            task.description = "Generates a dump of all symbols encountered in a header file"
+            task.generator.location.convention(extension.generator.local)
+        }
+        sourceSets?.named("main") { main ->
+            main.java.srcDir(jextractTask)
+            main.compileClasspath += project.files(jextractTask)
+            main.runtimeClasspath += project.files(jextractTask)
+        }
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
-            project.tasks.register("${lib.name}Jextract", GenerateBindingsTask::class.java) { task ->
-                task.group = "Build"
-                task.description = "Generates bindings for the ${lib.name} library using Jextract"
-                task.outputDirectory.convention(project.layout.buildDirectory.dir("generated/sources/jextract/${lib.name}/main/java"))
-                task.generator.location.convention(extension.generator.local)
-                task.header.set(lib.header)
-                task.definedMacros.set(lib.definedMacros)
-                task.whitelist.set(lib.whitelist.mapProvider)
-                task.argFile.set(lib.whitelist.argFile)
-                task.targetPackage.set(lib.targetPackage)
-                task.headerClassName.set(lib.headerClassName)
-                task.includes.set(lib.includes)
-                task.libraries.set(lib.libraries)
-                task.useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
-                sourceSets?.named("main") { main ->
-                    main.java.srcDir(task)
-                    main.compileClasspath += project.files(task)
-                    main.runtimeClasspath += project.files(task)
+            jextractTask.configure { task ->
+                val config = project.objects.newInstance(GenerateBindingsTask.LibraryConfig::class.java).apply {
+                    header.set(lib.header)
+                    includes.set(lib.includes)
+                    definedMacros.set(lib.definedMacros)
+                    headerClassName.set(lib.headerClassName)
+                    targetPackage.set(lib.targetPackage)
+                    whitelist.put("function", lib.whitelist.functions)
+                    whitelist.put("constant", lib.whitelist.constants)
+                    whitelist.put("struct", lib.whitelist.structs)
+                    whitelist.put("union", lib.whitelist.unions)
+                    whitelist.put("typedef", lib.whitelist.typedefs)
+                    whitelist.put("var", lib.whitelist.variables)
+                    argFile.set(lib.whitelist.argFile)
+                    libraries.set(lib.libraries)
+                    useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
+                    sources.set(project.layout.buildDirectory.dir("generated/sources/jextract/${lib.name}/main/java"))
                 }
+                task.libraries.add(config)
             }
-            project.tasks.register("${lib.name}DumpIncludes", DumpIncludesTask::class.java) { task ->
-                task.group = "documentation"
-                task.description = "Generates a dump of all symbols encountered in a header file"
-                task.generator.location.convention(extension.generator.local)
-                task.header.set(lib.header)
-                task.argFile.convention(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
+            dumpIncludesTask.configure { task ->
+                val config = project.objects.newInstance(DumpIncludesTask.LibraryConfig::class.java).apply {
+                    header.set(lib.header)
+                    argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
+                }
+                task.libraries.add(config)
             }
         }
     }

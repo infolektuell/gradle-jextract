@@ -2,22 +2,54 @@ package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.tasks.*
-import org.gradle.api.tasks.options.Option
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkerExecutor
+import javax.inject.Inject
 
-abstract class DumpIncludesTask : DefaultTask() {
+abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
+    interface LibraryConfig {
+        @get:InputFile
+        val header: RegularFileProperty
+        @get:OutputFile
+        val argFile: RegularFileProperty
+    }
+    abstract class DumpIncludesAction @Inject constructor(private val execOperations: ExecOperations) : WorkAction<DumpIncludesAction.Parameters> {
+        interface Parameters : WorkParameters {
+            val executable: RegularFileProperty
+            val library: Property<LibraryConfig>
+        }
+        override fun execute() {
+            execOperations.exec { spec ->
+                spec.executable(parameters.executable.get().asFile.absolutePath)
+                parameters.library.get().run {
+                    spec.args("--dump-includes", argFile.get().asFile.absolutePath)
+                    spec.args(header.get().asFile.absolutePath)
+                }
+            }
+        }
+    }
+
     @get:Nested
     abstract val generator: Generator
-    @get:InputFile
-    abstract val header: RegularFileProperty
-    @get:OutputFile
-    @get:Option(option = "arg-file", description = "The file to dump includes to")
-    abstract val argFile: RegularFileProperty
+    @get:Nested
+    abstract val libraries: SetProperty<LibraryConfig>
+
     @TaskAction
     fun dump() {
-        generator.execute { spec ->
-            spec.args("--dump-includes", argFile.get().asFile.absolutePath)
-            spec.args(header.get().asFile.absolutePath)
+        val queue = workerExecutor.noIsolation()
+        libraries.get().forEach { config ->
+            queue.submit(DumpIncludesAction::class.java) { param ->
+                param.executable.set(generator.executable)
+                param.library.set(config)
+            }
         }
     }
 }

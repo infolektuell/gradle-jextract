@@ -8,57 +8,85 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.*
+import org.gradle.process.ExecOperations
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkerExecutor
 import javax.inject.Inject
 
-abstract class GenerateBindingsTask @Inject constructor(private val fileSystemOperations: FileSystemOperations) : DefaultTask() {
+abstract class GenerateBindingsTask @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
+    interface LibraryConfig {
+        @get:InputFile
+        val header: RegularFileProperty
+        @get:InputFiles
+        val includes: ListProperty<Directory>
+        @get:Input
+        val definedMacros: ListProperty<String>
+        @get:Optional
+        @get:Input
+        val targetPackage: Property<String>
+        @get:Optional
+        @get:Input
+        val headerClassName: Property<String>
+        @get:Input
+        val whitelist: MapProperty<String, Set<String>>
+        @get:Optional
+        @get:InputFile
+        val argFile: RegularFileProperty
+        @get:Input
+        val libraries: ListProperty<String>
+        @get:Optional
+        @get:Input
+        val useSystemLoadLibrary: Property<Boolean>
+        @get:OutputDirectory
+        val sources: DirectoryProperty
+    }
+
+    abstract class GenerateBindingsAction @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : WorkAction<GenerateBindingsAction.Parameters> {
+        interface Parameters : WorkParameters {
+            val executable: RegularFileProperty
+            val library: Property<LibraryConfig>
+        }
+
+        override fun execute() {
+            parameters.library.get().run {
+            fileSystemOperations.delete { spec ->
+                spec.delete(sources)
+            }
+            execOperations.exec { spec ->
+                spec.executable(parameters.executable.get().asFile.absolutePath)
+                spec.args("--output", sources.get().asFile.absolutePath)
+                    targetPackage.orNull?.let { spec.args("-t", it) }
+                    headerClassName.orNull?.let { spec.args("--header-class-name", it) }
+                    includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
+                    definedMacros.get().forEach { spec.args("-D", it) }
+                    whitelist.get().forEach { (k, v) ->
+                        if (v.isEmpty()) return@forEach
+                        v.forEach { spec.args("--include-$k", it) }
+                    }
+                    libraries.get().forEach { spec.args("-l", it) }
+                    if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+                    argFile.orNull?.let { spec.args("@$it") }
+                    spec.args(header.get())
+                }
+            }
+        }
+    }
+
     @get:Nested
     abstract val generator: Generator
-    @get:InputFile
-    abstract val header: RegularFileProperty
-    @get:Optional
-    @get:Input
-    abstract val targetPackage: Property<String>
-    @get:Optional
-    @get:Input
-    abstract val headerClassName: Property<String>
-
-    @get:InputFiles
-    abstract val includes: ListProperty<Directory>
-    @get:Input
-    abstract val definedMacros: ListProperty<String>
-
-    @get:Input
-    abstract val whitelist: MapProperty<String, List<String>>
-    @get:Optional
-    @get:InputFile
-    abstract val argFile: RegularFileProperty
-
-    @get:Input
-    abstract val libraries: ListProperty<String>
-    @get:Input
-    abstract val useSystemLoadLibrary: Property<Boolean>
-    @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
+    @get:Nested
+    abstract val libraries: SetProperty<LibraryConfig>
     @TaskAction
-    fun execute() {
-        fileSystemOperations.delete { spec ->
-            spec.delete(outputDirectory)
-        }
-        generator.execute { spec ->
-            spec.args("--output", outputDirectory.get())
-            targetPackage.orNull?.let { spec.args("-t", it) }
-            headerClassName.orNull?.let { spec.args("--header-class-name", it) }
-            includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
-            definedMacros.get().forEach { spec.args("-D", it) }
-            whitelist.get().forEach { (k, v) ->
-                if (v.isEmpty()) return@forEach
-                v.forEach { spec.args("--include-$k", it) }
+    fun generateBindings() {
+        val queue = workerExecutor.noIsolation()
+        libraries.get().forEach { lib ->
+            queue.submit(GenerateBindingsAction::class.java) { param ->
+                param.executable.set(generator.executable)
+                param.library.set(lib)
             }
-            libraries.get().forEach { spec.args("-l", it) }
-            if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
-            argFile.orNull?.let { spec.args("@$it") }
-            spec.args(header.get())
         }
     }
 }
