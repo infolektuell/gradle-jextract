@@ -1,6 +1,5 @@
 package de.infolektuell.gradle.jextract.tasks
 
-import de.infolektuell.gradle.jextract.extensions.JextractResolver
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
@@ -19,17 +18,25 @@ import java.security.MessageDigest
 import java.time.Duration
 
 abstract class DownloadTask : DefaultTask() {
-    @get:Input
-    abstract val resource: Property<JextractResolver.Resource>
+    interface Resource {
+        @get:Input
+        val url: Property<URI>
+        @get:Input
+        val checksum: Property<String>
+        @get:Input
+        val algorithm: Property<String>
+    }
+    @get:Nested
+    abstract val resource: Resource
     @get:OutputFile
     abstract val target: RegularFileProperty
     private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1).build()
 
     @TaskAction
     protected fun download() {
-        val url = resource.get().url
-        val checksum = resource.get().checksum
-        val algorithm = resource.get().algorithm
+        val url = resource.url.get()
+        val checksum = resource.checksum.get()
+        val algorithm = resource.algorithm.get()
         val targetPath = target.get().asFile.toPath()
         Files.createDirectories(targetPath.parent)
         download(url, checksum, algorithm, targetPath)

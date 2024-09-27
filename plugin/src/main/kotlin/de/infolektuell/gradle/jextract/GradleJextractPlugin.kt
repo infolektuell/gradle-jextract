@@ -1,32 +1,53 @@
 package de.infolektuell.gradle.jextract
 
-import de.infolektuell.gradle.jextract.extensions.DefaultJextractResolver
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
-import de.infolektuell.gradle.jextract.extensions.JextractResolver
-import de.infolektuell.gradle.jextract.tasks.*
+import de.infolektuell.gradle.jextract.tasks.DownloadTask
+import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
+import de.infolektuell.gradle.jextract.tasks.ExtractTask
+import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.internal.jvm.Jvm
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import java.util.*
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
-        val sourceSets = project.extensions.findByType(SourceSetContainer::class.java)
-        val resourceProvider: Provider<JextractResolver.Resource> = project.providers.of(DefaultJextractResolver::class.java) { spec ->
-            spec.parameters.javaLanguageVersion.convention(extension.generator.javaLanguageVersion)
-        }
-
         val userOutput = project.layout.projectDirectory.dir(project.gradle.gradleUserHomeDir.absolutePath)
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
-            task.resource.convention(resourceProvider)
-            task.target.convention(userOutput.dir("downloads").file(task.resource.map { it.fileName }))
+            val data = Properties().apply {
+                object {}.javaClass.getResourceAsStream("/jextract.properties")?.use { load(it) }
+            }
+            val version = extension.generator.javaLanguageVersion.get().asInt()
+            if (version < 19) throw GradleException("Jextract requires at least Java 19")
+            val currentOs = DefaultNativePlatform.getCurrentOperatingSystem()
+            val currentArch = DefaultNativePlatform.getCurrentArchitecture()
+            val osKey = if (currentOs.isLinux) {
+                "linux"
+            } else if (currentOs.isMacOsX) {
+                "mac"
+            } else {
+                "windows"
+            }
+            val archKey = if (currentArch.isArm) {
+                "aarch64"
+            } else {
+                "x64"
+            }
+            val url = data.getProperty("jextract.$version.$osKey.$archKey.url") ?: data.getProperty("jextract.$version.$osKey.x64.url")
+            val checksum = data.getProperty("jextract.$version.$osKey.$archKey.sha-256") ?: data.getProperty("jextract.$version.$osKey.x64.sha-256")
+            task.resource.url.convention(project.uri(url))
+            task.resource.checksum.convention(checksum)
+            task.resource.algorithm.convention("SHA-256")
+            task.target.convention(userOutput.dir("downloads").file(task.resource.url.map { it.path.replaceBeforeLast('/', "").trim('/') }))
         }
 
         val extractTask = project.tasks.register("extract", ExtractTask::class.java) { task ->
@@ -45,6 +66,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.description = "Generates a dump of all symbols encountered in a header file"
             task.generator.location.convention(extension.generator.local)
         }
+        val sourceSets = project.extensions.findByType(SourceSetContainer::class.java)
         sourceSets?.named("main") { main ->
             main.java.srcDir(jextractTask)
             main.compileClasspath += project.files(jextractTask)
