@@ -14,6 +14,8 @@ The plugin generates Java bindings for native libraries using the FFM-related [J
 - [x] Alternately, use a local installation of Jextract.
 - [x] Generated code is available in main sourceset of Java projects.
 - [x] Multiple libs can be configured in one project and are built concurrently.
+- [x] Whitelisting of included symbols via DSL extension
+- [x] Can dump includes and use arg files
 - [x] Compatible with [Configuration Cache].
 
 ## Usage
@@ -38,7 +40,9 @@ jextract.libraries {
         header = layout.projectDirectory.file("bass.h")
         targetPackage = "com.un4seen.bass"
         headerClassName = "Bass"
+        includes.add(layout.projectDirectory.dir("src/main/public"))
         libraries = listOf("bass")
+        useSystemLoadLibrary = true
     }
 }
 
