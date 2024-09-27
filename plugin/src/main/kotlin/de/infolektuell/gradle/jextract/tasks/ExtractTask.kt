@@ -15,7 +15,7 @@ abstract class ExtractTask @Inject constructor(private val fileSystem: FileSyste
     @get:OutputDirectory
     abstract val target: DirectoryProperty
     @TaskAction
-    fun run() {
+    protected fun extract() {
         fileSystem.delete { spec ->
             spec.delete(target)
         }

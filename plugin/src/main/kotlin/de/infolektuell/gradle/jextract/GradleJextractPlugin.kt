@@ -75,6 +75,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             dumpIncludesTask.configure { task ->
                 val config = project.objects.newInstance(DumpIncludesTask.LibraryConfig::class.java).apply {
                     header.set(lib.header)
+                    includes.set(lib.includes)
                     argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
                 }
                 task.libraries.add(config)

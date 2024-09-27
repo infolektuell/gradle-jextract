@@ -26,7 +26,7 @@ abstract class DownloadTask : DefaultTask() {
     private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1).build()
 
     @TaskAction
-    fun download() {
+    protected fun download() {
         val url = resource.get().url
         val checksum = resource.get().checksum
         val algorithm = resource.get().algorithm

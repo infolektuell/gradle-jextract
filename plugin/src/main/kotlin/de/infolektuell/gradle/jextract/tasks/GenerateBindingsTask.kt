@@ -44,7 +44,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
         val sources: DirectoryProperty
     }
 
-    abstract class GenerateBindingsAction @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : WorkAction<GenerateBindingsAction.Parameters> {
+    protected abstract class GenerateBindingsAction @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : WorkAction<GenerateBindingsAction.Parameters> {
         interface Parameters : WorkParameters {
             val executable: RegularFileProperty
             val library: Property<LibraryConfig>
@@ -80,7 +80,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
     @get:Nested
     abstract val libraries: SetProperty<LibraryConfig>
     @TaskAction
-    fun generateBindings() {
+    protected fun generateBindings() {
         val queue = workerExecutor.noIsolation()
         libraries.get().forEach { lib ->
             queue.submit(GenerateBindingsAction::class.java) { param ->

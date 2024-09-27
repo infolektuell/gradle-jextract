@@ -1,13 +1,12 @@
 package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.SetProperty
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
@@ -18,10 +17,13 @@ abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: 
     interface LibraryConfig {
         @get:InputFile
         val header: RegularFileProperty
+        @get:InputFiles
+        val includes: ListProperty<Directory>
         @get:OutputFile
         val argFile: RegularFileProperty
     }
-    abstract class DumpIncludesAction @Inject constructor(private val execOperations: ExecOperations) : WorkAction<DumpIncludesAction.Parameters> {
+
+    protected abstract class DumpIncludesAction @Inject constructor(private val execOperations: ExecOperations) : WorkAction<DumpIncludesAction.Parameters> {
         interface Parameters : WorkParameters {
             val executable: RegularFileProperty
             val library: Property<LibraryConfig>
@@ -30,6 +32,7 @@ abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: 
             execOperations.exec { spec ->
                 spec.executable(parameters.executable.get().asFile.absolutePath)
                 parameters.library.get().run {
+                    includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
                     spec.args("--dump-includes", argFile.get().asFile.absolutePath)
                     spec.args(header.get().asFile.absolutePath)
                 }
@@ -43,7 +46,7 @@ abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: 
     abstract val libraries: SetProperty<LibraryConfig>
 
     @TaskAction
-    fun dump() {
+    protected fun dump() {
         val queue = workerExecutor.noIsolation()
         libraries.get().forEach { config ->
             queue.submit(DumpIncludesAction::class.java) { param ->
