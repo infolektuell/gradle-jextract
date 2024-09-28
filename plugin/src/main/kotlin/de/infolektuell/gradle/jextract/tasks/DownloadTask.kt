@@ -4,12 +4,15 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 import java.io.InputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import java.net.http.HttpResponse.BodyHandlers.ofInputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -30,7 +33,6 @@ abstract class DownloadTask : DefaultTask() {
     abstract val resource: Resource
     @get:OutputFile
     abstract val target: RegularFileProperty
-    private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1).build()
 
     @TaskAction
     protected fun download() {
@@ -43,13 +45,14 @@ abstract class DownloadTask : DefaultTask() {
     }
 
     private fun download(source: URI, checksum: String, algorithm: String, target: Path) {
+        val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1).build()
         val downloaded = verify(target, checksum, algorithm)
         if (downloaded) return
         val request: HttpRequest = HttpRequest.newBuilder()
             .uri(source)
             .GET()
             .build()
-        val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
+        val response = client.send(request, ofInputStream())
         if (response.statusCode() != 200) throw GradleException("Downloading from $source failed with status code ${response.statusCode()}.")
         println(response.version())
         val isValid = copyVerify(response.body(), target, checksum, algorithm)
