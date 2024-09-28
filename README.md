@@ -32,7 +32,7 @@ In _build.gradle.kts_:
 ```gradle kotlin dsl
 plugins {
     id("application")
-    id("de.infolektuell.jextract") version "0.2.0"
+    id("de.infolektuell.jextract") version "0.2.1"
 }
 
 jextract.libraries {
@@ -64,7 +64,7 @@ Instead of using an arg file, included symbols can also be configured directly i
 ```gradle kotlin dsl
 plugins {
     id("application")
-    id("de.infolektuell.jextract") version "0.2.0"
+    id("de.infolektuell.jextract") version "0.2.1"
 }
 
 jextract.libraries {
@@ -92,7 +92,7 @@ The extension offers a property to select a version without relying on a Java pl
 
 ```gradle kotlin dsl
 plugins {
-    id("de.infolektuell.jextract") version "0.2.0"
+    id("de.infolektuell.jextract") version "0.2.1"
 }
 
 jextract {
@@ -111,7 +111,7 @@ Instead of downloading Jextract, a local installation directory can be configure
 
 ```gradle kotlin dsl
 plugins {
-    id("de.infolektuell.jextract") version "0.2.0"
+    id("de.infolektuell.jextract") version "0.2.1"
 }
 
 jextract {
@@ -134,7 +134,7 @@ The plugin implements its own decision logic to select apropriate values dependi
 import de.infolektuell.gradle.jextract.tasks.DownloadTask
 
 plugins {
-    id("de.infolektuell.jextract") version "0.2.0"
+    id("de.infolektuell.jextract") version "0.2.1"
 }
 
 tasks.withType(DownloadTask::class).configureEach {
