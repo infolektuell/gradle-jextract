@@ -13,11 +13,14 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import javax.inject.Inject
 
+@CacheableTask
 abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
     interface LibraryConfig {
         @get:InputFile
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         val header: RegularFileProperty
         @get:InputFiles
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         val includes: ListProperty<Directory>
         @get:OutputFile
         val argFile: RegularFileProperty

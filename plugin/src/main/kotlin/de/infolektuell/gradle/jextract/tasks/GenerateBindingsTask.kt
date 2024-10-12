@@ -16,11 +16,14 @@ import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import javax.inject.Inject
 
+@CacheableTask
 abstract class GenerateBindingsTask @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
     interface LibraryConfig {
         @get:InputFile
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         val header: RegularFileProperty
         @get:InputFiles
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         val includes: ListProperty<Directory>
         @get:Input
         val definedMacros: ListProperty<String>
@@ -34,6 +37,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
         val whitelist: MapProperty<String, Set<String>>
         @get:Optional
         @get:InputFile
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         val argFile: RegularFileProperty
         @get:Input
         val libraries: ListProperty<String>
