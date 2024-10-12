@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create changelog file for release notes
 - The source set the generated sources are added to is now user-selectable via extension property, `main` is chosen by default.
 
+### Fixed
+
+- Jextract is downloaded and installed to project build directory to avoid access conflicts for output files and directories in multi-project builds.
+
 ## [0.2.1] - 2024-09-28
 
 ### Fixed

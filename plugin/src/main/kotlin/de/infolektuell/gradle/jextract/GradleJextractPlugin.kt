@@ -21,7 +21,6 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
         project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
-        val userOutput = project.layout.projectDirectory.dir(project.gradle.gradleUserHomeDir.absolutePath)
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
             val data = Properties().apply {
@@ -48,12 +47,12 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.resource.url.convention(project.uri(url))
             task.resource.checksum.convention(checksum)
             task.resource.algorithm.convention("SHA-256")
-            task.target.convention(userOutput.dir("downloads").file(task.resource.url.map { it.path.replaceBeforeLast('/', "").trim('/') }))
+            task.target.convention(task.resource.fileName.flatMap { project.layout.buildDirectory.file("downloads/$it") })
         }
 
         val extractTask = project.tasks.register("extract", ExtractTask::class.java) { task ->
             task.source.convention(downloadTask.flatMap { it.target })
-            task.target.convention(userOutput.dir("jextract").dir(extension.generator.javaLanguageVersion.map { "jextract-${it.asInt()}" }))
+            task.target.convention(project.layout.buildDirectory.dir("jextract"))
         }
         extension.generator.local.convention(extractTask.flatMap { it.target })
 

@@ -3,8 +3,11 @@ package de.infolektuell.gradle.jextract.tasks
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -19,15 +22,18 @@ import java.nio.file.StandardCopyOption
 import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.time.Duration
+import javax.inject.Inject
 
 abstract class DownloadTask : DefaultTask() {
-    interface Resource {
+    abstract class Resource @Inject constructor(objects: ObjectFactory) {
         @get:Input
-        val url: Property<URI>
+        val url: Property<URI> = objects.property(URI::class.java)
+        @get:Internal
+        val fileName: Provider<String> = url.map { it.path.replaceBeforeLast('/', "").trim('/') }
         @get:Input
-        val checksum: Property<String>
+        abstract val checksum: Property<String>
         @get:Input
-        val algorithm: Property<String>
+        abstract val algorithm: Property<String>
     }
     @get:Nested
     abstract val resource: Resource
