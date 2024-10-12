@@ -20,6 +20,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
+        project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
         val userOutput = project.layout.projectDirectory.dir(project.gradle.gradleUserHomeDir.absolutePath)
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
@@ -66,11 +67,10 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.description = "Generates a dump of all symbols encountered in a header file"
             task.generator.location.convention(extension.generator.local)
         }
-        val sourceSets = project.extensions.findByType(SourceSetContainer::class.java)
-        sourceSets?.named("main") { main ->
-            main.java.srcDir(jextractTask)
-            main.compileClasspath += project.files(jextractTask)
-            main.runtimeClasspath += project.files(jextractTask)
+        extension.sourceSet.orNull?.run {
+            java.srcDir(jextractTask)
+            compileClasspath += project.files(jextractTask)
+            runtimeClasspath += project.files(jextractTask)
         }
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
