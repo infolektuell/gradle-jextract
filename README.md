@@ -33,7 +33,7 @@ In _build.gradle.kts_:
 ```gradle kotlin dsl
 plugins {
     id("application")
-    id("de.infolektuell.jextract") version "0.2.1"
+    id("de.infolektuell.jextract") version "0.3.0"
 }
 
 jextract.libraries {
