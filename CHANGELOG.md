@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Create changelog file for release notes
 - The source set the generated sources are added to is now user-selectable via extension property, `main` is chosen by default.
+- DownloadTask became cacheable, so the downloaded Jextract archives can be shared and re-used via build cache.
 
 ### Fixed
 

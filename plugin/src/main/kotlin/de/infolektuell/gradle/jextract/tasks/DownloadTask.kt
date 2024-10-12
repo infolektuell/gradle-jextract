@@ -6,6 +6,7 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
@@ -24,6 +25,7 @@ import java.security.MessageDigest
 import java.time.Duration
 import javax.inject.Inject
 
+@CacheableTask
 abstract class DownloadTask : DefaultTask() {
     abstract class Resource @Inject constructor(objects: ObjectFactory) {
         @get:Input
@@ -52,15 +54,12 @@ abstract class DownloadTask : DefaultTask() {
 
     private fun download(source: URI, checksum: String, algorithm: String, target: Path) {
         val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1).build()
-        val downloaded = verify(target, checksum, algorithm)
-        if (downloaded) return
         val request: HttpRequest = HttpRequest.newBuilder()
             .uri(source)
             .GET()
             .build()
         val response = client.send(request, ofInputStream())
         if (response.statusCode() != 200) throw GradleException("Downloading from $source failed with status code ${response.statusCode()}.")
-        println(response.version())
         val isValid = copyVerify(response.body(), target, checksum, algorithm)
         if (!isValid) throw GradleException("Data integrity of downloaded file $source could not be verified, checksums do not match.")
     }
@@ -72,17 +71,5 @@ abstract class DownloadTask : DefaultTask() {
         val calculatedChecksum = input.messageDigest.digest().toHexString()
         if (calculatedChecksum != checksum) Files.deleteIfExists(file)
         return calculatedChecksum == checksum
-    }
-    @OptIn(ExperimentalStdlibApi::class)
-    private fun verify(file: Path, checksum: String, algorithm: String): Boolean {
-        if (Files.notExists(file)) return false
-        val md = MessageDigest.getInstance(algorithm)
-        DigestInputStream(Files.newInputStream(file), md).use { input ->
-            input.readAllBytes()
-        }
-        val calculatedChecksum = md.digest().toHexString()
-        val isValid = calculatedChecksum == checksum
-        if (!isValid) Files.deleteIfExists(file)
-        return isValid
     }
 }
