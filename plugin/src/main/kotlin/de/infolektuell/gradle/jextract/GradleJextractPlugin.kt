@@ -5,7 +5,6 @@ import de.infolektuell.gradle.jextract.tasks.DownloadTask
 import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
 import de.infolektuell.gradle.jextract.tasks.ExtractTask
 import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
@@ -20,14 +19,13 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
+        val versionProvider = extension.generator.javaLanguageVersion.map { kotlin.math.max(kotlin.math.min(it.asInt(), 22), 19) }
         project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
             val data = Properties().apply {
                 object {}.javaClass.getResourceAsStream("/jextract.properties")?.use { load(it) }
             }
-            val version = extension.generator.javaLanguageVersion.get().asInt()
-            if (version < 19) throw GradleException("Jextract requires at least Java 19")
             val currentOs = DefaultNativePlatform.getCurrentOperatingSystem()
             val currentArch = DefaultNativePlatform.getCurrentArchitecture()
             val osKey = if (currentOs.isLinux) {
@@ -42,10 +40,8 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             } else {
                 "x64"
             }
-            val url = data.getProperty("jextract.$version.$osKey.$archKey.url") ?: data.getProperty("jextract.$version.$osKey.x64.url")
-            val checksum = data.getProperty("jextract.$version.$osKey.$archKey.sha-256") ?: data.getProperty("jextract.$version.$osKey.x64.sha-256")
-            task.resource.url.convention(project.uri(url))
-            task.resource.checksum.convention(checksum)
+            task.resource.url.convention(versionProvider.map { project.uri(data.getProperty("jextract.$it.$osKey.$archKey.url") ?: data.getProperty("jextract.$it.$osKey.x64.url")) })
+            task.resource.checksum.convention(versionProvider.map { data.getProperty("jextract.$it.$osKey.$archKey.sha-256") ?: data.getProperty("jextract.$it.$osKey.x64.sha-256") })
             task.resource.algorithm.convention("SHA-256")
             task.target.convention(task.resource.fileName.flatMap { project.layout.buildDirectory.file("downloads/$it") })
         }

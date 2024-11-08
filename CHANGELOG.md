@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- When Jextract 22 is requested, Build 22-jextract+6-47 will be downloaded from now on.
+
 ## [0.3.0] - 2024-10-12
 
 ### Added
