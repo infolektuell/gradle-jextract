@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2024-11-08
+
 ### Changed
 
 - When Jextract 22 is requested, Build 22-jextract+6-47 will be downloaded from now on.
@@ -62,7 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Task to generate bindings for given headers using Jextract
 - DSL extension to configure multiple native libraries and desired Jextract version/installation
 
-[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.3.0...HEAD
+[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.1.0...v0.2.0
