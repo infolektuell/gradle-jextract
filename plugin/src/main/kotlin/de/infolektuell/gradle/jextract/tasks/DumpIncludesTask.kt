@@ -28,12 +28,12 @@ abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: 
 
     protected abstract class DumpIncludesAction @Inject constructor(private val execOperations: ExecOperations) : WorkAction<DumpIncludesAction.Parameters> {
         interface Parameters : WorkParameters {
-            val executable: RegularFileProperty
+            val executable: Property<String>
             val library: Property<LibraryConfig>
         }
         override fun execute() {
             execOperations.exec { spec ->
-                spec.executable(parameters.executable.get().asFile.absolutePath)
+                spec.executable(parameters.executable.get())
                 parameters.library.get().run {
                     includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
                     spec.args("--dump-includes", argFile.get().asFile.absolutePath)
@@ -50,10 +50,11 @@ abstract class DumpIncludesTask @Inject constructor(private val workerExecutor: 
 
     @TaskAction
     protected fun dump() {
+        val executable = generator.findExecutable()
         val queue = workerExecutor.noIsolation()
         libraries.get().forEach { config ->
             queue.submit(DumpIncludesAction::class.java) { param ->
-                param.executable.set(generator.executable)
+                param.executable.set(executable)
                 param.library.set(config)
             }
         }

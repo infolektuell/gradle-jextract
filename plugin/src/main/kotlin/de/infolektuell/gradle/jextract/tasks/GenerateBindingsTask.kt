@@ -50,7 +50,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
 
     protected abstract class GenerateBindingsAction @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : WorkAction<GenerateBindingsAction.Parameters> {
         interface Parameters : WorkParameters {
-            val executable: RegularFileProperty
+            val executable: Property<String>
             val library: Property<LibraryConfig>
         }
 
@@ -60,7 +60,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
                 spec.delete(sources)
             }
             execOperations.exec { spec ->
-                spec.executable(parameters.executable.get().asFile.absolutePath)
+                spec.executable(parameters.executable.get())
                 spec.args("--output", sources.get().asFile.absolutePath)
                     targetPackage.orNull?.let { spec.args("-t", it) }
                     headerClassName.orNull?.let { spec.args("--header-class-name", it) }
@@ -85,10 +85,11 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
     abstract val libraries: SetProperty<LibraryConfig>
     @TaskAction
     protected fun generateBindings() {
+        val executable = generator.findExecutable()
         val queue = workerExecutor.noIsolation()
         libraries.get().forEach { lib ->
             queue.submit(GenerateBindingsAction::class.java) { param ->
-                param.executable.set(generator.executable)
+                param.executable.set(executable)
                 param.library.set(lib)
             }
         }
