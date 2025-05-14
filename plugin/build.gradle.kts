@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "2.0.20"
     signing
-    id("com.gradle.plugin-publish") version "1.2.2"
+    id("com.gradle.plugin-publish") version "1.3.1"
 }
 
 gradlePlugin {
@@ -18,9 +18,10 @@ gradlePlugin {
 
 signing {
     // Get credentials from env variables for better CI compatibility
+    val signingKeyId: String? by project
     val signingKey: String? by project
     val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKey, signingPassword)
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
 }
 
 java {
