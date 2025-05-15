@@ -27,6 +27,8 @@ abstract class JextractExtension @Inject constructor(objects: ObjectFactory) {
     abstract val sourceSet: Property<SourceSet>
     /** specify the directory to place generated files of all libraries by default */
     abstract val output: DirectoryProperty
+    /** Generate source files instead of class files for all libraries where not set explicitly (Jextract 21 and below) */
+    abstract val generateSourceFiles: Property<Boolean>
     companion object {
         const val EXTENSION_NAME = "jextract"
     }

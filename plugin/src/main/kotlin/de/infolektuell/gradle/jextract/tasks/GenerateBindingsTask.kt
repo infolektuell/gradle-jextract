@@ -44,17 +44,22 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
         @get:Optional
         @get:Input
         val useSystemLoadLibrary: Property<Boolean>
+        @get:Optional
+        @get:Input
+        val generateSourceFiles: Property<Boolean>
         @get:OutputDirectory
         val sources: DirectoryProperty
     }
 
     protected abstract class GenerateBindingsAction @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : WorkAction<GenerateBindingsAction.Parameters> {
         interface Parameters : WorkParameters {
+            val version: Property<Int>
             val executable: Property<String>
             val library: Property<LibraryConfig>
         }
 
         override fun execute() {
+            val version = parameters.version.get()
             parameters.library.get().run {
             fileSystemOperations.delete { spec ->
                 spec.delete(sources)
@@ -71,7 +76,8 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
                         v.forEach { spec.args("--include-$k", it) }
                     }
                     libraries.get().forEach { spec.args("-l", it) }
-                    if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+                    if (version >= 22 && useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+                if (version <= 21 && generateSourceFiles.get()) spec.args("--source")
                     argFile.orNull?.let { spec.args("@$it") }
                     spec.args(header.get())
                 }
@@ -89,6 +95,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
         val queue = workerExecutor.noIsolation()
         libraries.get().forEach { lib ->
             queue.submit(GenerateBindingsAction::class.java) { param ->
+                param.version.set(generator.version)
                 param.executable.set(executable)
                 param.library.set(lib)
             }

@@ -55,11 +55,13 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.group = "Build"
             task.description = "Generates bindings for all configured libraries"
             task.generator.location.convention(extension.generator.local)
+            task.generator.version.convention(versionProvider)
         }
         val dumpIncludesTask = project.tasks.register("dumpIncludes", DumpIncludesTask::class.java) { task ->
             task.group = "documentation"
             task.description = "Generates a dump of all symbols encountered in a header file"
             task.generator.location.convention(extension.generator.local)
+            task.generator.version.convention(versionProvider)
         }
         project.extensions.findByType(SourceSetContainer::class.java)?.run {
             listOf("jvmMain", "main")
@@ -67,8 +69,10 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                 ?.let { extension.sourceSet.convention(named(it)) }
         }
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
+        extension.generateSourceFiles.convention(false)
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
+            lib.generateSourceFiles.convention(extension.generateSourceFiles)
             lib.output.convention(extension.output.dir("${lib.name}"))
             jextractTask.configure { task ->
                 val config = project.objects.newInstance(GenerateBindingsTask.LibraryConfig::class.java).apply {
@@ -86,6 +90,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     argFile.set(lib.whitelist.argFile)
                     libraries.set(lib.libraries)
                     useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
+                    generateSourceFiles.set(lib.generateSourceFiles)
                     sources.set(lib.output)
                 }
                 task.libraries.add(config)
