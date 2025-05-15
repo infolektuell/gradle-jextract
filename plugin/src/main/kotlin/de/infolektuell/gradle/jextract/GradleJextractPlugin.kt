@@ -20,7 +20,6 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
         val versionProvider = extension.generator.javaLanguageVersion.map { kotlin.math.max(kotlin.math.min(it.asInt(), 22), 19) }
-        project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
             val data = Properties().apply {
@@ -62,10 +61,10 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.description = "Generates a dump of all symbols encountered in a header file"
             task.generator.location.convention(extension.generator.local)
         }
-        extension.sourceSet.orNull?.run {
-            java.srcDir(jextractTask)
-            compileClasspath += project.files(jextractTask)
-            runtimeClasspath += project.files(jextractTask)
+        project.extensions.findByType(SourceSetContainer::class.java)?.run {
+            "main".let {
+                if (names.contains(it)) extension.sourceSet.convention(named(it))
+            }
         }
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         extension.libraries.all { lib ->
@@ -98,6 +97,11 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
                 }
                 task.libraries.add(config)
+            }
+            extension.sourceSet.orNull?.run {
+                java.srcDir(jextractTask)
+                compileClasspath += project.files(jextractTask)
+                runtimeClasspath += project.files(jextractTask)
             }
         }
     }
