@@ -62,9 +62,9 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.generator.location.convention(extension.generator.local)
         }
         project.extensions.findByType(SourceSetContainer::class.java)?.run {
-            "main".let {
-                if (names.contains(it)) extension.sourceSet.convention(named(it))
-            }
+            listOf("jvmMain", "main")
+                .find { names.contains(it) }
+                ?.let { extension.sourceSet.convention(named(it)) }
         }
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         extension.libraries.all { lib ->
