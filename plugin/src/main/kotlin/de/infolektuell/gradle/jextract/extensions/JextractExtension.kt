@@ -2,6 +2,7 @@ package de.infolektuell.gradle.jextract.extensions
 
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Nested
@@ -24,6 +25,8 @@ abstract class JextractExtension @Inject constructor(objects: ObjectFactory) {
     }
     /** The generated Java sources will be added to this source set (main by default) */
     abstract val sourceSet: Property<SourceSet>
+    /** specify the directory to place generated files of all libraries by default */
+    abstract val output: DirectoryProperty
     companion object {
         const val EXTENSION_NAME = "jextract"
     }

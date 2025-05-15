@@ -67,8 +67,10 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             compileClasspath += project.files(jextractTask)
             runtimeClasspath += project.files(jextractTask)
         }
+        extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
+            lib.output.convention(extension.output.dir("${lib.name}"))
             jextractTask.configure { task ->
                 val config = project.objects.newInstance(GenerateBindingsTask.LibraryConfig::class.java).apply {
                     header.set(lib.header)
@@ -85,7 +87,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     argFile.set(lib.whitelist.argFile)
                     libraries.set(lib.libraries)
                     useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
-                    sources.set(project.layout.buildDirectory.dir("generated/sources/jextract/${lib.name}/main/java"))
+                    sources.set(lib.output)
                 }
                 task.libraries.add(config)
             }
