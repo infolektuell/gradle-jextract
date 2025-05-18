@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The business logic for Jextract versions and their download resources has been extracted from the plugin into its own model.
+  The nested resource property of DownloadTask was removed and replaced with a property that receives an instance of the model's Resource class.
+  The values of these resources strictly belong together, so a data class is more appropriate than a bean with separate properties. 
+
+### Fixed
+
+- The plugin checks for the Java toolchain version only if and after the Java plugin is applied.
+
 ## [0.4.0] - 2024-11-08
 
 ### Changed

@@ -11,39 +11,21 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.internal.jvm.Jvm
 import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import java.util.*
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
+        val dataStore = JextractDataStore()
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
-        project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
-        val versionProvider = extension.generator.javaLanguageVersion.map { kotlin.math.max(kotlin.math.min(it.asInt(), 22), 19) }
+        project.pluginManager.withPlugin("java") {
+            project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
+        }
+        val resourceProvider = extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) }
         project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
-            val data = Properties().apply {
-                object {}.javaClass.getResourceAsStream("/jextract.properties")?.use { load(it) }
-            }
-            val currentOs = DefaultNativePlatform.getCurrentOperatingSystem()
-            val currentArch = DefaultNativePlatform.getCurrentArchitecture()
-            val osKey = if (currentOs.isLinux) {
-                "linux"
-            } else if (currentOs.isMacOsX) {
-                "mac"
-            } else {
-                "windows"
-            }
-            val archKey = if (currentArch.isArm) {
-                "aarch64"
-            } else {
-                "x64"
-            }
-            task.resource.url.convention(versionProvider.map { project.uri(data.getProperty("jextract.$it.$osKey.$archKey.url") ?: data.getProperty("jextract.$it.$osKey.x64.url")) })
-            task.resource.checksum.convention(versionProvider.map { data.getProperty("jextract.$it.$osKey.$archKey.sha-256") ?: data.getProperty("jextract.$it.$osKey.x64.sha-256") })
-            task.resource.algorithm.convention("SHA-256")
-            task.target.convention(task.resource.fileName.flatMap { project.layout.buildDirectory.file("downloads/$it") })
+            task.resource.convention(resourceProvider)
+            task.target.convention(task.resource.flatMap { project.layout.buildDirectory.file("downloads/${it.filename}") })
         }
 
         val extractTask = project.tasks.register("extract", ExtractTask::class.java) { task ->
