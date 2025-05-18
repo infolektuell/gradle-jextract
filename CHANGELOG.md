@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replace the nested resource property of DownloadTask with a property that receives an instance of the Resource class from a separate business model.
   The values of these resources strictly belong together, so a data class coming from a business model is more appropriate than a bean with separate properties. 
+- The plugin adds an extension to each source set where Jextract libraries can be added.
+  This breaking API change improves flexibility and stability.
 
 ### Added
 
@@ -22,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Check for the Java toolchain version only if and after the Java plugin is applied.
 - Pass the `--use-system-load-library` command line flag only to Jextract 22 or above, fails with Jextract 21 and below.
+
+### Removed
+
+- Remove The sourceSet property in the DSL which is superseded by a source set extension.
 
 ## [0.4.0] - 2024-11-08
 

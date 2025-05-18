@@ -1,6 +1,7 @@
 package de.infolektuell.gradle.jextract
 
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
+import de.infolektuell.gradle.jextract.extensions.SourceSetExtension
 import de.infolektuell.gradle.jextract.tasks.DownloadTask
 import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
 import de.infolektuell.gradle.jextract.tasks.ExtractTask
@@ -17,13 +18,10 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val dataStore = JextractDataStore()
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
-        project.pluginManager.withPlugin("java") {
-            project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
-        }
         val versionProvider = extension.generator.javaLanguageVersion.map { dataStore.version(it.asInt()) }
         val resourceProvider = extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) }
-        project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
+
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
             task.resource.convention(resourceProvider)
@@ -49,11 +47,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             task.generator.version.convention(versionProvider)
             task.generator.location.convention(extension.generator.local)
         }
-        extension.sourceSet.orNull?.run {
-            java.srcDir(jextractTask)
-            compileClasspath += project.files(jextractTask)
-            runtimeClasspath += project.files(jextractTask)
-        }
+
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
             lib.output.convention(extension.output.dir("${lib.name}"))
@@ -84,6 +78,21 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
                 }
                 task.libraries.add(config)
+            }
+        }
+
+        project.pluginManager.withPlugin("java") {
+            project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
+            project.extensions.findByType(SourceSetContainer::class.java)?.all { s ->
+                val sourceSetExtension = s.extensions.create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension::class.java, project.objects)
+                sourceSetExtension.libraries.all { lib ->
+                    s.java.srcDir(lib.output)
+                    s.resources.srcDir(lib.output)
+                    s.compileClasspath += project.files(lib.output)
+                    s.runtimeClasspath += project.files(lib.output)
+                    project.tasks.named(s.compileJavaTaskName) { it.dependsOn(jextractTask) }
+                    project.tasks.named(s.processResourcesTaskName) { it.dependsOn(jextractTask) }
+                }
             }
         }
     }
