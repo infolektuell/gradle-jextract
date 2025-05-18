@@ -51,10 +51,12 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
     protected abstract class GenerateBindingsAction @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : WorkAction<GenerateBindingsAction.Parameters> {
         interface Parameters : WorkParameters {
             val executable: Property<String>
+            val version: Property<Int>
             val library: Property<LibraryConfig>
         }
 
         override fun execute() {
+            val version = parameters.version.get()
             parameters.library.get().run {
             fileSystemOperations.delete { spec ->
                 spec.delete(sources)
@@ -71,7 +73,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
                         v.forEach { spec.args("--include-$k", it) }
                     }
                     libraries.get().forEach { spec.args("-l", it) }
-                    if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+                    if (useSystemLoadLibrary.get() && version >= 22) spec.args("--use-system-load-library")
                     argFile.orNull?.let { spec.args("@$it") }
                     spec.args(header.get())
                 }
@@ -90,6 +92,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
         libraries.get().forEach { lib ->
             queue.submit(GenerateBindingsAction::class.java) { param ->
                 param.executable.set(executable)
+                param.version.set(generator.version)
                 param.library.set(lib)
             }
         }

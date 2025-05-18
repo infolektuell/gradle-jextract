@@ -41,8 +41,9 @@ class JextractDataStore {
             Arch.X64
         }
     }
+    fun version(javaLanguageVersion: Int) = kotlin.math.max(kotlin.math.min(javaLanguageVersion, 22), 19)
     fun resource(javaLanguageVersion: Int): Resource {
-        val version = kotlin.math.max(kotlin.math.min(javaLanguageVersion, 22), 19)
+        val version = version(javaLanguageVersion)
         val url: String = data.getProperty("jextract.$version.$os.$arch.url") ?: data.getProperty("jextract.$version.$os.${Arch.X64}.url")
         val checksum: String = data.getProperty("jextract.$version.$os.$arch.sha-256") ?: data.getProperty("jextract.$version.$os.${Arch.X64}.sha-256")
         return Resource(version, URI.create(url), checksum)

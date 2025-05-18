@@ -9,13 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- The business logic for Jextract versions and their download resources has been extracted from the plugin into its own model.
-  The nested resource property of DownloadTask was removed and replaced with a property that receives an instance of the model's Resource class.
+- Extract the business logic for Jextract versions and their download resources from the plugin into its own model.
+- Replace the nested resource property of DownloadTask with a property that receives an instance of the model's Resource class.
   The values of these resources strictly belong together, so a data class is more appropriate than a bean with separate properties. 
+
+### Added
+
+- Add a separate method to the Jextract business model to infer the Jextract version from a Java language version
+- Add a version property to the Jextract task, so when the command is built, decisions can be made depending on the Jextract version. 
 
 ### Fixed
 
-- The plugin checks for the Java toolchain version only if and after the Java plugin is applied.
+- Check for the Java toolchain version only if and after the Java plugin is applied.
+- Pass the `--use-system-load-library` command line flag only to Jextract 22 or above, fails with Jextract 21 and below.
 
 ## [0.4.0] - 2024-11-08
 
@@ -31,19 +37,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Create changelog file for release notes
+- Create a changelog file for release notes
 - The source set the generated sources are added to is now user-selectable via extension property, `main` is chosen by default.
 - Tasks became cacheable, so the downloaded Jextract archives and generated sources can be shared and re-used via build cache.
 
 ### Changed
 
-- Jextract is downloaded and installed to project build directory to avoid access conflicts for output files and directories in multi-project builds.
+- Jextract is downloaded and installed to the project build directory to avoid access conflicts for output files and directories in multi-project builds.
 
 ## [0.2.1] - 2024-09-28
 
 ### Fixed
 
-- Make DownloadTask compatible with configuration cache.
+- Make DownloadTask compatible with the configuration cache.
 
 ## [0.2.0] - 2024-09-27
 
@@ -63,8 +69,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Remove custom download location DSL, but the download task can be configured with custom URLs.
-- Remove separate download plugin and merge download stuff into this plugin.
+- Remove the custom download location DSL, but the download task can be configured with custom URLs.
+- Remove the separate download plugin and merge download stuff into this plugin.
 
 ## [0.1.0] - 2024-09-16
 

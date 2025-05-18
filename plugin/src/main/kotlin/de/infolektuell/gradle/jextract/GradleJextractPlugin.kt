@@ -20,6 +20,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         project.pluginManager.withPlugin("java") {
             project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
         }
+        val versionProvider = extension.generator.javaLanguageVersion.map { dataStore.version(it.asInt()) }
         val resourceProvider = extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) }
         project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
@@ -37,11 +38,14 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val jextractTask = project.tasks.register("jextract", GenerateBindingsTask::class.java) { task ->
             task.group = "Build"
             task.description = "Generates bindings for all configured libraries"
+            task.generator.version.convention(versionProvider)
             task.generator.location.convention(extension.generator.local)
         }
+
         val dumpIncludesTask = project.tasks.register("dumpIncludes", DumpIncludesTask::class.java) { task ->
             task.group = "documentation"
             task.description = "Generates a dump of all symbols encountered in a header file"
+            task.generator.version.convention(versionProvider)
             task.generator.location.convention(extension.generator.local)
         }
         extension.sourceSet.orNull?.run {
