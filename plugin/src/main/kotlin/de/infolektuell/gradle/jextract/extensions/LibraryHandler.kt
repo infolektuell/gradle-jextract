@@ -3,6 +3,7 @@ package de.infolektuell.gradle.jextract.extensions
 import org.gradle.api.Action
 import org.gradle.api.Named
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -20,15 +21,17 @@ abstract class LibraryHandler : Named {
     abstract val targetPackage: Property<String>
     /** The name for the class generated from the header file, derived from the header file if missing */
     abstract val headerClassName: Property<String>
-    /** Whitelist of definitions to be included */
+    /** List of definitions to be included */
     @get:Nested
     abstract val whitelist: WhitelistHandler
-    /** Configures the whitelist of definitions to be included */
+    /** Configures the list of definitions to be included */
     fun whitelist(action: Action<in WhitelistHandler>) {
         action.execute(whitelist)
     }
-    /** Native libraries to be loaded by generated code (either names, or paths starting with colon) */
+    /** Native libraries to be loaded by generated code (either names or paths starting with colon) */
     abstract val libraries: ListProperty<String>
     /** Load libraries in the library symbol lookup, using either `System.load` or `System.loadLibrary`, useful for libraries in java.library.path */
     abstract val useSystemLoadLibrary: Property<Boolean>
+    /** specify the directory to place generated files. */
+    abstract val output: DirectoryProperty
 }

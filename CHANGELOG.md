@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Extract the business logic for Jextract versions and their download resources from the plugin into its own model.
-- Replace the nested resource property of DownloadTask with a property that receives an instance of the model's Resource class.
-  The values of these resources strictly belong together, so a data class is more appropriate than a bean with separate properties. 
+- Replace the nested resource property of DownloadTask with a property that receives an instance of the Resource class from a separate business model.
+  The values of these resources strictly belong together, so a data class coming from a business model is more appropriate than a bean with separate properties. 
 
 ### Added
 
-- Add a separate method to the Jextract business model to infer the Jextract version from a Java language version
-- Add a version property to the Jextract task, so when the command is built, decisions can be made depending on the Jextract version. 
+- Add output properties in DSL extension to customize the output path per library or as a parent folder for all libraries without a specified output path.
+  If a library has no explicit output path, its name is used to create a subdirectory under the top-level output path.
+  If no explicit top-level output is given, it defaults to a convention in the build directory.
 
 ### Fixed
 

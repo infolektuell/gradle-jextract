@@ -23,6 +23,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val versionProvider = extension.generator.javaLanguageVersion.map { dataStore.version(it.asInt()) }
         val resourceProvider = extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) }
         project.extensions.findByType(SourceSetContainer::class.java)?.let { extension.sourceSet.convention(it.named("main")) }
+        extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
             task.resource.convention(resourceProvider)
@@ -55,6 +56,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         }
         extension.libraries.all { lib ->
             lib.useSystemLoadLibrary.convention(false)
+            lib.output.convention(extension.output.dir("${lib.name}"))
             jextractTask.configure { task ->
                 val config = project.objects.newInstance(GenerateBindingsTask.LibraryConfig::class.java).apply {
                     header.set(lib.header)
@@ -71,7 +73,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     argFile.set(lib.whitelist.argFile)
                     libraries.set(lib.libraries)
                     useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
-                    sources.set(project.layout.buildDirectory.dir("generated/sources/jextract/${lib.name}/main/java"))
+                    sources.set(lib.output)
                 }
                 task.libraries.add(config)
             }
