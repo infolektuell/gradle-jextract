@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-05-18
+
 ### Changed
 
 - Replace the nested resource property of DownloadTask with a property that receives an instance of the Resource class from a separate business model.
@@ -87,7 +89,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Task to generate bindings for given headers using Jextract
 - DSL extension to configure multiple native libraries and desired Jextract version/installation
 
-[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.0...v0.2.1
