@@ -26,7 +26,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Publish Plugin
         env:
-          ORG_GRADLE_PROJECT_signingKeyId: "{{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEYID }}"
+          ORG_GRADLE_PROJECT_signingKeyId: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEYID }}"
           ORG_GRADLE_PROJECT_signingKey: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}"
           ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}"
           GRADLE_PUBLISH_KEY: "${{ secrets.GRADLE_PUBLISH_KEY }}"
