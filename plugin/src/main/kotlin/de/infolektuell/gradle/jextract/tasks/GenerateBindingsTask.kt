@@ -44,6 +44,9 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
         @get:Optional
         @get:Input
         val useSystemLoadLibrary: Property<Boolean>
+        @get:Optional
+        @get:Input
+        val generateSourceFiles: Property<Boolean>
         @get:OutputDirectory
         val sources: DirectoryProperty
     }
@@ -74,6 +77,7 @@ abstract class GenerateBindingsTask @Inject constructor(private val workerExecut
                     }
                     libraries.get().forEach { spec.args("-l", it) }
                     if (useSystemLoadLibrary.get() && version >= 22) spec.args("--use-system-load-library")
+                if (version <= 21 && generateSourceFiles.get()) spec.args("--source")
                     argFile.orNull?.let { spec.args("@$it") }
                     spec.args(header.get())
                 }

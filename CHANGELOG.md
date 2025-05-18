@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add output properties in DSL extension to customize the output path per library or as a parent folder for all libraries without a specified output path.
   If a library has no explicit output path, its name is used to create a subdirectory under the top-level output path.
   If no explicit top-level output is given, it defaults to a convention in the build directory.
+- Add DSL properties to configure Jextract 21 to generate source files instead of class files (per library or top-level).
 
 ### Fixed
 

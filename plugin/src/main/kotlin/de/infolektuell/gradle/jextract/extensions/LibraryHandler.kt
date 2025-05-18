@@ -34,4 +34,6 @@ abstract class LibraryHandler : Named {
     abstract val useSystemLoadLibrary: Property<Boolean>
     /** specify the directory to place generated files. */
     abstract val output: DirectoryProperty
+    /** Generate source files instead of class files (Jextract 21 and below) */
+    abstract val generateSourceFiles: Property<Boolean>
 }
