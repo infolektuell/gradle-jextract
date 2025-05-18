@@ -8,126 +8,194 @@ The plugin generates Java bindings for native libraries using the FFM-related [J
 
 ## Features
 
-- [x] Downloads Jextract for the current build platform and architecture, no additional installation steps needed.
+- [x] Downloads Jextract for the current build platform and architecture, no additional installation steps are needed.
 - [x] Preset conventions for Jextract versions 19 up to 22.
 - [x] Download locations can be customized for more restrictive environments.
 - [x] Alternately, use a local installation of Jextract.
-- [x] Generated source code is available in a user-selected Java source set (`main` by default).
 - [x] Multiple libs can be configured in one project and are built concurrently.
+- [x] Customize the output path for each lib
+- [x] Configurable to add generated lib outputs to Java source sets
 - [x] Whitelisting of included symbols via DSL extension
 - [x] Can dump includes and use arg files
 - [x] Compatible with [Configuration Cache].
 - [x] Tasks are [cacheable][build cache].
 
+The Java plugin is not required, but this plugin reacts to it.
+On JDk 23, Jextract 22 is used because FFM has been finalized.
+
 ## Usage
 
-You might want to apply this plugin after one of the Java plugins.
-It tries to get the correct Java version from the toolchain extension or falls back to the JDK Gradle is running on.
-On JDk 23, Jextract 22 is used, because FFM has been finalized, so there are effectively no differences between version 22 and 23.
-After running `./gradlew build`, the generated code will be available in the main source set.
-
-### Simple Example
-
-In _build.gradle.kts_:
+Include the plugin in _build.gradle.kts_:
 
 ```gradle kotlin dsl
 plugins {
-    id("application")
-    id("de.infolektuell.jextract") version "0.4.0"
+    id("base")
+    id("de.infolektuell.jextract") version "0.5.0"
 }
+```
 
+Running `gradlew jextract` will download and install Jextract into the build folder, but no libs are defined to generate bindings for.
+The matching Jextract distribution is downloaded from the [official page][jextract] by default.
+
+No Java plugin is applied, so the JVM version Gradle is running on is selected.
+The version can be set explicitly using the plugin DSL extension:
+
+```gradle kotlin dsl
+jextract.generator.javaLanguageVersion = JavaLanguageVersion.of(21)
+```
+
+### Defining libraries
+
+Jextract generates Java bindings for native libraries consisting of public headers and binaries.
+These must be defined using the plugin's DSL.
+This example demonstrates some Jextract-specific settings.
+Append this in _build.gradle.kts_:
+
+```gradle kotlin dsl
 jextract.libraries {
-    create("bass") {
-        header = layout.projectDirectory.file("bass.h")
-        targetPackage = "com.un4seen.bass"
-        headerClassName = "Bass"
-        includes.add(layout.projectDirectory.dir("src/main/public"))
-        libraries = listOf("bass")
-        useSystemLoadLibrary = true
-    }
+        // The native BASS audio library.
+        val bass by creating {
+            header = layout.projectDirectory.file("src/main/public/bass.h")
+            headerClassName = "Bass"
+            targetPackage = "com.un4seen.bass"
+            useSystemLoadLibrary = true
+            libraries.add("bass")
+            // Make your public headers folder searchable for Jextract
+            includes.add(layout.projectDirectory.dir("src/main/public"))
+            // For large headers it is good practice to generate only the symbols you need.
+            whitelist {
+                // We only want to access the BASS version
+                functions.addAll("bass_get_version")
+            }
+        }
 }
+```
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(22)
+You can define as many libraries as you need.
+Running `gradlew jextract` will generate bindings for the defined libraries into the conventional output path under _build/generated/sources/jextract/<libname>_.
+
+### Custom output path
+
+There are flexible options to customize the output path.
+
+#### Customizing the parent folder
+
+```gradle kotlin dsl
+jextract.output = layout.projectDirectory.dir("bindings")
+```
+
+Running `gradlew jextract` will generate bindings for the defined libraries into the customized output path under _bindings/<libname>_.
+
+#### Customizing a library's output path
+
+The output path of each library is customizable.
+The top-level output path is ignored by libraries with an explicit output path
+
+```gradle kotlin dsl
+jextract.libraries {
+    val bass by creating {
+        output = layout.projectDirectory.dir("bassBindings")
     }
 }
 ```
 
 ### Filtering and arg files
 
-The plugin can dump includes encountered in the headers and use arg files.
-Running `gradlew dumpIncludes` produces a _<libname>-includes.txt_ file for each configured lib under _build/reports/jextract/_.
-To use this as an arg file for storing your whitelisted includes, you should copy, modify, and put it under source control.
-Add this copy to the plugin's extension.
-Instead of using an arg file, included symbols can also be configured directly in the whitelist extension via respective properties.
+See [Filtering] in the Jextract guide for more information.
+The whitelist DSL enables symbol filtering in the build script, but using arg files is possible too. Both can be combined.
+
+1. Run `gradlew dumpIncludes` to Generate an arg file for each library under _build/reports/jextract/<libname>-includes.txt_.
+2. Copy the desired file to src or a similar place where it should be persisted.
+3. Modify your copy, remove unnecessary symbols, keep what you need.
+4. Add the file to the build script using the DSL.
 
 ```gradle kotlin dsl
 jextract.libraries {
     create("bass") {
-        header = layout.projectDirectory.file("bass.h")
-        targetPackage = "com.un4seen.bass"
-        headerClassName = "Bass"
             whitelist {
                 argFile = layout.projectDirectory.file("src/main/includes/bass-includes.txt")
-                // Include more symbols via DSL extension
-                functions.addAll("bass_get_version")
             }
-        libraries = listOf("bass")
-    }
-}
-```
-
-See [Filtering] section in the Jextract guide for more information.
-
-### Without Java Plugin
-
-The extension offers a property to select a version without relying on a Java plugin.
-
-```gradle kotlin dsl
-jextract {
-    generator {
-        javaLanguageVersion = JavaLanguageVersion.of(21)
     }
 }
 ```
 
 ### Local Installation
 
-Instead of downloading Jextract, a local installation directory can be configured.
+To run a local Jextract installation instead of downloading it, the location must be given.
+The correct version should be set too.
 
 ```gradle kotlin dsl
-jextract {
-    generator {
-        local = layout.projectDirectory.dir("/usr/local/opt/jextract-22/") 
+jextract.generator {
+    local = layout.projectDirectory.dir("/usr/local/opt/jextract-22/")
+    javaLanguageVersion = JavaLanguageVersion.of(21) 
+}
+```
+
+### Custom Download Locations
+
+If custom locations are needed, the download task needs a resource object with url, checksum, and verification algorithm (SHA-256 by default).
+In practice, you will have to implement platform-specific resources.
+
+```gradle kotlin dsl
+import de.infolektuell.gradle.jextract.JextractDataStore.Resource
+import de.infolektuell.gradle.jextract.tasks.DownloadTask
+
+tasks.withType(DownloadTask::class).configureEach {
+    val version = 22
+    val url = uri("https://my-company.com/jextract/file.tgz")
+    val checksum = "abcdef123456"
+    resource = Resource(version, url, checksum, "SHA-512")
+}
+```
+
+### Generating Source Files with older Jextract Versions
+
+Jextract 22 generates Java source files by default, but Jextract 21 generates class files and needs the respective command line flag to generate source files.
+In the plugin DSL extension this can be configured top-level or per library.
+
+```gradle kotlin dsl
+jextract.generator.javaLanguageVersion = JavaLanguageVersion.of(21)
+jextract.generateSourceFiles = true
+```
+
+This was a preview feature. Maybe you want to upgrade instead of using this.
+
+## Using the generated bindings
+
+If the Java plugin is present, the Jextract version is determined based on the Java toolchain version.
+It works with any plugin that applies the Java plugin.
+
+```gradle kotlin dsl
+plugins {
+    `java-library`
+    id("de.infolektuell.jextract") version "0.5.0"
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 ```
 
-### Custom Locations
-
-Jextract is downloaded from the [official page][jextract] by default.
-If custom locations are needed, the download task must be configured (url, checksum, and verification algorithm).
-The plugin implements its own decision logic to select appropriate conventions depending on the current build platform and JDK version.
+The source sets for Java are not aware of the generated bindings.
+This plugin adds a `jextract` extension to each source set.
+Jextract library definitions can be added to this extension and will be included in the Java compilation.
 
 ```gradle kotlin dsl
-import de.infolektuell.gradle.jextract.tasks.DownloadTask
-
-tasks.withType(DownloadTask::class).configureEach {
-    resource.url = uri("https://my-company.com/jextract/file.tgz")
-    resource.checksum = "xyz"
-    resource.algorithm = "SHA-512" // SHA-256 by default
-}
-```
-
-### Custom source set
-
-In some situations, the `main` source set is not available or the sources should be added to another one, e.g., `test`.
-This must be configured in the extension:
-
-```gradle kotlin dsl
-jextract {
-    sourceSet = sourceSets.named("test")
+jextract.libraries {
+        val bass by creating {}
+        sourceSets {
+            // For KMP you want something like jvmMain
+            main {
+                jextract.libraries.add(bass)
+            }
+        }
 }
 ```
 
