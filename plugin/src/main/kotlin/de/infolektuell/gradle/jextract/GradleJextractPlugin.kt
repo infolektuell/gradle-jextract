@@ -89,12 +89,11 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             project.extensions.findByType(SourceSetContainer::class.java)?.all { s ->
                 val sourceSetExtension = s.extensions.create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension::class.java, project.objects)
                 sourceSetExtension.libraries.all { lib ->
-                    s.java.srcDir(lib.output)
-                    s.resources.srcDir(lib.output)
-                    s.compileClasspath += project.files(lib.output)
-                    s.runtimeClasspath += project.files(lib.output)
-                    project.tasks.named(s.compileJavaTaskName) { it.dependsOn(jextractTask) }
-                    project.tasks.named(s.processResourcesTaskName) { it.dependsOn(jextractTask) }
+                    val libOutputs = project.files(lib.output).builtBy(jextractTask)
+                    s.java.srcDir(libOutputs)
+                    s.resources.srcDir(libOutputs)
+                    s.compileClasspath += libOutputs
+                    s.runtimeClasspath += libOutputs
                 }
             }
         }
