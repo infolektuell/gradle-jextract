@@ -2,6 +2,7 @@ package de.infolektuell.gradle.jextract
 
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension
+import de.infolektuell.gradle.jextract.service.JextractDataStore
 import de.infolektuell.gradle.jextract.tasks.DownloadTask
 import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
 import de.infolektuell.gradle.jextract.tasks.ExtractTask
@@ -19,7 +20,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         val versionProvider = extension.generator.javaLanguageVersion.map { dataStore.version(it.asInt()) }
-        val resourceProvider = extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) }
+        val resourceProvider = versionProvider.map { dataStore.resource(it) }
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         extension.generateSourceFiles.convention(false)
 
