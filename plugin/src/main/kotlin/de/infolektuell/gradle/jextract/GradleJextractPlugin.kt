@@ -3,14 +3,12 @@ package de.infolektuell.gradle.jextract
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension
 import de.infolektuell.gradle.jextract.service.JextractDataStore
-import de.infolektuell.gradle.jextract.tasks.DownloadTask
-import de.infolektuell.gradle.jextract.tasks.DumpIncludesTask
-import de.infolektuell.gradle.jextract.tasks.ExtractTask
-import de.infolektuell.gradle.jextract.tasks.GenerateBindingsTask
+import de.infolektuell.gradle.jextract.tasks.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.jvm.Jvm
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 
@@ -36,52 +34,44 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         }
         extension.generator.local.convention(extractTask.flatMap { it.target })
 
-        val jextractTask = project.tasks.register("jextract", GenerateBindingsTask::class.java) { task ->
-            task.group = "Build"
-            task.description = "Generates bindings for all configured libraries"
-            task.generator.version.convention(versionProvider)
-            task.generator.location.convention(extension.generator.local)
-        }
-
-        val dumpIncludesTask = project.tasks.register("dumpIncludes", DumpIncludesTask::class.java) { task ->
-            task.group = "documentation"
-            task.description = "Generates a dump of all symbols encountered in a header file"
-            task.generator.version.convention(versionProvider)
-            task.generator.location.convention(extension.generator.local)
-        }
-
-        extension.libraries.all { lib ->
+        extension.libraries.configureEach { lib ->
             lib.useSystemLoadLibrary.convention(false)
             lib.output.convention(extension.output.dir("${lib.name}"))
             lib.generateSourceFiles.convention(extension.generateSourceFiles)
-            jextractTask.configure { task ->
-                val config = project.objects.newInstance(GenerateBindingsTask.LibraryConfig::class.java).apply {
-                    header.set(lib.header)
-                    includes.set(lib.includes)
-                    definedMacros.set(lib.definedMacros)
-                    headerClassName.set(lib.headerClassName)
-                    targetPackage.set(lib.targetPackage)
-                    whitelist.put("function", lib.whitelist.functions)
-                    whitelist.put("constant", lib.whitelist.constants)
-                    whitelist.put("struct", lib.whitelist.structs)
-                    whitelist.put("union", lib.whitelist.unions)
-                    whitelist.put("typedef", lib.whitelist.typedefs)
-                    whitelist.put("var", lib.whitelist.variables)
-                    argFile.set(lib.whitelist.argFile)
-                    libraries.set(lib.libraries)
-                    useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
-                    generateSourceFiles.set(lib.generateSourceFiles)
-                    sources.set(lib.output)
+        }
+
+        project.tasks.withType(JextractBaseTask::class.java) { task ->
+            task.version.convention(versionProvider)
+            task.distribution.convention(extension.generator.local)
+        }
+
+        val jextractGenerateTasks = mutableMapOf<String, TaskProvider<JextractGenerateTask>>()
+        extension.libraries.all { lib ->
+            val generateTaskProvider = project.tasks.register("${lib.name}JextractGenerateBindings", JextractGenerateTask::class.java) { task ->
+                task.header.set(lib.header)
+                task.includes.set(lib.includes)
+                task.definedMacros.set(lib.definedMacros)
+                task.headerClassName.set(lib.headerClassName)
+                task.targetPackage.set(lib.targetPackage)
+                task.whitelist.run {
+                    put("function", lib.whitelist.functions)
+                    put("constant", lib.whitelist.constants)
+                    put("struct", lib.whitelist.structs)
+                    put("union", lib.whitelist.unions)
+                    put("typedef", lib.whitelist.typedefs)
+                    put("var", lib.whitelist.variables)
                 }
-                task.libraries.add(config)
+                task.argFile.set(lib.whitelist.argFile)
+                task.libraries.set(lib.libraries)
+                task.useSystemLoadLibrary.set(lib.useSystemLoadLibrary)
+                task.generateSourceFiles.set(lib.generateSourceFiles)
+                task.sources.set(lib.output)
             }
-            dumpIncludesTask.configure { task ->
-                val config = project.objects.newInstance(DumpIncludesTask.LibraryConfig::class.java).apply {
-                    header.set(lib.header)
-                    includes.set(lib.includes)
-                    argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
-                }
-                task.libraries.add(config)
+            jextractGenerateTasks[lib.name] = generateTaskProvider
+            project.tasks.register("${lib.name}JextractDumpIncludes", JextractDumpIncludesTask::class.java) { task ->
+                task.header.set(lib.header)
+                task.includes.set(lib.includes)
+                task.argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
             }
         }
 
@@ -90,13 +80,26 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             project.extensions.findByType(SourceSetContainer::class.java)?.all { s ->
                 val sourceSetExtension = s.extensions.create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension::class.java, project.objects)
                 sourceSetExtension.libraries.all { lib ->
-                    val libOutputs = project.files(lib.output).builtBy(jextractTask)
-                    s.java.srcDir(libOutputs)
-                    s.resources.srcDir(libOutputs)
-                    s.compileClasspath += libOutputs
-                    s.runtimeClasspath += libOutputs
+                    jextractGenerateTasks[lib.name]?.flatMap { it.sources }?.also {
+                        s.java.srcDir(it)
+                        s.resources.srcDir(it)
+                        s.compileClasspath += project.files(it)
+                        s.runtimeClasspath += project.files(it)
+                    }
                 }
             }
+        }
+
+        project.tasks.register("jextract") { task ->
+            task.group = "Build"
+            task.description = "Generates bindings for all configured libraries"
+            task.dependsOn(project.tasks.withType(JextractGenerateTask::class.java))
+        }
+
+        project.tasks.register("dumpIncludes") { task ->
+            task.group = "documentation"
+            task.description = "Generates a dump of all symbols encountered in a header file"
+            task.dependsOn(project.tasks.withType(JextractDumpIncludesTask::class.java))
         }
     }
 
