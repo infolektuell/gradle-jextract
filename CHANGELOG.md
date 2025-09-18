@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- New implementations of both Jextract tasks have been added that process one library per task instance. This facilitates their usage and debugging problems with specific libraries.
+
 ## [0.5.0] - 2025-05-18
 
 ### Changed
