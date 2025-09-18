@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - If you configure the plugin using its DSL extension in your build script, nothing will change for you.
 - The plugin has been migrated to use the new tasks without worker API. If you configure the tasks directly in your build, this version will be a breaking change for you. Please try to configure the plugin via DSL, or migrate to the new tasks.
 
+### Removed
+
+- Tasks that make use of the worker API have been removed.
+
 ## [0.5.0] - 2025-05-18
 
 ### Changed
