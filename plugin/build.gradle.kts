@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "2.1.21"
+    kotlin("jvm") version "2.2.20"
     signing
-    id("com.gradle.plugin-publish") version "1.3.1"
+    id("com.gradle.plugin-publish") version "2.0.0"
 }
 
 gradlePlugin {
@@ -10,7 +10,6 @@ gradlePlugin {
     plugins.create("jextractPlugin") {
         id = "de.infolektuell.jextract"
         displayName = "jextract gradle plugin"
-        description = "Generates Java bindings from native library headers using the Jextract tool"
         tags = listOf("native", "FFM", "panama", "jextract")
         implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
     }
