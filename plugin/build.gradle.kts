@@ -4,12 +4,17 @@ plugins {
     id("com.gradle.plugin-publish") version "2.0.0"
 }
 
+val releaseVersion = releaseVersion()
+val releaseNotes = releaseNotes()
+version = releaseVersion.get()
+
 gradlePlugin {
     website = "https://github.com/infolektuell/gradle-jextract"
     vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
     plugins.create("jextractPlugin") {
         id = "de.infolektuell.jextract"
         displayName = "jextract gradle plugin"
+        description = releaseNotes.get()
         tags = listOf("native", "FFM", "panama", "jextract")
         implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
     }
@@ -64,4 +69,14 @@ tasks.named<Task>("check") {
 tasks.named<Test>("test") {
     // Use JUnit Jupiter for unit tests.
     useJUnitPlatform()
+}
+
+fun releaseVersion(): Provider<String> {
+    val releaseVersionFile = rootProject.layout.projectDirectory.file("release/version.txt")
+    return providers.fileContents(releaseVersionFile).asText.map(String::trim)
+}
+
+fun releaseNotes(): Provider<String> {
+    val releaseNotesFile = rootProject.layout.projectDirectory.file("release/changes.md")
+    return providers.fileContents(releaseNotesFile).asText.map(String::trim)
 }

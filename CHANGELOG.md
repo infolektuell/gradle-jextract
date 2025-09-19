@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...HEAD
 
 ### Fixed
 
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tasks that make use of the worker API have been removed.
 
 ## [0.5.0] - 2025-05-18
+[0.5.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.4.0...v0.5.0
 
 ### Changed
 
@@ -50,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove The sourceSet property in the DSL which is superseded by a source set extension.
 
 ## [0.4.0] - 2024-11-08
+[0.4.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.3.0...v0.4.0
 
 ### Changed
 
@@ -60,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved configuration cache stability by moving provider creation to task action.
 
 ## [0.3.0] - 2024-10-12
+[0.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.1...v0.3.0
 
 ### Added
 
@@ -72,12 +76,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Jextract is downloaded and installed to the project build directory to avoid access conflicts for output files and directories in multi-project builds.
 
 ## [0.2.1] - 2024-09-28
+[0.2.1]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.0...v0.2.1
 
 ### Fixed
 
 - Make DownloadTask compatible with the configuration cache.
 
 ## [0.2.0] - 2024-09-27
+[0.2.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.1.0...v0.2.0
 
 ### Added
 
@@ -99,17 +105,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove the separate download plugin and merge download stuff into this plugin.
 
 ## [0.1.0] - 2024-09-16
+[0.1.0]: https://github.com/infolektuell/gradle-jextract/releases/tag/v0.1.0
 
 ### Added
 
 - Tasks to download and install Jextract from the official EA download page
 - Task to generate bindings for given headers using Jextract
 - DSL extension to configure multiple native libraries and desired Jextract version/installation
-
-[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...HEAD
-[0.5.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.1...v0.3.0
-[0.2.1]: https://github.com/infolektuell/gradle-jextract/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/infolektuell/gradle-jextract/releases/tag/v0.1.0
