@@ -36,12 +36,11 @@ abstract class GradleJextractPlugin : Plugin<Project> {
 
         extension.libraries.configureEach { lib ->
             lib.useSystemLoadLibrary.convention(false)
-            lib.output.convention(extension.output.dir("${lib.name}"))
+            lib.output.convention(extension.output.dir(lib.name))
             lib.generateSourceFiles.convention(extension.generateSourceFiles)
         }
 
         project.tasks.withType(JextractBaseTask::class.java) { task ->
-            task.version.convention(versionProvider)
             task.distribution.convention(extension.generator.local)
         }
 

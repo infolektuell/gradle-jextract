@@ -8,10 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...HEAD
 
-### Fixed
-
-- Task dependencies are declared properly, so Kotlin and similar tasks run after Jextract.
-
 ### Added
 
 - New implementations of both Jextract tasks have been added that process one library per task instance. This facilitates their usage and debugging problems with specific libraries.
@@ -20,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - If you configure the plugin using its DSL extension in your build script, nothing will change for you.
 - The plugin has been migrated to use the new tasks without worker API. If you configure the tasks directly in your build, this version will be a breaking change for you. Please try to configure the plugin via DSL, or migrate to the new tasks.
+
+### Fixed
+
+- Task dependencies are declared properly, so Kotlin and similar tasks run after Jextract.
+
+### Deprecated
+
+- In the Jextract tasks, the version input property is not used anymore because the version is read from command line.
 
 ### Removed
 

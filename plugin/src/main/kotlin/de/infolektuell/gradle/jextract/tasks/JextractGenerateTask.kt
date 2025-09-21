@@ -1,24 +1,17 @@
 package de.infolektuell.gradle.jextract.tasks
 
+import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
-import org.gradle.process.ExecOperations
+import org.gradle.api.tasks.*
 import javax.inject.Inject
 
 @CacheableTask
-abstract class JextractGenerateTask @Inject constructor(private val fileSystemOperations: FileSystemOperations, private val execOperations: ExecOperations) : JextractBaseTask() {
+abstract class JextractGenerateTask @Inject constructor(private val fileSystemOperations: FileSystemOperations) : JextractBaseTask() {
     @get:Input
     abstract val definedMacros: ListProperty<String>
     @get:Optional
@@ -46,6 +39,8 @@ abstract class JextractGenerateTask @Inject constructor(private val fileSystemOp
 
     @TaskAction
     protected fun generateBindings() {
+        val version = executableVersion()
+            ?: throw GradleException("Couldn't recognize the version of the given Jextract distribution.")
         fileSystemOperations.delete { spec ->
             spec.delete(sources)
         }
@@ -61,7 +56,7 @@ abstract class JextractGenerateTask @Inject constructor(private val fileSystemOp
                 v.forEach { spec.args("--include-$k", it) }
             }
             libraries.get().forEach { spec.args("-l", it) }
-            when(version.get()) {
+            when(version) {
                 19, 20, 21 -> {
                     if (generateSourceFiles.get()) spec.args("--source")
                 }

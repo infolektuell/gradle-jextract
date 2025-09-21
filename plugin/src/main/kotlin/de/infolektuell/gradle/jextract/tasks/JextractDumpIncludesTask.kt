@@ -4,11 +4,9 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.process.ExecOperations
-import javax.inject.Inject
 
 @CacheableTask
-abstract class JextractDumpIncludesTask @Inject constructor(private val execOperations: ExecOperations) : JextractBaseTask() {
+abstract class JextractDumpIncludesTask : JextractBaseTask() {
     @get:OutputFile
     abstract val argFile: RegularFileProperty
 
