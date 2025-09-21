@@ -54,7 +54,7 @@ Append this in _build.gradle.kts_:
 ```gradle kotlin dsl
 jextract.libraries {
         // The native BASS audio library.
-        val bass by creating {
+        val bass by registering {
             header = layout.projectDirectory.file("src/main/public/bass.h")
             headerClassName = "Bass"
             targetPackage = "com.un4seen.bass"
@@ -93,7 +93,7 @@ The top-level output path is ignored by libraries with an explicit output path
 
 ```gradle kotlin dsl
 jextract.libraries {
-    val bass by creating {
+    val bass by registering {
         output = layout.projectDirectory.dir("bassBindings")
     }
 }
@@ -189,11 +189,11 @@ Jextract library definitions can be added to this extension and will be included
 
 ```gradle kotlin dsl
 jextract.libraries {
-        val bass by creating {}
+        val bass by registering {}
         sourceSets {
             // For KMP you want something like jvmMain
             main {
-                jextract.libraries.add(bass)
+                jextract.libraries.addLater(bass)
             }
         }
 }
