@@ -10,12 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New implementations of both Jextract tasks have been added that process one library per task instance. This facilitates their usage and debugging problems with specific libraries.
+- Custom download locations for Jextract distributions can be configured in the DSL extension. Configuring the download task isn't necessary anymore.
 
 ### Changed
 
 - If you configure the plugin using its DSL extension in your build script, nothing will change for you.
-- The plugin has been migrated to use the new tasks without worker API. If you configure the tasks directly in your build, this version will be a breaking change for you. Please try to configure the plugin via DSL, or migrate to the new tasks.
+- The Jextract tasks have been reimplemented without the worker API. If you configure the tasks directly in your build, this version will be a breaking change for you. Please try to configure the plugin via DSL, or migrate to the new tasks.
 
 ### Fixed
 
