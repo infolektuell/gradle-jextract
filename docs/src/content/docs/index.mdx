@@ -1,0 +1,34 @@
+---
+title: Welcome to Gradle Jextract
+description: Gradle plugin that generates Java bindings for native libraries using Jextract.
+template: splash
+hero:
+  tagline: Start integrating native libraries in your Java project!
+  image:
+    file: ../../assets/houston.webp
+  actions:
+    - text: Setup Guide
+      link: ./start/setup/
+      icon: right-arrow
+    - text: See the latest version on Gradle Plugin Portal
+      link: https://plugins.gradle.org/plugin/de.infolektuell.jextract
+      icon: seti:gradle
+      variant: minimal
+---
+
+import { Card, LinkCard, CardGrid } from '@astrojs/starlight/components'
+
+## Next steps
+
+<CardGrid stagger>
+  <Card title="Prepare a Gradle project" icon="pencil">
+    Initialize a new Gradle project or open an existing one.
+  </Card>
+  <Card title="Add native header and library" icon="add-document">
+    Put `.h` and library files in your source folder, e.g., `src/main/public`. If you want to develop against system libraries, this step isn't necessary.
+  </Card>
+  <LinkCard title="Use the plugin" icon="setting" href="https://plugins.gradle.org/plugin/de.infolektuell.jextract" />
+  <Card title="Configure your libraries" icon="open-book">
+    Learn more about how to add your libraries to the build script using the plugin's DSL extension.
+  </Card>
+</CardGrid>

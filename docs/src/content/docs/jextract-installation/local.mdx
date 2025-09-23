@@ -1,0 +1,40 @@
+---
+title: Using local path
+description: How to use a locally installed version of Jextract with the Gradle Jextract plugin
+sidebar:
+  order: 4
+---
+
+import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
+
+## Use a Local Installation
+
+You can explicitly set the path to a local Jextract installation in the plugin's DSL.
+In this case, the plugin will ignore any download-related configuration.
+
+:::caution
+This method meets an offline-requirement, but your build becomes dependent of your local setup.
+:::
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kotlin gradle dsl "local"
+// build.gradle.kts
+jextract.generator {
+    local = layout.projectDirectory.dir("/usr/local/opt/jextract-22/")
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy gradle dsl "local"
+// build.gradle
+jextract.generator {
+    local = layout.projectDirectory.dir "/usr/local/opt/jextract-22/"
+}
+```
+
+</TabItem>
+</Tabs>

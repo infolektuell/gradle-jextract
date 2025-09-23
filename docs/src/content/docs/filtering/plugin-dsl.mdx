@@ -1,0 +1,71 @@
+---
+title: Using the plugin DSL
+description: How to implement filtering using the plugin DSL of the Jextract Gradle plugin
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+This plugin offers filtering without arg files through DSL properties where the symbols can be added.
+This approach might be more beginner-friendly or facilitate exploration of available options.
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kotlin gradle dsl  "typedefs" "functions" "constants"
+// build.gradle.kts
+jextract.libraries {
+    register("<libname>") {
+            whitelist {
+                typedefs.add("MY_TYPE")
+                functions.add("MY_FN")
+                constants.add("MY_CONST")
+                // more categories
+            }
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy gradle dsl "typedefs" "functions" "constants"
+// build.gradle
+jextract.libraries {
+    register("<libname>") {
+            whitelist {
+                typedefs += "MY_TYPE"
+                functions += "MY_FN"
+                constants += "MY_CONST"
+                // more categories
+            }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+The distinct symbol categories like typedefs, constants, or functions have their separate list properties in the `jextract.whitelist` extension.
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+```pwsh title="Rebuilding the project"
+gradlew.bat clean build
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash title="Rebuilding the project"
+./gradlew clean build
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+This will generate and use a partial version of the library bindings.
+:::

@@ -1,0 +1,22 @@
+---
+title: Filtering Generated Symbols
+description: Introduction to filtering in Jextract with the Gradle Jextract plugin
+sidebar:
+  order: 1
+  label: Filtering
+---
+
+Libraries can be quite large, and maybe you're not going to use every symbol in it.
+Jextract offers a [filtering] mechanism for generating partial library bindings that include only the explicitly requested symbols.
+See [Filtering] in the Jextract guide for more information.
+
+:::tip
+Avoiding dead code is a best practice, so filtering is recommended if applicable.
+:::
+
+This plugin supports two approaches to implement filtering per library.
+
+- Using a dedicated arg file is the more Jextract-idiomatic way.
+- Putting the symbols in the plugin's DSL is a quick convenience alternative with a bit more help from the IDE.
+
+[filtering]: https://github.com/openjdk/jextract/blob/master/doc/GUIDE.md#filtering

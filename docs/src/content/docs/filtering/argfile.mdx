@@ -1,0 +1,112 @@
+---
+title: Using an arg file
+description: How to implement filtering using an arg file with the Jextract Gradle plugin
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
+
+Arg files are the standard way to add filtering with Jextract.
+The setup involves two steps:
+
+1. Creating the file
+2. Adding it to the library config in the build script
+
+## Arg Files
+
+### What is an arg file?
+
+Jextract is a command line tool, and arg files are files containing command line arguments, separated by linebreaks.
+Instead of passing each of them to a shell command by hand, an arg file is passed to the CLI that reads the contained arguments.
+It is a configuration file to be checked into source control
+
+This example demonstrates the format using some filtering arguments from Jextract:
+
+```bash
+# bass-includes.txt
+--include-function BASS_Update
+--include-constant
+```
+
+### Creating a working arg file
+
+Jextract can dump all symbols used in a given library into an arg file.
+This file is meant to be edited and reduced to include only the needed symbols.
+This plugin makes this feature available through the `dumpIncludes` task.
+
+```bash title="Dumping all library symbols into an arg file"
+./gradlew dumpIncludes
+```
+
+This will output the generated arg file to a predefined location in the build directory.
+
+<FileTree>
+
+- lib
+  - build
+    - reports
+      - jextract
+        - **\<libname\>-includes.txt**
+
+</FileTree>
+
+1. Copy this file anywhere into your source directory.
+2. Modify and rinse until it includes only the needed symbols.
+3. Check it into source control.
+
+## Configuring Gradle
+
+Lastly, the prepared arg file must be associated with its library config.
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kotlin gradle dsl "argFile" "<libname>"
+// build.gradle.kts
+jextract.libraries {
+    register("<libname>") {
+            whitelist {
+                argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
+            }
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy gradle dsl "argFile" "<libname>"
+// build.gradle
+jextract.libraries {
+    register("<libname>") {
+            whitelist {
+                argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
+            }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+```pwsh title="Rebuilding the project"
+gradlew.bat clean build
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash title="Rebuilding the project"
+./gradlew clean build
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+This will generate and use a partial version of the library bindings.
+:::

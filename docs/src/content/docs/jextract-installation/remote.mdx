@@ -1,0 +1,76 @@
+---
+title: Downloading from custom locations
+description: How to download and use Jextract from custom locations with the Gradle Jextract plugin
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
+
+The selected Jextract version can be downloaded from custom locations.
+These must be stored in a configuration file located anywhere in the project.
+The plugin doesn't search in a convention path and must be added in the DSL.
+
+:::tip
+This can be useful in situations with higher network restrictions.
+:::
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kotlin gradle dsl "distributions"
+jextract.generator {
+    distributions = layout.file("company-jextract.properties")
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```kotlin gradle dsl "distributions"
+jextract.generator {
+    distributions = layout.file "company-jextract.properties"
+}
+```
+
+</TabItem>
+</Tabs>
+
+## The Jextract distribution Data
+
+The distribution data is stored in a [Java properties][properties] file.
+The plugin bundles its own default distribution data file with the official download resources.
+
+:::note
+[Properties] is the only textual serialization format for structured data natively supported in Java.
+:::
+
+- A distribution consists of all downloadable platform-specific resources for a given Jextract version/release.
+- A resource consists of a URL and an SHA-256 checksum.
+
+The custom data file doesn't need to be comprehensive.
+If a needed resource is not supplied, the default data is used as fallback.
+
+The following excerpt from the default data declares all resources for Jextract 22.
+Every key follows the `jextract.<major-version>.<os>.<arch>.key` schema.
+You can take it as a starting point for a custom distribution data file.
+
+```properties
+# jextract.properties
+jextract.22.linux.aarch64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_linux-aarch64_bin.tar.gz
+jextract.22.linux.aarch64.sha-256=e218579a43dd1cb77e94cdbfa5b7b30eaed682aef8f40300c9916e59b1194fa7
+jextract.22.linux.x64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_linux-x64_bin.tar.gz
+jextract.22.linux.x64.sha-256=a6a42d5b5f4bff119455daadd1ccec9389b2554aea3342f391577843769cc7ec
+jextract.22.mac.aarch64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_macos-aarch64_bin.tar.gz
+jextract.22.mac.aarch64.sha-256=f17afbd6dc191b8c922698253b485d31e2e46a7fbe55de3ba61cf74fa2af75d1
+jextract.22.mac.x64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_macos-x64_bin.tar.gz
+jextract.22.mac.x64.sha-256=a4f404ee6c55ef03dd32bf9018b0c8e051c422c5937024507007ab444cd44b0f
+jextract.22.windows.x64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_windows-x64_bin.tar.gz
+jextract.22.windows.x64.sha-256=3cdb7d586507994c3e2c3e9456bf2a8b115af52ac21eb6ff6fdd4b93cc245db8
+```
+
+:::tip
+The checksums are used for integrity checks and to avoid unnecessary downloads.
+:::
+
+[properties]: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Properties.html

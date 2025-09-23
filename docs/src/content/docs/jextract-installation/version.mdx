@@ -1,0 +1,86 @@
+---
+title: Downloading by version
+description: How to let the Gradle Jextract plugin download and use Jextract depending on a given JVM target version
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
+
+The DSL extension offers a `version` property that can be configured with a `JavaLanguageVersion` to define which version should be used.
+The plugin downloads and installs Jextract from the [official release page][jextract].
+It selects the best Jextract distribution for the configured version and current native platform.
+
+## Use Java toolchain (highly recommended)
+
+By convention, the plugin tries to infer the version from the configured Java toolchain.
+This is by far the most convenient and reliable method for most projects.
+
+:::caution[modern JDK]
+Your target JVM should be of version 19 or above.
+:::
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kotlin gradle dsl "languageVersion"
+// build.gradle.kts
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy gradle dsl "languageVersion"
+// build.gradle
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of 24
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+This will choose Jextract 22, because this is still the latest release.
+:::
+
+## Use another version
+
+Setting a version in the DSL will override the convention, and the Java toolchain will be ignored.
+This might make sense if no Java plugin is used in the build, or if the version should diverge from the target JVM.
+
+:::caution[Compatibility]
+Please ensure that Jextract and the JVM target of your code are compatible. The major version of Jextract shouldn't be higher than that of the target JVM version.
+:::
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kotlin gradle dsl "languageVersion"
+// build.gradle.kts
+jextract.generator {
+    javaLanguageVersion = JavaLanguageVersion.of(21)
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy gradle dsl "languageVersion"
+// build.gradle
+jextract.generator {
+    javaLanguageVersion = JavaLanguageVersion.of(21)
+}
+```
+
+</TabItem>
+</Tabs>
+
+[jextract]: https://jdk.java.net/jextract/

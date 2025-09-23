@@ -1,0 +1,178 @@
+---
+title: Setup Guide
+description: A getting started guide to setup the Gradle Jextract plugin
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
+
+This setup guide covers the standard use-case of generating and integrating native bindings into a Java project with a main source set.
+
+## Prerequisites
+
+You should have these things in place before you start:
+
+- JVM 17 or above
+- A Gradle project using Gradle v8.8 or above
+
+## Including the Plugin
+
+This will configure the project to download and use Jextract 22 which is determined from the Java toolchain.
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```gradle kotlin dsl
+// build.gradle.kts
+plugins {
+    `java-library`
+    id("de.infolektuell.jextract") version "0.5.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(22)
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```gradle groovy dsl
+// build.gradle
+plugins {
+    id 'java-library'
+    id 'de.infolektuell.jextract' version 'x.y.z'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of 22
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Adding a Library
+
+Libraries often consist of a `name.h` file and binaries like `libname.dylib` or `name.dll`.
+Put them in your source folder like this:
+
+<FileTree>
+
+- lib
+  - src
+    - main
+      - java
+        - com
+          - example
+            - greeting
+              - greeting.java
+      - native
+        - macos
+          - **libgreeting.dylib** the macOS binary
+        - windows
+          - **greeting.dll** the windows binary
+      - public
+        - **greeting.h** the header file
+  - build.gradle.kts
+- settings.gradle.kts
+
+</FileTree>
+
+## Configuring the plugin
+
+Configure the plugin via DSL extension, so it can find the library files.
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+```gradle kotlin dsl
+// build.gradle.kts
+jextract.libraries {
+    val greeting by registering {
+        header = layout.projectDirectory.file("src/main/public/greeting.h")
+        headerClassName = "Greeting"
+        targetPackage = "com.example.greeting"
+        useSystemLoadLibrary = true
+        libraries.add("greeting")
+    }
+    sourceSets.main.jextract.libraries.addLater(greeting)
+}
+```
+</TabItem>
+<TabItem label="Groovy">
+```gradle groovy dsl
+// build.gradle
+jextract.libraries {
+    def greeting = register('greeting') {
+        header = layout.projectDirectory.file("src/main/public/greeting.h")
+        headerClassName = "Greeting"
+        targetPackage = "com.example.greeting"
+        useSystemLoadLibrary = true
+        libraries.add("greeting")
+    }
+    sourceSets.main.jextract.libraries.addLater(greeting)
+}
+```
+</TabItem>
+</Tabs>
+
+## Build and use
+
+Now the project is ready for its first build.
+
+<tabs syncKey="os">
+<TabItem label="Windows">
+
+```pwsh title="Building the project"
+gradlew.bat build
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```bash title="Building the project"
+./gradlew build
+```
+
+</TabItem>
+</tabs>
+
+This will result in the following output file structure:
+
+<FileTree>
+
+- lib
+  - build
+    - ...
+    - **download/** the downloaded Jextract distribution archives
+    - generated
+      - sources
+        - jextract
+          - **greeting** the library bindings
+            - com
+              - example
+                - greeting
+                  - **Greeting.java** the bindings to import and use in Java code
+    - **jextract** the extracted Jextract installations
+    - ...
+  - build.gradle.kts
+- settings.gradle.kts
+
+</FileTree>
+
+:::caution[Missing last step]
+This tutorial still doesn't explain how to deploy the native binary files.
+:::
