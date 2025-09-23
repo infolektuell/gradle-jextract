@@ -23,7 +23,7 @@ This will configure the project to download and use Jextract 22 which is determi
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```gradle kotlin dsl
+```kts
 // build.gradle.kts
 plugins {
     `java-library`
@@ -44,7 +44,7 @@ java {
 </TabItem>
 <TabItem label="Groovy">
 
-```gradle groovy dsl
+```groovy
 // build.gradle
 plugins {
     id 'java-library'
@@ -98,7 +98,7 @@ Configure the plugin via DSL extension, so it can find the library files.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
-```gradle kotlin dsl
+```kts
 // build.gradle.kts
 jextract.libraries {
     val greeting by registering {
@@ -113,7 +113,7 @@ jextract.libraries {
 ```
 </TabItem>
 <TabItem label="Groovy">
-```gradle groovy dsl
+```groovy
 // build.gradle
 jextract.libraries {
     def greeting = register('greeting') {
@@ -136,14 +136,14 @@ Now the project is ready for its first build.
 <tabs syncKey="os">
 <TabItem label="Windows">
 
-```pwsh title="Building the project"
+```shell title="Building the project"
 gradlew.bat build
 ```
 
 </TabItem>
 <TabItem label="Linux">
 
-```bash title="Building the project"
+```shell title="Building the project"
 ./gradlew build
 ```
 

@@ -23,7 +23,7 @@ Your target JVM should be of version 19 or above.
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kotlin gradle dsl "languageVersion"
+```kts "languageVersion"
 // build.gradle.kts
 java {
     toolchain {
@@ -35,7 +35,7 @@ java {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy gradle dsl "languageVersion"
+```groovy "languageVersion"
 // build.gradle
 java {
     toolchain {
@@ -63,7 +63,7 @@ Please ensure that Jextract and the JVM target of your code are compatible. The 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kotlin gradle dsl "languageVersion"
+```kts "languageVersion"
 // build.gradle.kts
 jextract.generator {
     javaLanguageVersion = JavaLanguageVersion.of(21)
@@ -73,7 +73,7 @@ jextract.generator {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy gradle dsl "languageVersion"
+```groovy "languageVersion"
 // build.gradle
 jextract.generator {
     javaLanguageVersion = JavaLanguageVersion.of(21)

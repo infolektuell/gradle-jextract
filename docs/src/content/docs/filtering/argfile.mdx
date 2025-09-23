@@ -62,7 +62,7 @@ Lastly, the prepared arg file must be associated with its library config.
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kotlin gradle dsl "argFile" "<libname>"
+```kts "argFile" "<libname>"
 // build.gradle.kts
 jextract.libraries {
     register("<libname>") {
@@ -76,7 +76,7 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy gradle dsl "argFile" "<libname>"
+```groovy "argFile" "<libname>"
 // build.gradle
 jextract.libraries {
     register("<libname>") {
@@ -93,14 +93,14 @@ jextract.libraries {
 <Tabs syncKey="os">
 <TabItem label="Windows">
 
-```pwsh title="Rebuilding the project"
+```shell title="Rebuilding the project"
 gradlew.bat clean build
 ```
 
 </TabItem>
 <TabItem label="Linux">
 
-```bash title="Rebuilding the project"
+```shell title="Rebuilding the project"
 ./gradlew clean build
 ```
 

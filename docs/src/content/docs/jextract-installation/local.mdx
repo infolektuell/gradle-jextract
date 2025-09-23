@@ -19,7 +19,7 @@ This method meets an offline-requirement, but your build becomes dependent of yo
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kotlin gradle dsl "local"
+```kts "local"
 // build.gradle.kts
 jextract.generator {
     local = layout.projectDirectory.dir("/usr/local/opt/jextract-22/")
@@ -29,7 +29,7 @@ jextract.generator {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy gradle dsl "local"
+```groovy "local"
 // build.gradle
 jextract.generator {
     local = layout.projectDirectory.dir "/usr/local/opt/jextract-22/"
