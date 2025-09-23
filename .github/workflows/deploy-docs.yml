@@ -42,9 +42,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: ${{ env.BUILD_PATH }}
+      - name: Check for formatting or typing errors
+        run: npm run check
+        working-directory: ${{ env.BUILD_PATH }}
       - name: Build with Astro
         run: |
-          npx astro build \
+          npm run build -- \
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
