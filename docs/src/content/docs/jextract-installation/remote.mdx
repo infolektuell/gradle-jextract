@@ -9,32 +9,10 @@ import { Tabs, TabItem, FileTree } from '@astrojs/starlight/components'
 
 The selected Jextract version can be downloaded from custom locations.
 These must be stored in a configuration file located anywhere in the project.
-The plugin doesn't search in a convention path and must be added in the DSL.
 
 :::tip
 This can be useful in situations with higher network restrictions.
 :::
-
-<Tabs syncKey="dsl">
-<TabItem label="Kotlin">
-
-```kts "distributions"
-jextract.generator {
-    distributions = layout.file("company-jextract.properties")
-}
-```
-
-</TabItem>
-<TabItem label="Groovy">
-
-```groovy "distributions"
-jextract.generator {
-    distributions = layout.file "company-jextract.properties"
-}
-```
-
-</TabItem>
-</Tabs>
 
 ## The Jextract distribution Data
 
@@ -52,8 +30,7 @@ The custom data file doesn't need to be comprehensive.
 If a needed resource is not supplied, the default data is used as fallback.
 
 The following excerpt from the default data declares all resources for Jextract 22.
-Every key follows the `jextract.<major-version>.<os>.<arch>.key` schema.
-You can take it as a starting point for a custom distribution data file.
+Every key follows the `jextract.<major-version>.<os>.<arch>.key` pattern.
 
 ```properties
 # jextract.properties
@@ -72,5 +49,35 @@ jextract.22.windows.x64.sha-256=3cdb7d586507994c3e2c3e9456bf2a8b115af52ac21eb6ff
 :::tip
 The checksums are used for integrity checks and to avoid unnecessary downloads.
 :::
+
+You can take it as a starting point for a custom distribution data file.
+Put it somewhere in your project and check it into source control.
+
+<FileTree>
+- lib/
+- ...
+- gradle.properties
+- **company-jextract.properties**
+- settings.gradle.kts
+</FileTree>
+
+## Configuring Gradle
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+```kts "distributions"
+jextract.generator {
+    distributions = rootProject.layout.file("company-jextract.properties")
+}
+```
+</TabItem>
+<TabItem label="Groovy">
+```groovy "distributions"
+jextract.generator {
+    distributions = rootProject.layout.file "company-jextract.properties"
+}
+```
+</TabItem>
+</Tabs>
 
 [properties]: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Properties.html
