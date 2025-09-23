@@ -6,7 +6,6 @@ import starlight from '@astrojs/starlight'
 export default defineConfig({
     site: 'https://infolektuell.github.io',
     base: '/gradle-jextract/',
-    outDir: './build/dist',
     trailingSlash: 'always',
     integrations: [
         starlight({
