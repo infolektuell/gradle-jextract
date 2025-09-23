@@ -4,3 +4,57 @@ sidebar:
   order: 1
   label: Java
 ---
+
+Libraries defined in the DSL extension are not available to the Java code automatically.
+They must be added to the Java source sets where they should be accessible.
+The plugin adds a source set extension named `jextract` with a libraries list.
+The library config objects must be added to this list to become a dependency of the respective source set.
+
+:::tip
+A source set may depend on multiple libraries, and a library may be added to multiple source sets.
+:::
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kts "jextract.libraries"
+// build.gradle.kts
+jextract.libraries {
+    val greeting by registering {
+        // library config
+    }
+    val cursing by registering {
+        // library config
+    }
+    sourceSets {
+        main.jextract.libraries.addLater(greeting)
+        test.jextract.libraries.addLater(cursing)
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy "jextract.libraries"
+// build.gradle
+jextract.libraries {
+    def greeting = register('greeting') {
+        // library config
+    }
+    def cursing = register('cursing') {
+        // library config
+    }
+    sourceSets { // coming from Java plugin
+        main.jextract.libraries.addLater(greeting)
+        test.jextract.libraries.addLater(cursing)
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::tip
+The `addLater` method prevents creating the library config objects during configuration phase by adding providers to list properties.
+:::
