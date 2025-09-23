@@ -98,6 +98,7 @@ Configure the plugin via DSL extension, so it can find the library files.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
+
 ```kts
 // build.gradle.kts
 jextract.libraries {
@@ -111,8 +112,10 @@ jextract.libraries {
     sourceSets.main.jextract.libraries.addLater(greeting)
 }
 ```
+
 </TabItem>
 <TabItem label="Groovy">
+
 ```groovy
 // build.gradle
 jextract.libraries {
@@ -126,6 +129,7 @@ jextract.libraries {
     sourceSets.main.jextract.libraries.addLater(greeting)
 }
 ```
+
 </TabItem>
 </Tabs>
 
@@ -135,14 +139,18 @@ Now the project is ready for its first build.
 
 <Tabs syncKey="os">
 <TabItem label="Windows">
+
 ```shell title="Building the project"
 gradlew.bat build
 ```
+
 </TabItem>
 <TabItem label="Linux">
+
 ```shell title="Building the project"
 ./gradlew build
 ```
+
 </TabItem>
 </Tabs>
 
