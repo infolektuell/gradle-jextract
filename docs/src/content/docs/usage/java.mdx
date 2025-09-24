@@ -1,11 +1,13 @@
 ---
-title: Using the generated bindings
+title: Using Jextract in Java code
 sidebar:
   order: 1
   label: Java
 ---
 
-Libraries defined in the DSL extension are not available to the Java code automatically.
+import { Tabs, TabItem } from '@astrojs/starlight/components'
+
+Libraries defined in the DSL extension are not made available to the Java code automatically.
 They must be added to the Java source sets where they should be accessible.
 The plugin adds a source set extension named `jextract` with a libraries list.
 The library config objects must be added to this list to become a dependency of the respective source set.
@@ -17,7 +19,7 @@ A source set may depend on multiple libraries, and a library may be added to mul
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts "jextract.libraries"
+```kts {10-11}
 // build.gradle.kts
 jextract.libraries {
     val greeting by registering {
@@ -36,7 +38,7 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy "jextract.libraries"
+```groovy {10-11}
 // build.gradle
 jextract.libraries {
     def greeting = register('greeting') {
