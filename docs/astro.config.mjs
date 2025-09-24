@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
+import starlightAutoImport from './src/plugins/starlight-auto-import'
 
 // https://astro.build/config
 export default defineConfig({
@@ -9,6 +10,7 @@ export default defineConfig({
     trailingSlash: 'always',
     integrations: [
         starlight({
+            plugins: [starlightAutoImport()],
             title: 'Gradle Jextract Plugin',
             description: 'Generates Java bindings from native library headers using Jextract',
             logo: {

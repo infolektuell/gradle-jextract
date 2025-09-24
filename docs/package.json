@@ -16,6 +16,7 @@
         "@astrojs/check": "^0.9.4",
         "@astrojs/starlight": "^0.36.0",
         "astro": "^5.13.10",
+        "astro-auto-import": "^0.4.4",
         "prettier": "^3.6.2",
         "prettier-plugin-astro": "^0.14.1",
         "sharp": "^0.34.2",
