@@ -10,30 +10,48 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import javax.inject.Inject
 
+/** Uses Jextract to generate Java bindings for a given native library */
 @CacheableTask
 abstract class JextractGenerateTask @Inject constructor(private val fileSystemOperations: FileSystemOperations) : JextractBaseTask() {
+    /** All macros defined for this library, conforming to the `<name>=<value>` pattern or `<name>` where `<value>` will be 1 */
     @get:Input
     abstract val definedMacros: ListProperty<String>
+
+    /** The package name for the generated classes (`unnamed` if missing). */
     @get:Optional
     @get:Input
     abstract val targetPackage: Property<String>
+
+    /** Name of the generated header class (derived from header file name if missing) */
     @get:Optional
     @get:Input
     abstract val headerClassName: Property<String>
+
+    /** All symbols to be included in the generated bindings, grouped by their category */
     @get:Input
     abstract val whitelist: MapProperty<String, Set<String>>
+
+    /** An optional arg file for includes filtering */
     @get:Optional
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val argFile: RegularFileProperty
+
+    /** The names of the libraries that should be loaded by the generated header class */
     @get:Input
     abstract val libraries: ListProperty<String>
+
+    /** If true, this instructs Jextract to load the shared libraries in the loader symbol lookup */
     @get:Optional
     @get:Input
     abstract val useSystemLoadLibrary: Property<Boolean>
+
+    /** If true, this instructs Jextract 21 and older to generate source files instead of class files */
     @get:Optional
     @get:Input
     abstract val generateSourceFiles: Property<Boolean>
+
+    /** The directory where to place the generated source files */
     @get:OutputDirectory
     abstract val sources: DirectoryProperty
 

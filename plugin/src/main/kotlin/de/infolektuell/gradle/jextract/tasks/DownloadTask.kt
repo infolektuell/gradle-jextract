@@ -9,6 +9,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
+/** Downloads a [file][resource] to a [path][target] using [DownloadClient] */
 @CacheableTask
 abstract class DownloadTask : DefaultTask() {
     @get:Input

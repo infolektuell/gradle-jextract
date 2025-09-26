@@ -16,28 +16,33 @@ import java.io.File
 import java.nio.charset.Charset
 import javax.inject.Inject
 
+/** Offers Jextract-related implementation for inheriting tasks, does nothing itself */
 abstract class JextractBaseTask : DefaultTask() {
+    private var executable: String? = null
+
     @get:Inject
     protected abstract val execOperations: ExecOperations
 
-    @Deprecated("Version is determined from command line, so this won't be used anymore.")
-    @get:Optional
-    @get:Input
-    abstract val version: Property<Int>
-
+    /** The installation directory where Jextract can be found */
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val distribution: DirectoryProperty
 
+    /** All directories to be added to the end of the list of include search paths */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val includes: ListProperty<Directory>
 
+    /** The library header file to generate bindings for */
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val header: RegularFileProperty
 
-    private var executable: String? = null
+    /**
+     * Executes the Jextract command line with a configurable [action]
+     *
+     * This is used by inheriting tasks to run Jextract commands with the correct executable.
+     */
     protected fun execute(action: Action<in ExecSpec>): ExecResult {
         if (executable == null) {
             executable = findExecutable().absolutePath
