@@ -15,7 +15,6 @@ import java.time.Duration
 
 class DownloadClient {
     data class Resource(val url: URI, val checksum: String, val algorithm: String = "SHA-256") : Serializable {
-        val filename: String get() = url.path.replaceBeforeLast('/', "").trim('/')
         companion object {
             const val serialVersionUID: Long = 0
         }

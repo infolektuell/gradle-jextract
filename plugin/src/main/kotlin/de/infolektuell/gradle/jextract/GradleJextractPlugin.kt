@@ -11,7 +11,6 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.jvm.Jvm
 import org.gradle.jvm.toolchain.JavaLanguageVersion
-import java.util.*
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -22,13 +21,16 @@ abstract class GradleJextractPlugin : Plugin<Project> {
 
         val dataStore = JextractDataStore()
         val resource = extension.generator.distributions
-            .map { dataStore.loadDistributions(it.asFile) }
-            .orElse(project.providers.provider { dataStore.defaultDistributions() ?: Properties() })
-            .zip(extension.generator.javaLanguageVersion) { p, v -> dataStore.resource(p, v.asInt()) }
+            .zip(extension.generator.javaLanguageVersion) { p, v -> dataStore.resource(v.asInt(), p.asFile.toPath()) }
+            .orElse(extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) })
+        val target = extension.generator.distributions
+            .zip(extension.generator.javaLanguageVersion) { p, v -> dataStore.filename(v.asInt(), p.asFile.toPath()) }
+            .orElse(extension.generator.javaLanguageVersion.map { dataStore.filename(it.asInt()) })
+            .flatMap { project.layout.buildDirectory.file("downloads/${it}") }
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
             task.description = "Downloads Jextract"
             task.resource.convention(resource)
-            task.target.convention(task.resource.flatMap { project.layout.buildDirectory.file("downloads/${it.filename}") })
+            task.target.convention(target)
         }
 
         val extractTask = project.tasks.register("extract", ExtractTask::class.java) { task ->
