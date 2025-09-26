@@ -39,17 +39,16 @@ abstract class JextractGenerateTask @Inject constructor(private val fileSystemOp
 
     @TaskAction
     protected fun generateBindings() {
-        val version = executableVersion()
+        val version = findVersion()
             ?: throw GradleException("Couldn't recognize the version of the given Jextract distribution.")
         fileSystemOperations.delete { spec ->
             spec.delete(sources)
         }
-        execOperations.exec { spec ->
-            spec.executable(executable.get().absolutePath)
+        execute { spec ->
+            includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
             spec.args("--output", sources.get().asFile.absolutePath)
             targetPackage.orNull?.let { spec.args("-t", it) }
             headerClassName.orNull?.let { spec.args("--header-class-name", it) }
-            includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
             definedMacros.get().forEach { spec.args("-D", it) }
             whitelist.get().forEach { (k, v) ->
                 if (v.isEmpty()) return@forEach

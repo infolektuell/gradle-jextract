@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Task dependencies are declared properly, so Kotlin and similar tasks run after Jextract.
+- Configuration cache doesn't fail anymore with “executable not found” error.
 
 ### Deprecated
 

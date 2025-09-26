@@ -12,8 +12,7 @@ abstract class JextractDumpIncludesTask : JextractBaseTask() {
 
     @TaskAction
     protected fun dump() {
-        execOperations.exec { spec ->
-            spec.executable(executable.get().absolutePath)
+        execute { spec ->
             includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
             spec.args("--dump-includes", argFile.get().asFile.absolutePath)
             spec.args(header.get().asFile.absolutePath)

@@ -1,15 +1,17 @@
 package de.infolektuell.gradle.jextract.tasks
 
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.gradle.process.ExecOperations
+import org.gradle.process.ExecResult
+import org.gradle.process.ExecSpec
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.charset.Charset
@@ -23,27 +25,33 @@ abstract class JextractBaseTask : DefaultTask() {
     @get:Optional
     @get:Input
     abstract val version: Property<Int>
+
     @get:InputDirectory
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val distribution: DirectoryProperty
-    @get:Internal
-    protected val executable: Provider<File> = distribution.map { g ->
-        g.asFileTree.matching { spec ->
-            val fileName = if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) "jextract.bat" else "jextract"
-            spec.include("**/bin/$fileName")
-        }.singleFile
-    }
+
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val includes: ListProperty<Directory>
+
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val header: RegularFileProperty
 
-    protected fun executableVersion(): Int? {
+    private var executable: String? = null
+    protected fun execute(action: Action<in ExecSpec>): ExecResult {
+        if (executable == null) {
+            executable = findExecutable().absolutePath
+        }
+        return execOperations.exec { spec ->
+            spec.executable(executable)
+            action.execute(spec)
+        }
+    }
+
+    protected fun findVersion(): Int? {
         return ByteArrayOutputStream().use { s ->
-            execOperations.exec { spec ->
-                spec.executable(executable.get().absolutePath)
+            execute { spec ->
                 spec.args("--version")
                 spec.errorOutput = s
             }
@@ -55,5 +63,12 @@ abstract class JextractBaseTask : DefaultTask() {
                 .last()
                 .toIntOrNull()
         }
+    }
+
+    private fun findExecutable(): File {
+        return distribution.asFileTree.matching { spec ->
+            val fileName = if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) "jextract.bat" else "jextract"
+            spec.include("**/bin/$fileName")
+        }.singleFile
     }
 }
