@@ -2,7 +2,7 @@ package de.infolektuell.gradle.jextract
 
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension
-import de.infolektuell.gradle.jextract.service.JextractDataStore
+import de.infolektuell.gradle.jextract.model.JextractDataStore
 import de.infolektuell.gradle.jextract.tasks.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project

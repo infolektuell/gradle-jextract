@@ -1,4 +1,4 @@
-package de.infolektuell.gradle.jextract.service
+package de.infolektuell.gradle.jextract.model
 
 import java.io.Serializable
 import java.net.URI

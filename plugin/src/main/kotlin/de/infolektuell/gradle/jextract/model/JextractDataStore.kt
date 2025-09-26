@@ -1,6 +1,6 @@
-package de.infolektuell.gradle.jextract.service
+package de.infolektuell.gradle.jextract.model
 
-import de.infolektuell.gradle.jextract.service.DownloadClient.Resource
+import de.infolektuell.gradle.jextract.model.DownloadClient.Resource
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path

@@ -1,6 +1,6 @@
 package de.infolektuell.gradle.jextract.tasks
 
-import de.infolektuell.gradle.jextract.service.DownloadClient
+import de.infolektuell.gradle.jextract.model.DownloadClient
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
