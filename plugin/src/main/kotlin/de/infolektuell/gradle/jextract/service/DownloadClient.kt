@@ -1,6 +1,5 @@
 package de.infolektuell.gradle.jextract.service
 
-import org.gradle.api.GradleException
 import java.io.Serializable
 import java.net.URI
 import java.net.http.HttpClient
@@ -13,13 +12,33 @@ import java.security.DigestInputStream
 import java.security.MessageDigest
 import java.time.Duration
 
+/**
+ * A service class for downloading files
+ */
 class DownloadClient {
+    /** Indicates that the client couldn't download a given resource */
+    class FailedDownloadException(message: String, val statusCode: Int = 404, err: Throwable? = null) : RuntimeException(message, err)
+    /** Indicates that the integrity of a downloaded file couldn't be verified with the given checksum */
+    class FailedIntegrityCheckException(message: String, err: Throwable? = null) : RuntimeException(message, err)
+
+    /**
+     * Data describing a downloadable file
+     *
+     * A resource consists of a [location][url]] and a [checksum] and [algorithm] to verify the integrity of the downloaded file.
+     *
+     * @constructor Creates a new resource
+     */
     data class Resource(val url: URI, val checksum: String, val algorithm: String = "SHA-256") : Serializable {
         companion object {
-            const val serialVersionUID: Long = 0
+            const val serialVersionUID: Long = 1
         }
     }
 
+    /**
+     * Downloads a [resource], checks its integrity, and stores it to a [target] path
+     * @throws FailedDownloadException If the resource couldn't be downloaded
+     * @throws FailedIntegrityCheckException If the expected and actual checksum of the downloaded file don't match.
+     */
     @OptIn(ExperimentalStdlibApi::class)
     fun download(resource: Resource, target: Path) {
         val (url, checksum, algorithm) = resource
@@ -29,7 +48,7 @@ class DownloadClient {
             .GET()
             .build()
         val response = client.send(request, ofInputStream())
-        if (response.statusCode() != 200) throw GradleException("Downloading from $url failed with status code ${response.statusCode()}.")
+        if (response.statusCode() != 200) throw FailedDownloadException("Downloading from $url failed with status code ${response.statusCode()}.", 404)
         val md = MessageDigest.getInstance(algorithm)
         val input = DigestInputStream(response.body(), md)
         Files.createDirectories(target.parent)
@@ -38,7 +57,7 @@ class DownloadClient {
         val isValid = calculatedChecksum == checksum
         if (!isValid) {
             Files.deleteIfExists(target)
-            throw GradleException("Data integrity of downloaded file $url could not be verified, checksums do not match.")
+            throw FailedIntegrityCheckException("Data integrity of downloaded file $url could not be verified, checksums do not match.")
         }
     }
 }
