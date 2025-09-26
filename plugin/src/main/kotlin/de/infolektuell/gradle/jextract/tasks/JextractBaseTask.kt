@@ -8,7 +8,6 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
@@ -66,9 +65,9 @@ abstract class JextractBaseTask : DefaultTask() {
     }
 
     private fun findExecutable(): File {
-        return distribution.asFileTree.matching { spec ->
-            val fileName = if (DefaultNativePlatform.getCurrentOperatingSystem().isWindows) "jextract.bat" else "jextract"
-            spec.include("**/bin/$fileName")
-        }.singleFile
+        return  distribution.asFileTree
+            .matching { it.include("**/bin/jextract*") }
+            .filter { it.canExecute() }
+            .singleFile
     }
 }
