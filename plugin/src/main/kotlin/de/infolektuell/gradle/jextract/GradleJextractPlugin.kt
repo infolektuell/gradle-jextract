@@ -28,12 +28,13 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             .orElse(extension.generator.javaLanguageVersion.map { dataStore.filename(it.asInt()) })
             .flatMap { project.layout.buildDirectory.file("downloads/${it}") }
         val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
-            task.description = "Downloads Jextract"
+            task.description = "Downloads the correct Jextract distribution archive for a configured Java version and the build platform"
             task.resource.convention(resource)
             task.target.convention(target)
         }
 
         val extractTask = project.tasks.register("extract", ExtractTask::class.java) { task ->
+            task.description = "Extracts the downloaded Jextract archive as an installation for further usage"
             task.source.convention(downloadTask.flatMap { it.target })
             task.target.convention(project.layout.buildDirectory.dir("jextract"))
         }
@@ -45,13 +46,11 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             lib.generateSourceFiles.convention(extension.generateSourceFiles)
         }
 
-        project.tasks.withType(JextractBaseTask::class.java) { task ->
-            task.distribution.convention(extension.generator.local)
-        }
-
         val jextractGenerateTasks = mutableMapOf<String, TaskProvider<JextractGenerateTask>>()
         extension.libraries.all { lib ->
             val generateTaskProvider = project.tasks.register("${lib.name}JextractGenerateBindings", JextractGenerateTask::class.java) { task ->
+                task.description = "Uses Jextract to generate Java bindings for the ${lib.name} native library"
+                task.distribution.set(extension.generator.local)
                 task.header.set(lib.header)
                 task.includes.set(lib.includes)
                 task.definedMacros.set(lib.definedMacros)
@@ -73,6 +72,8 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             }
             jextractGenerateTasks[lib.name] = generateTaskProvider
             project.tasks.register("${lib.name}JextractDumpIncludes", JextractDumpIncludesTask::class.java) { task ->
+                task.description = "Uses Jextract to dump all includes of the ${lib.name} native library into an arg file"
+                task.distribution.set(extension.generator.local)
                 task.header.set(lib.header)
                 task.includes.set(lib.includes)
                 task.argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
@@ -92,18 +93,6 @@ abstract class GradleJextractPlugin : Plugin<Project> {
                     }
                 }
             }
-        }
-
-        project.tasks.register("jextract") { task ->
-            task.group = "Build"
-            task.description = "Generates bindings for all configured libraries"
-            task.dependsOn(project.tasks.withType(JextractGenerateTask::class.java))
-        }
-
-        project.tasks.register("dumpIncludes") { task ->
-            task.group = "documentation"
-            task.description = "Generates a dump of all symbols encountered in a header file"
-            task.dependsOn(project.tasks.withType(JextractDumpIncludesTask::class.java))
         }
     }
 
