@@ -40,7 +40,6 @@ abstract class JextractBaseTask : DefaultTask() {
     protected abstract val jextractStore: Property<JextractStore>
 
     /** Configures which Jextract installation should be used */
-    @get:Input
     @get:Nested
     abstract val installation: Property<JextractInstallation>
 
