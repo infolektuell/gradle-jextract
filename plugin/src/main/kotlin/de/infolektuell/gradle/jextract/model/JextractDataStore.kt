@@ -14,21 +14,27 @@ class JextractDataStore {
     private val defaultDistributions: Properties by lazy { loadDefaultDistributions() }
     private val arch: String by lazy { currentArch() }
     private val os: String by lazy { currentOs() }
+    val executableFilename: String by lazy { if (os == "windows") "jextract.bat" else "jextract" }
+
+    /** Returns the matching Jextract version for a given [Java major version][javaVersion] */
+    @Suppress("SameParameterValue")
+    fun version(javaVersion: Int, lower: Int = 19, upper: Int = 22) = max(min(javaVersion, upper), lower)
 
     /** Returns a downloadable resource for the specified Jextract [version],  using the data from an optional [file], falls back to the official distribution data */
     fun resource(version: Int, file: Path? = null) = resource(version, loadDistributions(file))
+
     /** Returns an archive filename for the specified Jextract [version],  using the data from an optional [file], falls back to the official distribution data */
     fun filename(version: Int, file: Path? = null) = filename(version, loadDistributions(file))
 
-    private fun resource(version: Int, data: Properties): Resource {
-        val version = clamp(version, 19, 22)
+    private fun resource(javaVersion: Int, data: Properties): Resource {
+        val version = version(javaVersion)
         val url: String = data.getProperty("jextract.$version.$os.$arch.url") ?: data.getProperty("jextract.$version.$os.x64.url")
         val checksum: String = data.getProperty("jextract.$version.$os.$arch.sha-256") ?: data.getProperty("jextract.$version.$os.x64.sha-256")
         return Resource(URI.create(url), checksum)
     }
 
-    private fun filename(version: Int, data: Properties): String {
-        val version = clamp(version, 19, 22)
+    private fun filename(javaVersion: Int, data: Properties): String {
+        val version = version(javaVersion)
         val url: String = data.getProperty("jextract.$version.$os.$arch.url") ?: data.getProperty("jextract.$version.$os.x64.url")
         return url.replaceBeforeLast('/', "").trim('/')
     }
@@ -50,8 +56,6 @@ class JextractDataStore {
         }
     }
 
-    @Suppress("SameParameterValue")
-    private fun clamp(value: Int, lower: Int, upper: Int) = max(min(value, upper), lower)
     private fun currentArch(): String {
         return System.getProperty("os.arch")
     }
