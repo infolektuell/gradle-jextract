@@ -7,8 +7,8 @@ sidebar:
 
 ## Use a Local Installation
 
-You can explicitly set the path to a local Jextract installation in the plugin's DSL.
-In this case, the plugin will ignore any download-related configuration.
+The plugin can also use a local Jextract installation.
+Setting the installation path in the DSL activates this alternative mode.
 
 :::caution
 This method meets an offline-requirement, but your build becomes dependent of your local setup.
@@ -18,17 +18,13 @@ This method meets an offline-requirement, but your build becomes dependent of yo
 <TabItem label="Kotlin">
 ```kts "local"
 // build.gradle.kts
-jextract.generator {
-    local = layout.projectDirectory.dir("/usr/local/opt/jextract-22/")
-}
+jextract.local(layout.projectDirectory.dir("/usr/local/opt/jextract-22/"))
 ```
 </TabItem>
 <TabItem label="Groovy">
 ```groovy "local"
 // build.gradle
-jextract.generator {
-    local = layout.projectDirectory.dir "/usr/local/opt/jextract-22/"
-}
+jextract.local(layout.projectDirectory.dir "/usr/local/opt/jextract-22/")
 ```
 </TabItem>
 </Tabs>

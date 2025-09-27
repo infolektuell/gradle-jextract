@@ -5,13 +5,13 @@ sidebar:
   order: 2
 ---
 
-The DSL extension offers a `version` property that can be configured with a `JavaLanguageVersion` to define which version should be used.
-The plugin downloads and installs Jextract from the [official release page][jextract].
-It selects the best Jextract distribution for the configured version and current native platform.
+The DSL extension offers a `download` method to configure a `JavaLanguageVersion`.
+The plugin infers the matching Jextract version from that defined Java version.
+It downloads and installs Jextract from the [official release page][jextract] for the current build platform.
 
 ## Use Java toolchain (highly recommended)
 
-By convention, the plugin tries to infer the version from the configured Java toolchain.
+By convention, the plugin tries to get the Java version from the configured Java toolchain.
 This is by far the most convenient and reliable method for most projects.
 
 :::caution[modern JDK]
@@ -51,7 +51,7 @@ This will choose Jextract 22, because this is still the latest release.
 
 ## Use another version
 
-Setting a version in the DSL will override the convention, and the Java toolchain will be ignored.
+Setting an explicit version in the DSL will override the convention, and the Java toolchain will be ignored.
 This might make sense if no Java plugin is used in the build, or if the version should diverge from the target JVM.
 
 :::caution[Compatibility]
@@ -63,9 +63,7 @@ Please ensure that Jextract and the JVM target of your code are compatible. The 
 
 ```kts "javaLanguageVersion"
 // build.gradle.kts
-jextract.generator {
-    javaLanguageVersion = JavaLanguageVersion.of(21)
-}
+jextract.download(JavaLanguageVersion.of(21))
 ```
 
 </TabItem>
@@ -73,9 +71,7 @@ jextract.generator {
 
 ```groovy "javaLanguageVersion"
 // build.gradle
-jextract.generator {
-    javaLanguageVersion = JavaLanguageVersion.of(21)
-}
+jextract.download(JavaLanguageVersion.of(21))
 ```
 
 </TabItem>

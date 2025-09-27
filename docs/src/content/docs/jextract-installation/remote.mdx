@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-The selected Jextract version can be downloaded from custom locations.
+Jextract can be downloaded from custom locations.
 These must be stored in a configuration file located anywhere in the project.
 
 :::tip
@@ -66,14 +66,14 @@ Put it somewhere in your project and check it into source control.
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 ```kts "distributions"
-jextract.generator {
+jextract {
     distributions = rootProject.layout.file("company-jextract.properties")
 }
 ```
 </TabItem>
 <TabItem label="Groovy">
 ```groovy "distributions"
-jextract.generator {
+jextract {
     distributions = rootProject.layout.file "company-jextract.properties"
 }
 ```
