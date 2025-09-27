@@ -36,7 +36,7 @@ So importing and configuring tasks directly is not necessary.
 
 ### Gradle
 
-The plugin tries to stay up-to-date with Gradle's development and benefits from their performance optimization.
+The plugin is committed to follow Gradle's [best practices].
 
 - Compatible with [Configuration Cache].
 - Tasks are [cacheable][build cache].
@@ -45,3 +45,4 @@ The plugin tries to stay up-to-date with Gradle's development and benefits from 
 [ffm]: https://openjdk.org/jeps/454
 [configuration cache]: https://docs.gradle.org/current/userguide/configuration_cache.html
 [build cache]: https://docs.gradle.org/current/userguide/build_cache.html
+[best practices]: https://docs.gradle.org/current/userguide/best_practices.html

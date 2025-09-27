@@ -156,10 +156,13 @@ This will result in the following output file structure:
 
 <FileTree>
 
+- .gradle
+  - **jextract** Cache for Jextract downloads and installations
+      - downloads
+      - installation
 - lib
   - build
     - ...
-    - **download/** the downloaded Jextract distribution archives
     - generated
       - sources
         - jextract
@@ -168,7 +171,6 @@ This will result in the following output file structure:
               - example
                 - greeting
                   - **Greeting.java** the bindings to import and use in Java code
-    - **jextract** the extracted Jextract installations
     - ...
   - build.gradle.kts
 - settings.gradle.kts
