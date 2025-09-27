@@ -18,7 +18,7 @@ abstract class JextractDumpIncludesTask : JextractBaseTask() {
         val jextract = jextractStore.get()
         when (val config = installation.get()) {
             is RemoteJextractInstallation -> {
-                jextract.exec(config.javaLanguageVersion.get(), config.distributions.orNull?.asFile?.toPath()) { spec ->
+                jextract.exec(config.javaLanguageVersion.get()) { spec ->
                     includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
                     spec.args("--dump-includes", argFile.get().asFile.absolutePath)
                     spec.args(header.get().asFile.absolutePath)

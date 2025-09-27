@@ -60,7 +60,7 @@ abstract class JextractGenerateTask : JextractBaseTask() {
         when (val config = installation.get()) {
             is RemoteJextractInstallation -> {
                 val version = jextract.version(config.javaLanguageVersion.get())
-                jextract.exec(config.javaLanguageVersion.get(), config.distributions.orNull?.asFile?.toPath()) { spec ->
+                jextract.exec(config.javaLanguageVersion.get()) { spec ->
                     commonExec(version, spec)
                 }
             }

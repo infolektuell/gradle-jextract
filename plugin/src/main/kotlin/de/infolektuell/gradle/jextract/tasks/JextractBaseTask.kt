@@ -21,10 +21,6 @@ abstract class JextractBaseTask : DefaultTask() {
         /** The [Java version][javaLanguageVersion] the code should be generated for */
         @get:Input
         val javaLanguageVersion: Property<JavaLanguageVersion>
-        /** A [properties][java.util.Properties] file containing the remote locations where to download the Jextract distributions */
-        @get:Optional
-        @get:InputFile
-        val distributions: RegularFileProperty
     }
 
     /** Configuration of a local Jextract installation */

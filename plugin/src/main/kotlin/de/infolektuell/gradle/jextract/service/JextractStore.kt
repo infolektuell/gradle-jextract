@@ -6,6 +6,7 @@ import org.gradle.api.Action
 import org.gradle.api.file.ArchiveOperations
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileSystemOperations
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.jvm.toolchain.JavaLanguageVersion
@@ -19,6 +20,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.PathMatcher
 import javax.inject.Inject
+import kotlin.io.path.absolute
 
 abstract class JextractStore @Inject constructor(
     private val fileSystem: FileSystemOperations,
@@ -28,6 +30,7 @@ abstract class JextractStore @Inject constructor(
 
     interface Parameters : BuildServiceParameters {
         val cacheDir: DirectoryProperty
+        val distributions: RegularFileProperty
     }
 
     private val dataStore = JextractDataStore()
@@ -47,8 +50,8 @@ abstract class JextractStore @Inject constructor(
      *
      * This is intended to be used by tasks.
      */
-    fun exec (javaLanguageVersion: JavaLanguageVersion, distributions: Path? = null, action: Action<in ExecSpec>): ExecResult{
-        val installation = install(javaLanguageVersion.asInt(), distributions)
+    fun exec (javaLanguageVersion: JavaLanguageVersion, action: Action<in ExecSpec>): ExecResult{
+        val installation = install(javaLanguageVersion.asInt())
         return exec(installation, action)
     }
 
@@ -58,9 +61,9 @@ abstract class JextractStore @Inject constructor(
      * This is intended to be used by tasks.
      */
     fun exec (installation: Path, action: Action<in ExecSpec>): ExecResult {
-        val executable = executablePaths.computeIfAbsent(installation) { k -> findExecutable(k) }
+        val executable = executablePaths.computeIfAbsent(installation) { k -> findExecutable(k) ?: throw RuntimeException("No valid Jextract installation") }
         return execOperations.exec { spec ->
-            spec.executable(executable.toFile())
+            spec.executable(executable.absolute())
             action.execute(spec)
         }
     }
@@ -88,8 +91,9 @@ abstract class JextractStore @Inject constructor(
         }
     }
 
-    private fun download(javaLanguageVersion: Int, distributions: Path?): Path {
-        val resource = dataStore.resource(javaLanguageVersion, distributions)
+    private fun download(javaLanguageVersion: Int): Path {
+        val distributionsPath = parameters.distributions.orNull?.asFile?.toPath()?.takeIf { Files.exists(it) }
+        val resource = dataStore.resource(javaLanguageVersion, distributionsPath)
         val target = downloadsPaths.computeIfAbsent(javaLanguageVersion) { k -> downloadsDir.get().asFile.toPath().resolve(dataStore.filename(k)) }
         if (!Files.exists(target)) {
             try {
@@ -102,8 +106,8 @@ abstract class JextractStore @Inject constructor(
             return target
     }
 
-    private fun install (javaLanguageVersion: Int, distributions: Path?): Path {
-        val source = download(javaLanguageVersion, distributions)
+    private fun install (javaLanguageVersion: Int): Path {
+        val source = download(javaLanguageVersion)
         val target = installationsPaths.computeIfAbsent(javaLanguageVersion) { k -> installDir.get().asFile.toPath().resolve("$k") }
         if (!Files.exists(target)) {
             fileSystem.copy { spec ->
@@ -114,14 +118,15 @@ abstract class JextractStore @Inject constructor(
         return target
     }
 
-    fun findExecutable(path: Path): Path {
+    fun findExecutable(path: Path): Path? {
         val glob = "glob:**/bin/${dataStore.executableFilename}"
         val pathMatcher: PathMatcher = FileSystems.getDefault().getPathMatcher(glob)
-        val match = Files.walk(path)
+        return Files.walk(path)
             .filter(pathMatcher::matches)
             .filter { Files.isExecutable(it) && Files.isRegularFile(it) }
             .findFirst()
-        return if (match.isPresent) { match.get() } else  { throw RuntimeException("Executable not found") }
+            .takeIf { it.isPresent }
+            ?.get()
     }
 
     companion object {

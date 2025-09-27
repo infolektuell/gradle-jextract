@@ -16,11 +16,6 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        project.gradle.sharedServices.registerIfAbsent(JextractStore.SERVICE_NAME, JextractStore::class.java) { s ->
-            s.maxParallelUsages.convention(1)
-            s.parameters.cacheDir.convention(project.rootProject.layout.projectDirectory.dir(".gradle/jextract"))
-        }
-
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
         val defaultInstallation = project.objects.newInstance(JextractBaseTask.RemoteJextractInstallation::class.java).apply {
             javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
@@ -28,6 +23,14 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         extension.installation.convention(defaultInstallation)
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         extension.generateSourceFiles.convention(false)
+
+        project.gradle.sharedServices.registerIfAbsent(JextractStore.SERVICE_NAME, JextractStore::class.java) { s ->
+            s.maxParallelUsages.convention(1)
+            s.parameters { p ->
+                p.cacheDir.convention(project.rootProject.layout.projectDirectory.dir(".gradle/jextract"))
+                p.distributions.convention(extension.distributions)
+            }
+        }
 
         extension.libraries.configureEach { lib ->
             lib.useSystemLoadLibrary.convention(false)
