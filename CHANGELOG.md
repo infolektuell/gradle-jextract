@@ -10,11 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Managing Jextract installations has moved to a shared build service. Running `clean` doesn't destroy the downloads and installations anymore, because they are no build artefacts or task outputs. Users will encounter less frequent downloads.
 - Custom download locations for Jextract distributions can be configured in the DSL extension. Configuring the download task isn't necessary anymore.
 
 ### Changed
 
-- If you configure the plugin using its DSL extension in your build script, nothing will change for you.
+- The DSL to configure the Java version for the plugin has slightly changed.
 - The Jextract tasks have been reimplemented without the worker API. If you configure the tasks directly in your build, this version will be a breaking change for you. Please try to configure the plugin via DSL, or migrate to the new tasks.
 
 ### Fixed
@@ -22,13 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Task dependencies are declared properly, so Kotlin and similar tasks run after Jextract.
 - Configuration cache doesn't fail anymore with “executable not found” error.
 
-### Deprecated
-
-- In the Jextract tasks, the version input property is not used anymore because the version is read from command line.
-
 ### Removed
 
-- Tasks that make use of the worker API have been removed.
+- Tasks that make use of the worker API have been removed and replaced with the new implementations.
+- Tasks for downloading and extracting Jextract have been removed and replaced with the shared build service.
 
 ## [0.5.0] - 2025-05-18
 [0.5.0]: https://github.com/infolektuell/gradle-jextract/compare/v0.4.0...v0.5.0
