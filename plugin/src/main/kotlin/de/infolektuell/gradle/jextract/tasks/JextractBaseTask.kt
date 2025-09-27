@@ -1,32 +1,48 @@
 package de.infolektuell.gradle.jextract.tasks
 
-import org.gradle.api.Action
+import de.infolektuell.gradle.jextract.service.JextractStore
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.*
-import org.gradle.process.ExecOperations
-import org.gradle.process.ExecResult
-import org.gradle.process.ExecSpec
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.nio.charset.Charset
-import javax.inject.Inject
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 
-/** Offers Jextract-related implementation for inheriting tasks, does nothing itself */
+/** Offers common properties for Jextract-related tasks, does nothing itself */
 abstract class JextractBaseTask : DefaultTask() {
-    private var executable: String? = null
+    /** Configuration of a Jextract installation that can be used by this task */
+    sealed interface JextractInstallation
 
-    @get:Inject
-    protected abstract val execOperations: ExecOperations
+    /** Configuration of a downloadable Jextract version */
+    interface RemoteJextractInstallation : JextractInstallation {
+        /** The [Java version][javaLanguageVersion] the code should be generated for */
+        @get:Input
+        val javaLanguageVersion: Property<JavaLanguageVersion>
+        /** A [properties][java.util.Properties] file containing the remote locations where to download the Jextract distributions */
+        @get:Optional
+        @get:InputFile
+        val distributions: RegularFileProperty
+    }
 
-    /** The installation directory where Jextract can be found */
-    @get:InputDirectory
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val distribution: DirectoryProperty
+    /** Configuration of a local Jextract installation */
+    interface LocalJextractInstallation : JextractInstallation {
+        /** A directory containing a JExtract installation */
+        @get:InputDirectory
+        @get:PathSensitive(PathSensitivity.RELATIVE)
+        val location: DirectoryProperty
+    }
+
+    /** A build service to run Jextract commands */
+    @get:ServiceReference(JextractStore.SERVICE_NAME)
+    protected abstract val jextractStore: Property<JextractStore>
+
+    /** Configures which Jextract installation should be used */
+    @get:Input
+    @get:Nested
+    abstract val installation: Property<JextractInstallation>
 
     /** All directories to be added to the end of the list of include search paths */
     @get:InputFiles
@@ -37,42 +53,4 @@ abstract class JextractBaseTask : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val header: RegularFileProperty
-
-    /**
-     * Executes the Jextract command line with a configurable [action]
-     *
-     * This is used by inheriting tasks to run Jextract commands with the correct executable.
-     */
-    protected fun execute(action: Action<in ExecSpec>): ExecResult {
-        if (executable == null) {
-            executable = findExecutable().absolutePath
-        }
-        return execOperations.exec { spec ->
-            spec.executable(executable)
-            action.execute(spec)
-        }
-    }
-
-    protected fun findVersion(): Int? {
-        return ByteArrayOutputStream().use { s ->
-            execute { spec ->
-                spec.args("--version")
-                spec.errorOutput = s
-            }
-            s.toString(Charset.defaultCharset())
-                .trim()
-                .lines()
-                .first()
-                .split(" ")
-                .last()
-                .toIntOrNull()
-        }
-    }
-
-    private fun findExecutable(): File {
-        return  distribution.asFileTree
-            .matching { it.include("**/bin/jextract*") }
-            .filter { it.canExecute() }
-            .singleFile
-    }
 }

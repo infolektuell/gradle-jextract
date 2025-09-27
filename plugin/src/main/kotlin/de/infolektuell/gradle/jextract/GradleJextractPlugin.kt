@@ -2,8 +2,10 @@ package de.infolektuell.gradle.jextract
 
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension
-import de.infolektuell.gradle.jextract.model.JextractDataStore
-import de.infolektuell.gradle.jextract.tasks.*
+import de.infolektuell.gradle.jextract.service.JextractStore
+import de.infolektuell.gradle.jextract.tasks.JextractBaseTask
+import de.infolektuell.gradle.jextract.tasks.JextractDumpIncludesTask
+import de.infolektuell.gradle.jextract.tasks.JextractGenerateTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
@@ -14,31 +16,18 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
+        project.gradle.sharedServices.registerIfAbsent(JextractStore.SERVICE_NAME, JextractStore::class.java) { s ->
+            s.maxParallelUsages.convention(1)
+            s.parameters.cacheDir.convention(project.rootProject.layout.projectDirectory.dir(".gradle/jextract"))
+        }
+
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
-        extension.generator.javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
+        val defaultInstallation = project.objects.newInstance(JextractBaseTask.RemoteJextractInstallation::class.java).apply {
+            javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
+        }
+        extension.installation.convention(defaultInstallation)
         extension.output.convention(project.layout.buildDirectory.dir("generated/sources/jextract"))
         extension.generateSourceFiles.convention(false)
-
-        val dataStore = JextractDataStore()
-        val resource = extension.generator.distributions
-            .zip(extension.generator.javaLanguageVersion) { p, v -> dataStore.resource(v.asInt(), p.asFile.toPath()) }
-            .orElse(extension.generator.javaLanguageVersion.map { dataStore.resource(it.asInt()) })
-        val target = extension.generator.distributions
-            .zip(extension.generator.javaLanguageVersion) { p, v -> dataStore.filename(v.asInt(), p.asFile.toPath()) }
-            .orElse(extension.generator.javaLanguageVersion.map { dataStore.filename(it.asInt()) })
-            .flatMap { project.layout.buildDirectory.file("downloads/${it}") }
-        val downloadTask = project.tasks.register("downloadJextract", DownloadTask::class.java) { task ->
-            task.description = "Downloads the correct Jextract distribution archive for a configured Java version and the build platform"
-            task.resource.convention(resource)
-            task.target.convention(target)
-        }
-
-        val extractTask = project.tasks.register("extract", ExtractTask::class.java) { task ->
-            task.description = "Extracts the downloaded Jextract archive as an installation for further usage"
-            task.source.convention(downloadTask.flatMap { it.target })
-            task.target.convention(project.layout.buildDirectory.dir("jextract"))
-        }
-        extension.generator.local.convention(extractTask.flatMap { it.target })
 
         extension.libraries.configureEach { lib ->
             lib.useSystemLoadLibrary.convention(false)
@@ -50,7 +39,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         extension.libraries.all { lib ->
             val generateTaskProvider = project.tasks.register("${lib.name}JextractGenerateBindings", JextractGenerateTask::class.java) { task ->
                 task.description = "Uses Jextract to generate Java bindings for the ${lib.name} native library"
-                task.distribution.set(extension.generator.local)
+                task.installation.set(extension.installation)
                 task.header.set(lib.header)
                 task.includes.set(lib.includes)
                 task.definedMacros.set(lib.definedMacros)
@@ -73,7 +62,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
             jextractGenerateTasks[lib.name] = generateTaskProvider
             project.tasks.register("${lib.name}JextractDumpIncludes", JextractDumpIncludesTask::class.java) { task ->
                 task.description = "Uses Jextract to dump all includes of the ${lib.name} native library into an arg file"
-                task.distribution.set(extension.generator.local)
+                task.installation.set(extension.installation)
                 task.header.set(lib.header)
                 task.includes.set(lib.includes)
                 task.argFile.set(project.layout.buildDirectory.file("reports/jextract/${lib.name}-includes.txt"))
@@ -81,7 +70,7 @@ abstract class GradleJextractPlugin : Plugin<Project> {
         }
 
         project.pluginManager.withPlugin("java") {
-            project.extensions.findByType(JavaPluginExtension::class.java)?.let { extension.generator.javaLanguageVersion.convention(it.toolchain.languageVersion) }
+            project.extensions.findByType(JavaPluginExtension::class.java)?.let { defaultInstallation.javaLanguageVersion.convention(it.toolchain.languageVersion) }
             project.extensions.findByType(SourceSetContainer::class.java)?.all { s ->
                 val sourceSetExtension = s.extensions.create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension::class.java, project.objects)
                 sourceSetExtension.libraries.all { lib ->

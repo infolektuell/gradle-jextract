@@ -2,17 +2,16 @@ package de.infolektuell.gradle.jextract.tasks
 
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import javax.inject.Inject
+import org.gradle.process.ExecSpec
 
 /** Uses Jextract to generate Java bindings for a given native library */
 @CacheableTask
-abstract class JextractGenerateTask @Inject constructor(private val fileSystemOperations: FileSystemOperations) : JextractBaseTask() {
+abstract class JextractGenerateTask : JextractBaseTask() {
     /** All macros defined for this library, conforming to the `<name>=<value>` pattern or `<name>` where `<value>` will be 1 */
     @get:Input
     abstract val definedMacros: ListProperty<String>
@@ -57,32 +56,45 @@ abstract class JextractGenerateTask @Inject constructor(private val fileSystemOp
 
     @TaskAction
     protected fun generateBindings() {
-        val version = findVersion()
-            ?: throw GradleException("Couldn't recognize the version of the given Jextract distribution.")
-        fileSystemOperations.delete { spec ->
-            spec.delete(sources)
-        }
-        execute { spec ->
-            includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
-            spec.args("--output", sources.get().asFile.absolutePath)
-            targetPackage.orNull?.let { spec.args("-t", it) }
-            headerClassName.orNull?.let { spec.args("--header-class-name", it) }
-            definedMacros.get().forEach { spec.args("-D", it) }
-            whitelist.get().forEach { (k, v) ->
-                if (v.isEmpty()) return@forEach
-                v.forEach { spec.args("--include-$k", it) }
-            }
-            libraries.get().forEach { spec.args("-l", it) }
-            when(version) {
-                19, 20, 21 -> {
-                    if (generateSourceFiles.get()) spec.args("--source")
-                }
-                22 -> {
-                    if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+        val jextract = jextractStore.get()
+        when (val config = installation.get()) {
+            is RemoteJextractInstallation -> {
+                val version = jextract.version(config.javaLanguageVersion.get())
+                jextract.exec(config.javaLanguageVersion.get(), config.distributions.orNull?.asFile?.toPath()) { spec ->
+                    commonExec(version, spec)
                 }
             }
-            argFile.orNull?.let { spec.args("@$it") }
-            spec.args(header.get())
+            is LocalJextractInstallation -> {
+                val installationPath = config.location.asFile.get().toPath()
+                val version = jextract.registerIfAbsent(installationPath)
+                    ?: throw GradleException("Couldn't recognize the version of the given Jextract distribution.")
+                jextract.exec(installationPath) { spec ->
+                    commonExec(version, spec)
+                }
+            }
         }
+    }
+
+    private fun commonExec(version: Int, spec: ExecSpec) {
+        includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
+        spec.args("--output", sources.get().asFile.absolutePath)
+        targetPackage.orNull?.let { spec.args("-t", it) }
+        headerClassName.orNull?.let { spec.args("--header-class-name", it) }
+        definedMacros.get().forEach { spec.args("-D", it) }
+        whitelist.get().forEach { (k, v) ->
+            if (v.isEmpty()) return@forEach
+            v.forEach { spec.args("--include-$k", it) }
+        }
+        libraries.get().forEach { spec.args("-l", it) }
+        when(version) {
+            19, 20, 21 -> {
+                if (generateSourceFiles.get()) spec.args("--source")
+            }
+            22 -> {
+                if (useSystemLoadLibrary.get()) spec.args("--use-system-load-library")
+            }
+        }
+        argFile.orNull?.let { spec.args("@$it") }
+        spec.args(header.get())
     }
 }
