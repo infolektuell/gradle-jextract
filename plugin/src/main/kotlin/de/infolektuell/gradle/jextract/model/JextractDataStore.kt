@@ -10,11 +10,45 @@ import kotlin.math.min
 
 /** A service class to query data for downloading Jextract, depending on the current platform and a given target JVM version */
 class JextractDataStore {
+    enum class OS {
+        WINDOWS, MAC, LINUX;
+        override fun toString(): String {
+            return when(this) {
+                WINDOWS -> "windows"
+                MAC -> "mac"
+                LINUX -> "linux"
+            }
+        }
+        companion object {
+            fun create(value: String): OS {
+                return if (value.contains("Windows")) {
+                    WINDOWS
+                } else if (value.contains("Mac")) {
+                    MAC
+                } else {
+                    LINUX
+                }
+            }
+        }
+    }
+    enum class Architecture {
+        AARCH64, X64;
+        override fun toString() = name.lowercase()
+        companion object {
+            fun create(value: String): Architecture {
+                return when (value.lowercase()) {
+                    "aarch64" -> AARCH64
+                    else -> X64
+                }
+            }
+        }
+    }
+
     private val distributionCache = mutableMapOf<Path, Properties>()
     private val defaultDistributions: Properties by lazy { loadDefaultDistributions() }
-    private val arch: String by lazy { currentArch() }
-    private val os: String by lazy { currentOs() }
-    val executableFilename: String by lazy { if (os == "windows") "jextract.bat" else "jextract" }
+    private val arch: Architecture by lazy { Architecture.create(System.getProperty("os.arch")) }
+    private val os: OS by lazy { OS.create(System.getProperty("os.name")) }
+    val executableFilename: String by lazy { if (os == OS.WINDOWS) "jextract.bat" else "jextract" }
 
     /** Returns the matching Jextract version for a given [Java major version][javaVersion] */
     @Suppress("SameParameterValue")
@@ -53,18 +87,6 @@ class JextractDataStore {
             object {}.javaClass.getResourceAsStream("/jextract.properties")?.use{
                 load(it)
             }
-        }
-    }
-
-    private fun currentArch(): String {
-        return System.getProperty("os.arch")
-    }
-    private fun currentOs(): String {
-        return when(System.getProperty("os.name")) {
-            "Windows" -> "windows"
-            "Mac OS X" -> "mac"
-            "Linux" -> "linux"
-            else -> "linux"
         }
     }
 }
