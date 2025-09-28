@@ -6,16 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0-beta-1...HEAD
+
+## [1.0.0-beta-1] - 2025-09-28
+[1.0.0-beta-1]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...v1.0.0-beta-1
 
 ### Added
 
-- Managing Jextract installations has moved to a shared build service. Running `clean` doesn't destroy the downloads and installations anymore, because they are no build artefacts or task outputs. Users will encounter less frequent downloads.
+- Managing Jextract installations has moved to a shared build service. Running `clean` doesn't destroy the downloads and installations anymore, because they are no build artefacts or task outputs. This reduces Jextract-related network requests.
 - Custom download locations for Jextract distributions can be configured in the DSL extension. Configuring the download task isn't necessary anymore.
 
 ### Changed
 
-- The DSL to configure the Java version for the plugin has slightly changed.
+- The DSL to configure the Java version for the plugin has changed. Builds that let the plugin use the toolchain are not affected.
 - The Jextract tasks have been reimplemented without the worker API. If you configure the tasks directly in your build, this version will be a breaking change for you. Please try to configure the plugin via DSL, or migrate to the new tasks.
 
 ### Fixed
