@@ -17,4 +17,4 @@ Visit GitHub Releases or the [changelog file](CHANGELOG.md) for releases and cha
 [MIT License](LICENSE.txt)
 
 [jextract]: https://jdk.java.net/jextract/
-[documentation website]: https://infolektuell.github.io/gradle-extract
+[documentation website]: https://infolektuell.github.io/gradle-jextract/
