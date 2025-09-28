@@ -1,6 +1,5 @@
 package de.infolektuell.gradle.jextract.tasks
 
-import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
@@ -66,8 +65,7 @@ abstract class JextractGenerateTask : JextractBaseTask() {
             }
             is LocalJextractInstallation -> {
                 val installationPath = config.location.asFile.get().toPath()
-                val version = jextract.registerIfAbsent(installationPath)
-                    ?: throw GradleException("Couldn't recognize the version of the given Jextract distribution.")
+                val version = jextract.version(installationPath)
                 jextract.exec(installationPath) { spec ->
                     commonExec(version, spec)
                 }

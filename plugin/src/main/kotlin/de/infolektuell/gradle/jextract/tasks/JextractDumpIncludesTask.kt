@@ -1,6 +1,5 @@
 package de.infolektuell.gradle.jextract.tasks
 
-import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.OutputFile
@@ -26,8 +25,6 @@ abstract class JextractDumpIncludesTask : JextractBaseTask() {
             }
             is LocalJextractInstallation -> {
                 val installationPath = config.location.asFile.get().toPath()
-                jextract.registerIfAbsent(installationPath)
-                    ?: throw GradleException("Couldn't recognize the version of the given Jextract distribution.")
                 jextract.exec(installationPath) { spec ->
                     includes.get().forEach { spec.args("-I", it.asFile.absolutePath) }
                     spec.args("--dump-includes", argFile.get().asFile.absolutePath)
