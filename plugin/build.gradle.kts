@@ -9,7 +9,7 @@ val releaseNotes = releaseNotes()
 version = releaseVersion.get()
 
 gradlePlugin {
-    website = "https://github.com/infolektuell/gradle-jextract"
+    website = "https://infolektuell.github.io/gradle-jextract/"
     vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
     plugins.create("jextractPlugin") {
         id = "de.infolektuell.jextract"
