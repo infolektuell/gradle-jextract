@@ -21,9 +21,9 @@ class JextractDataStore {
         }
         companion object {
             fun create(value: String): OS {
-                return if (value.contains("Windows")) {
+                return if (value.contains("Windows", true)) {
                     WINDOWS
-                } else if (value.contains("Mac")) {
+                } else if (value.contains("Mac", true)) {
                     MAC
                 } else {
                     LINUX
@@ -36,9 +36,10 @@ class JextractDataStore {
         override fun toString() = name.lowercase()
         companion object {
             fun create(value: String): Architecture {
-                return when (value.lowercase()) {
-                    "aarch64" -> AARCH64
-                    else -> X64
+                return if (value.contains("aarch64", true)) {
+                    AARCH64
+                } else {
+                    X64
                 }
             }
         }
