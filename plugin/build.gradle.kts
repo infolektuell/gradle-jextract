@@ -29,6 +29,8 @@ signing {
 }
 
 java {
+    withSourcesJar()
+    withJavadocJar()
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
