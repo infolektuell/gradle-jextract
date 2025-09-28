@@ -26,9 +26,11 @@ jextract.libraries {
     val cursing by registering {
         // library config
     }
-    sourceSets {
-        main.jextract.libraries.addLater(greeting)
-        test.jextract.libraries.addLater(cursing)
+    sourceSets.named("main") {
+        jextract.libraries.addLater(greeting)
+    }
+    sourceSets.named("test") {
+        jextract.libraries.addLater(cursing)
     }
 }
 ```
@@ -45,9 +47,11 @@ jextract.libraries {
     def cursing = register('cursing') {
         // library config
     }
-    sourceSets { // coming from Java plugin
-        main.jextract.libraries.addLater(greeting)
-        test.jextract.libraries.addLater(cursing)
+    sourceSets.named("main") {
+        jextract.libraries.addLater(greeting)
+    }
+    sourceSets.named("test") {
+        jextract.libraries.addLater(cursing)
     }
 }
 ```

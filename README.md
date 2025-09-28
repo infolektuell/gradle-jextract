@@ -191,8 +191,7 @@ Jextract library definitions can be added to this extension and will be included
 jextract.libraries {
         val bass by registering {}
         sourceSets {
-            // For KMP you want something like jvmMain
-            main {
+            named("main") { // jvmMain for KMP
                 jextract.libraries.addLater(bass)
             }
         }

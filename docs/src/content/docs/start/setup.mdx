@@ -107,7 +107,9 @@ jextract.libraries {
         useSystemLoadLibrary = true
         libraries.add("greeting")
     }
-    sourceSets.main.jextract.libraries.addLater(greeting)
+    sourceSets.named("main") {
+        jextract.libraries.addLater(greeting)
+    }
 }
 ```
 
@@ -124,7 +126,9 @@ jextract.libraries {
         useSystemLoadLibrary = true
         libraries.add("greeting")
     }
-    sourceSets.main.jextract.libraries.addLater(greeting)
+    sourceSets.named("main") {
+        jextract.libraries.addLater(greeting)
+    }
 }
 ```
 
@@ -158,8 +162,8 @@ This will result in the following output file structure:
 
 - .gradle
   - **jextract** Cache for Jextract downloads and installations
-      - downloads
-      - installation
+    - downloads
+    - installation
 - lib
   - build
     - ...

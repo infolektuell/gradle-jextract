@@ -21,14 +21,14 @@ The bindings are added as follows:
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts {7}
+```kts {6-8}
 // build.gradle.kts
 jextract.libraries {
     val greeting by registering {
         // library config
     }
-    sourceSets {
-        jvmMain.jextract.libraries.addLater(greeting)
+    sourceSets.named("jvmMain") {
+        jextract.libraries.addLater(greeting)
     }
 }
 ```
@@ -36,14 +36,14 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy {7}
+```groovy {6-8}
 // build.gradle.kts
 jextract.libraries {
     def greeting = register('greeting') {
         // library config
     }
-    sourceSets {
-        jvmMain.jextract.libraries.addLater(greeting)
+    sourceSets.named("jvmMain") {
+        jextract.libraries.addLater(greeting)
     }
 }
 ```

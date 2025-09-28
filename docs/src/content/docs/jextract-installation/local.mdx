@@ -16,15 +16,19 @@ This method meets an offline-requirement, but your build becomes dependent of yo
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
-```kts "local"
+
+```kts
 // build.gradle.kts
 jextract.local(layout.projectDirectory.dir("/usr/local/opt/jextract-22/"))
 ```
+
 </TabItem>
 <TabItem label="Groovy">
-```groovy "local"
+
+```groovy
 // build.gradle
 jextract.local(layout.projectDirectory.dir "/usr/local/opt/jextract-22/")
 ```
+
 </TabItem>
 </Tabs>
