@@ -1,7 +1,7 @@
 import autoImport from 'astro-auto-import'
 
 export default function starlightAutoImport(imports = []) {
-    const components = ['Card', 'LinkCard', 'CardGrid', 'Tabs', 'TabItem', 'FileTree']
+    const components = ['Card', 'LinkCard', 'CardGrid', 'Tabs', 'TabItem', 'FileTree', 'Steps']
     return {
         name: 'auto-imports',
         hooks: {
