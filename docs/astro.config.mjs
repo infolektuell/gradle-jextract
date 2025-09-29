@@ -17,11 +17,18 @@ export default defineConfig({
                 src: './src/assets/logo.svg',
             },
             social: [
-                { icon: 'seti:gradle', label: 'Gradle Plugin Portal', href: 'https://plugins.gradle.org/plugin/de.infolektuell.jextract' },
+                {
+                    icon: 'seti:gradle',
+                    label: 'Gradle Plugin Portal',
+                    href: 'https://plugins.gradle.org/plugin/de.infolektuell.jextract',
+                },
                 { icon: 'github', label: 'GitHub', href: 'https://github.com/infolektuell/gradle-jextract' },
             ],
             editLink: {
                 baseUrl: 'https://github.com/infolektuell/gradle-jextract/edit/main/docs/',
+            },
+            components: {
+                SiteTitle: './src/components/SiteTitle.astro',
             },
             sidebar: [
                 {

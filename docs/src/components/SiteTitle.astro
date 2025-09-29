@@ -1,0 +1,10 @@
+---
+import Default from '@astrojs/starlight/components/SiteTitle.astro'
+import { Badge } from '@astrojs/starlight/components'
+import { fetchLatestVersion } from '../lib/gradle'
+const version = await fetchLatestVersion()
+const href = 'https://plugins.gradle.org/plugin/de.infolektuell.jextract'
+---
+
+<Default><slot /></Default>
+<a class="site-title sl-flex" {href} target="_blank"><Badge text={version} variant="success" size="large" /></a>
