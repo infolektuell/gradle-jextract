@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0-beta-1...HEAD
 
+### Fixed
+
+- Recognizes Windows OS again.
+
 ## [1.0.0-beta-1] - 2025-09-28
 [1.0.0-beta-1]: https://github.com/infolektuell/gradle-jextract/compare/v0.5.0...v1.0.0-beta-1
 
