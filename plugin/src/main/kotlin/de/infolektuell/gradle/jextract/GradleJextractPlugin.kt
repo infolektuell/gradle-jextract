@@ -3,9 +3,7 @@ package de.infolektuell.gradle.jextract
 import de.infolektuell.gradle.jextract.extensions.JextractExtension
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension
 import de.infolektuell.gradle.jextract.service.JextractStore
-import de.infolektuell.gradle.jextract.tasks.JextractBaseTask
-import de.infolektuell.gradle.jextract.tasks.JextractDumpIncludesTask
-import de.infolektuell.gradle.jextract.tasks.JextractGenerateTask
+import de.infolektuell.gradle.jextract.tasks.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension
@@ -17,7 +15,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 abstract class GradleJextractPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         val extension = project.extensions.create(JextractExtension.EXTENSION_NAME, JextractExtension::class.java)
-        val defaultInstallation = project.objects.newInstance(JextractBaseTask.RemoteJextractInstallation::class.java).apply {
+        val defaultInstallation = project.objects.newInstance(RemoteJextractInstallation::class.java).apply {
             javaLanguageVersion.convention(JavaLanguageVersion.of(Jvm.current().javaVersionMajor ?: 22))
         }
         extension.installation.convention(defaultInstallation)

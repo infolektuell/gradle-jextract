@@ -1,6 +1,6 @@
 package de.infolektuell.gradle.jextract.extensions
 
-import de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*
+import de.infolektuell.gradle.jextract.tasks.*
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.file.Directory
