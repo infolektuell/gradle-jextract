@@ -15,6 +15,7 @@ tasks.named("compileJava", JavaCompile::class.java) {
 }
 
 application {
+    mainModule = "de.infolektuell.bass.app"
     mainClass = "de.infolektuell.bass.app.MainKt"
-    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
+    applicationDefaultJvmArgs = listOf("--enable-native-access=de.infolektuell.bass.main")
 }
