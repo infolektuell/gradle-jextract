@@ -18,12 +18,11 @@ object LibLoader {
         }
         val archName = "x64"
         Bass::class.java.getResourceAsStream("/native/${osName}/${archName}/${libName}")?.let { s ->
-            val tmpDir = Files.createTempDirectory("bass")
+            val tmpDir = Files.createTempDirectory("bass").apply { toFile().deleteOnExit() }
             val file = tmpDir.resolve(libName)
             Files.copy(s, file, StandardCopyOption.REPLACE_EXISTING)
             System.load(file.toString())
             loaded = true
-            Files.delete(file)
         }
     }
 }
