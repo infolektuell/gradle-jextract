@@ -1,7 +1,5 @@
 plugins {
-    `java-library`
     kotlin("jvm")
-    id("de.infolektuell.jextract")
 }
 
 repositories {

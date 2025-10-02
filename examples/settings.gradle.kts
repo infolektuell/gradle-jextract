@@ -5,4 +5,5 @@ plugins {
 
 rootProject.name = "examples"
 include("lib")
+include("app")
 includeBuild("../")
