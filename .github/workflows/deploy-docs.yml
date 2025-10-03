@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - docs/**
+      - plugin/src/main/kotlin/**
       - release/version.txt
 
   # Allows you to run this workflow manually from the Actions tab
@@ -33,27 +34,52 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version-file: .tool-versions
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version-file: .tool-versions
           cache: 'npm'
           cache-dependency-path: docs/package-lock.json
+
+      - name: Build API Docs
+        env:
+          ORG_GRADLE_PROJECT_signingKeyId: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEYID }}"
+          ORG_GRADLE_PROJECT_signingKey: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}"
+          ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}"
+          GRADLE_PUBLISH_KEY: "${{ secrets.GRADLE_PUBLISH_KEY }}"
+          GRADLE_PUBLISH_SECRET: "${{ secrets.GRADLE_PUBLISH_SECRET }}"
+        run: ./gradlew dokkaGenerate
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
+
       - name: Install dependencies
         run: npm ci
         working-directory: ${{ env.BUILD_PATH }}
+
       - name: Check for formatting or typing errors
         run: npm run check
         working-directory: ${{ env.BUILD_PATH }}
+
       - name: Build with Astro
         run: |
           npm run build -- \
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:

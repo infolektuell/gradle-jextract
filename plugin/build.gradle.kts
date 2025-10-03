@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.2.20"
+    id("org.jetbrains.dokka") version "2.1.0-Beta"
     signing
     id("com.gradle.plugin-publish") version "2.0.0"
 }
@@ -81,4 +82,27 @@ fun releaseVersion(): Provider<String> {
 fun releaseNotes(): Provider<String> {
     val releaseNotesFile = rootProject.layout.projectDirectory.file("release/changes.md")
     return providers.fileContents(releaseNotesFile).asText.map(String::trim)
+}
+
+// build.gradle.kts
+
+dokka {
+    moduleName = "Gradle Jextract Plugin"
+    dokkaPublications.html {
+        outputDirectory = rootProject.layout.projectDirectory.dir("docs/public/reference")
+        suppressInheritedMembers = true
+        failOnWarning = true
+    }
+    dokkaSourceSets.main {
+        sourceLink {
+            localDirectory = layout.projectDirectory.file("src/main/kotlin").asFile
+            remoteUrl("https://github.com/infolektuell/gradle-jextract/tree/main/plugin/src/main/kotlin")
+            remoteLineSuffix.set("#L")
+        }
+    }
+    pluginsConfiguration.html {
+        // customStyleSheets.from("styles.css")
+        // customAssets.from("logo.png")
+        footerMessage.set("(c) infolektuell")
+    }
 }

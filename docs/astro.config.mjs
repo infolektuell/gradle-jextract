@@ -48,8 +48,9 @@ export default defineConfig({
                     autogenerate: { directory: 'jextract-installation' },
                 },
                 {
-                    label: 'Reference',
-                    autogenerate: { directory: 'reference' },
+                    label: 'API Docs',
+                    link: 'https://infolektuell.github.io/gradle-jextract/reference/',
+                    attrs: { target: '_blank' },
                 },
             ],
         }),
