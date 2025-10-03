@@ -7,10 +7,10 @@ hero:
   image:
     file: ../../assets/houston.webp
   actions:
-    - text: Setup Guide
+    - text: Quick Start
       link: ./start/setup/
       icon: right-arrow
-    - text: See the latest version on Gradle Plugin Portal
+    - text: Latest Release
       link: https://plugins.gradle.org/plugin/de.infolektuell.jextract
       icon: seti:gradle
       variant: minimal
@@ -18,10 +18,9 @@ hero:
 
 ## Next steps
 
-<Steps>
-
-1. Initialize a new Gradle project or open an existing one.
-2. Prepare some native headers and libs you want to use in Java.
-3. Follow the [Quick start tutorial](./start/setup/) to setup this plugin.
-
-</Steps>
+<CardGrid stagger>
+<LinkCard href="./start/setup/" title="Quick Start" description="Setup your first project by following this step-by-step guide" />
+<LinkCard href="https://github.com/infolektuell/gradle-jextract/tree/main/examples/" title="Example project" description="Learn to use the plugin in a minimal sample project with a native library" />
+<LinkCard icon="seti:gradle" href="https://plugins.gradle.org/plugin/de.infolektuell.jextract" title="Latest release" description="See the latest release on Gradle Plugin Portal" />
+<LinkCard href="https://github.com/infolektuell/gradle-jextract/" title="GitHub Repository" description="Explore the source code, create issues, or contribute" />
+</CardGrid>

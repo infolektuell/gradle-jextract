@@ -108,8 +108,6 @@ jextract.libraries {
         header = layout.projectDirectory.file("src/main/public/greeting.h")
         headerClassName = "Greeting"
         targetPackage = "com.example.greeting"
-        useSystemLoadLibrary = true
-        libraries.add("greeting")
     }
     sourceSets.named("main") {
         jextract.libraries.addLater(greeting)
@@ -127,8 +125,6 @@ jextract.libraries {
         header = layout.projectDirectory.file("src/main/public/greeting.h")
         headerClassName = "Greeting"
         targetPackage = "com.example.greeting"
-        useSystemLoadLibrary = true
-        libraries.add("greeting")
     }
     sourceSets.named("main") {
         jextract.libraries.addLater(greeting)
@@ -185,6 +181,58 @@ This will result in the following output file structure:
 
 </FileTree>
 
-:::caution[Missing last step]
-This tutorial still doesn't explain how to deploy the native binary files.
+## Loading libraries
+
+There are mainly two approaches how the generated code can load and access the correct binaries.
+Please see this [stackoverflow question] for more details and explanation.
+
+### Automatic Loading
+
+The code searches in the OS-specific paths for the binary files and tries to load them via `system.loadLibrary`.
+The `java.library.path` property can be augmented to search in more paths or in the deployed app distribution.
+This approach is activated in a library config in the plugin DSL.
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kts {4-5}
+// build.gradle.kts
+jextract.libraries {
+    val greeting by registering {
+        useSystemLoadLibrary = true
+        libraries.add("greeting")
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy {4-5}
+// build.gradle
+jextract.libraries {
+    def greeting = register('greeting') {
+        useSystemLoadLibrary = true
+        libraries.add("greeting")
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::note
+`system.loadLibrary` infers the conventional name for an OS-Specific dynamic library from the base name, e.g. greeting.dll, libgreeting.dylib, or libgreeting.so.
 :::
+
+### Manual Loading
+
+Instead of configuring the libraries in the DSL, custom logic for loading the files can be implemented.
+This is a typical approach for bundling natives as resources of a jar file for more portable deployment.
+
+:::tip[Sample Project]
+The [example project] demonstrates this approach.
+:::
+
+[stackoverflow question]: https://stackoverflow.com/questions/78528174/gradle-java-include-native-library-project-panama
+[example project]: https://github.com/infolektuell/gradle-jextract/tree/main/examples/
