@@ -58,5 +58,5 @@ git tag -sa vM.m.p
 Push the release commits and tag to GitHub. The plugin will be published for the new tag.
 
 ```sh
-git push --tags
+git push && git push --tags
 ```
