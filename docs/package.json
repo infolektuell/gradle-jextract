@@ -13,14 +13,14 @@
         "astro": "astro"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.4",
-        "@astrojs/starlight": "^0.36.0",
-        "astro": "^5.14.1",
-        "astro-auto-import": "^0.4.4",
-        "fast-xml-parser": "^5.2.5",
+        "@astrojs/check": "^0.9.5",
+        "@astrojs/starlight": "^0.36.1",
+        "astro": "^5.15.2",
+        "astro-auto-import": "^0.4.5",
+        "fast-xml-parser": "^5.3.0",
         "prettier": "^3.6.2",
         "prettier-plugin-astro": "^0.14.1",
         "sharp": "^0.34.2",
-        "typescript": "^5.9.2"
+        "typescript": "^5.9.3"
     }
 }
