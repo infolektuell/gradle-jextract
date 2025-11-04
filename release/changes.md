@@ -1,7 +1,2 @@
-- Improved caching for Jextract downloads and installations: Jextract is not deleted by gradlew clean which saves bandwidth and privacy.
-- Custom download locations for Jextract are configurable via specific config file.
-- The plugin now has a documentation page.
-- An example project with native binaries as resources has been added.
-- Tasks were reimplemented to facilitate debugging.
-- Minor DSL changes for explicit Jextract version configuration that should only affect edge cases
-- Bug Fixes
+- Added support for Jextract 25 binaries.
+- Migrated example project to pure Java because Kotlin still doesn't support Java 25 compile target.
