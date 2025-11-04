@@ -19,8 +19,12 @@ class JextractDataStore {
     val executableFilename: String by lazy { if (platform.isWindows) "jextract.bat" else "jextract" }
 
     /** Returns the matching Jextract version for a given [Java major version][javaVersion] */
-    @Suppress("SameParameterValue")
-    fun version(javaVersion: Int, lower: Int = 19, upper: Int = 22) = max(min(javaVersion, upper), lower)
+    fun version(javaVersion: Int): Int {
+        return when(javaVersion) {
+            25 -> 25
+            else -> max(min(javaVersion, 22), 19)
+        }
+    }
 
     /** Returns a downloadable resource for the specified Jextract [version],  using the data from an optional [file], falls back to the official distribution data */
     fun resource(version: Int, file: Path? = null) = resource(version, loadDistributions(file))

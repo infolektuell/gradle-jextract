@@ -19,7 +19,7 @@ This plugin was created to get rid of a local Jextract installation requirement 
 All you need is at least JVM 17 and your project should use at least Gradle v8.8.
 
 - Downloads Jextract for the current build platform and architecture, no additional installation steps are needed.
-- Preset conventions for Jextract versions 19 up to 22.
+- Preset conventions for Jextract versions 19 up to 25.
 - Download locations can be customized for more restrictive environments.
 - Alternately, use a local installation of Jextract.
 

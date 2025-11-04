@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0...HEAD
 
+### Added
+
+- [Jextract 25 binaries](https://jdk.java.net/jextract/) can be used.
+
 ## [1.0.0] - 2025-10-04
 [1.0.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0-beta-2...v1.0.0
 
