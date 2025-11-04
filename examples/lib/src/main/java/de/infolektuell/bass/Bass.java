@@ -13,7 +13,7 @@ public final class Bass {
         buf.putInt(version);
         byte[] bytes = buf.array();
         int[] ints = new int[4];
-        for (int i = 0; i < ints.length; i++){
+        for (int i = 0; i < ints.length; i++) {
             ints[i] = bytes[i];
         }
         return new VersionNumber(ints[0], ints[1], ints[2], ints[3]);
