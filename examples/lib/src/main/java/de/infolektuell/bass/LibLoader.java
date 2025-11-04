@@ -7,9 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-public final class LibLoader {
-    boolean loaded = false;
-    void loadLibraries() {
+final class LibLoader {
+    private static volatile boolean loaded = false;
+    static synchronized void loadLibraries() {
         if (loaded) {
             return;
         }
@@ -23,11 +23,11 @@ public final class LibLoader {
         osName = "linux";
     }
     final String archName = "x64";
-    InputStream s = Bass.class.getResourceAsStream("/native/" + osName + "/" + archName + "/" + libName);
-    if (s == null) {
-        return;
-    }
-    try {
+    try(InputStream s = Bass.class.getResourceAsStream("/native/" + osName + "/" + archName + "/" + libName)) {
+        if (s == null) {
+            loaded = false;
+            return;
+        }
         Path tmpDir = Files.createTempDirectory("bass");
         tmpDir.toFile().deleteOnExit();
         Path file = tmpDir.resolve(libName);

@@ -3,9 +3,8 @@ package de.infolektuell.bass;
 import java.nio.ByteBuffer;
 
 public final class Bass {
-    LibLoader loader = new LibLoader();
     public Bass() {
-        loader.loadLibraries();
+        LibLoader.loadLibraries();
     }
 
     public VersionNumber getVersion() {
