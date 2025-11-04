@@ -2,13 +2,6 @@ plugins {
     id("library-conventions")
 }
 
-// Provide compiled Kotlin classes to javac – needed for Java/Kotlin mixed sources to work
-tasks.named("compileJava", JavaCompile::class.java) {
-    sourceSets.main {
-        options.compilerArgs.addAll(listOf("--patch-module", "de.infolektuell.bass.main=${output.asPath}"))
-    }
-}
-
 jextract.libraries {
     // The native BASS audio library.
     val bass by registering {

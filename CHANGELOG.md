@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Jextract 25 binaries](https://jdk.java.net/jextract/) can be used.
 
+### changed
+
+- Migrated example project to pure Java because Kotlin still doesn't support Java 25 compile target.
+
 ## [1.0.0] - 2025-10-04
 [1.0.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0-beta-2...v1.0.0
 
