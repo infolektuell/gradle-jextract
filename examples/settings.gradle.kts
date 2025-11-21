@@ -3,7 +3,7 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-rootProject.name = "examples"
+rootProject.name = "jextract-example-project"
 include("lib")
 include("app")
 includeBuild("../")
