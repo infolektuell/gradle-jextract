@@ -15,12 +15,12 @@
     "devDependencies": {
         "@astrojs/check": "^0.9.5",
         "@astrojs/starlight": "^0.36.2",
-        "astro": "^5.15.3",
+        "astro": "^5.16.0",
         "astro-auto-import": "^0.4.5",
-        "fast-xml-parser": "^5.3.0",
+        "fast-xml-parser": "^5.3.2",
         "prettier": "^3.6.2",
         "prettier-plugin-astro": "^0.14.1",
-        "sharp": "^0.34.2",
+        "sharp": "^0.34.5",
         "typescript": "^5.9.3"
     }
 }
