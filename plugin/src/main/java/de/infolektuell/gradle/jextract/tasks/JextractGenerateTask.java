@@ -81,11 +81,11 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
         JextractInstallation config = this.getInstallation().get();
         if (config instanceof RemoteJextractInstallation) {
             final JavaLanguageVersion javaVersion = ((RemoteJextractInstallation) config).getJavaLanguageVersion().get();
-            final int version = jextract.version(javaVersion);
+            final int version = jextract.getVersion(javaVersion);
             jextract.exec(javaVersion, spec -> commonExec(version, spec));
         } else if (config instanceof LocalJextractInstallation) {
             Path installationPath = ((LocalJextractInstallation) config).getLocation().getAsFile().get().toPath();
-            final int version = jextract.version(installationPath);
+            final int version = jextract.getVersion(installationPath);
             jextract.exec(installationPath, spec -> commonExec(version, spec));
         }
     }
