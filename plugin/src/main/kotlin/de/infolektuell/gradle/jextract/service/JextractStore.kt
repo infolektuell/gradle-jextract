@@ -19,6 +19,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.PathMatcher
+import java.util.regex.*
 import javax.inject.Inject
 import kotlin.io.path.absolute
 
@@ -78,21 +79,16 @@ abstract class JextractStore @Inject constructor(
 
     private fun install(root: Path): Installation {
         return localInstallations.computeIfAbsent(root) { k ->
-            val executable = findExecutable(k)
+            val executable = findExecutable(k, dataStore.executableFilename)
             val version = ByteArrayOutputStream().use { s ->
                 execOperations.exec { spec ->
                     spec.executable(executable)
                     spec.args("--version")
                     spec.errorOutput = s
                 }
-                s.toString(Charset.defaultCharset())
-                    .trim()
-                    .lines()
-                    .first()
-                    .split(" ")
-                    .last()
-                    .toIntOrNull()
-            } ?: throw RuntimeException("Couldn't parse version from local Jextract installation")
+                val output = s.toString(Charset.defaultCharset())
+                parseExecutableVersion(output)
+            }
             Installation(k, executable, version)
         }
     }
@@ -112,7 +108,7 @@ abstract class JextractStore @Inject constructor(
                     spec.into(root)
                 }
             }
-            val executable = findExecutable(root)
+            val executable = findExecutable(root, dataStore.executableFilename)
             val installation = Installation(root, executable, version)
             RemoteInstallation(resource, archive, installation)
         }
@@ -132,19 +128,22 @@ abstract class JextractStore @Inject constructor(
         remoteInstallations.keys.forEach { uninstall(it) }
     }
 
-    private fun findExecutable(path: Path): Path {
-        val glob = "glob:**/bin/${dataStore.executableFilename}"
-        val pathMatcher: PathMatcher = FileSystems.getDefault().getPathMatcher(glob)
-        return Files.walk(path)
-            .filter(pathMatcher::matches)
-            .filter { Files.isExecutable(it) && Files.isRegularFile(it) }
-            .findFirst()
-            .takeIf { it.isPresent }
-            ?.get()
-            ?: throw RuntimeException("Executable not found in $path")
-    }
-
     companion object {
         const val SERVICE_NAME = "jextractStore"
+        private val versionPattern: Pattern = Pattern.compile("jextract (?<version>\\d+)\\n+", Pattern.CASE_INSENSITIVE)
+        fun parseExecutableVersion(str: String): Int {
+            val matcher = versionPattern.matcher(str)
+            if (!matcher.find()) throw RuntimeException("Couldn't parse version from local Jextract installation")
+            return Integer.parseInt(matcher.group("version"))
+        }
+
+        private fun findExecutable(path: Path, filename: String): Path {
+            val pathMatcher: PathMatcher = FileSystems.getDefault().getPathMatcher("glob:**/bin/$filename")
+            val executable = Files.walk(path)
+                .filter { pathMatcher.matches(it) && Files.isExecutable(it) && Files.isRegularFile(it) }
+                .findFirst()
+            if (!executable.isPresent) throw RuntimeException("Executable named $filename not found in $path")
+            return executable.get()
+        }
     }
 }
