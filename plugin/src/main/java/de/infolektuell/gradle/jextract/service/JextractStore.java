@@ -58,7 +58,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NotNu
     Map<Path, Installation> localInstallations;
 
     @Inject
-    JextractStore(
+    public JextractStore(
         FileSystemOperations fileSystem,
         ArchiveOperations archives,
         ExecOperations execOperations
