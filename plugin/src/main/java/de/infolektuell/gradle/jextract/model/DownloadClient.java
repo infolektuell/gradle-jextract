@@ -12,6 +12,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.time.Duration;
+import java.util.HexFormat;
 import java.util.Objects;
 
 /**
@@ -39,20 +40,15 @@ public class DownloadClient {
             .build();
         try {
             var response = client.send(request, BodyHandlers.ofInputStream());
-            if (response.statusCode() != 200) throw new RuntimeException("Downloading from $url failed with status code ${response.statusCode()}.");
+            if (response.statusCode() != 200) throw new RuntimeException(String.format("Downloading from %s failed with status code %d.", resource.url, response.statusCode()));
             var md = MessageDigest.getInstance(resource.algorithm);
             var input = new DigestInputStream(response.body(), md);
             Files.createDirectories(target.getParent());
             Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
-            byte[] digest = input.getMessageDigest().digest();
-            StringBuilder calculatedChecksum = new StringBuilder();
-            for (byte b : digest) {
-                calculatedChecksum.append(String.format("%02x", b));
-            }
-            boolean isValid = Objects.equals(resource.checksum, calculatedChecksum.toString());
-            if (!isValid) {
+            String calculatedChecksum = HexFormat.of().formatHex(input.getMessageDigest().digest());
+            if (!Objects.equals(resource.checksum, calculatedChecksum)) {
                 Files.deleteIfExists(target);
-                throw new RuntimeException("Data integrity of downloaded file $url could not be verified, checksums do not match.");
+                throw new RuntimeException(String.format("Data integrity of downloaded file %s could not be verified, checksums do not match.", resource.url));
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
