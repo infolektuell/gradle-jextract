@@ -31,9 +31,10 @@ public class JextractDataStore {
         int version = version(javaVersion);
         String os = platform.operatingSystem().name().toLowerCase();
         String arch = platform.architecture().name().toLowerCase();
-        String base = String.join(".", "jextract", Integer.toString(version), os);
-        String url  = data.getProperty(String.join(".", base, arch, "url"), data.getProperty(String.join(".", base, "x64", "url")));
-        String checksum  = data.getProperty(String.join(".", base, arch, "checksum"), data.getProperty(String.join(".", base, "x64", "checksum")));
+        String base = String.format("jextract.%d.%s.%s", version, os, arch);
+        String baseFallback = String.format("jextract.%d.%s.%s", version, os, "x64");
+        String url  = data.getProperty(base + ".url", data.getProperty(baseFallback + ".url"));
+        String checksum  = data.getProperty(base + ".sha-256", data.getProperty(baseFallback + ".sha-256"));
         return new Resource(URI.create(url), checksum, "SHA-256");
     }
 
@@ -43,8 +44,9 @@ public class JextractDataStore {
         int version = version(javaVersion);
         String os = platform.operatingSystem().name().toLowerCase();
         String arch = platform.architecture().name().toLowerCase();
-        String base = String.join(".", "jextract", Integer.toString(version), os);
-        String url  = data.getProperty(String.join(".", base, arch, "url"), data.getProperty(String.join(".", base, "x64", "url")));
+        String base = String.format("jextract.%d.%s.%s", version, os, arch);
+        String baseFallback = String.format("jextract.%d.%s.%s", version, os, "x64");
+        String url  = data.getProperty(base + ".url", data.getProperty(baseFallback + ".url"));
         var segments = url.split("/");
         return segments[segments.length - 1];
     }

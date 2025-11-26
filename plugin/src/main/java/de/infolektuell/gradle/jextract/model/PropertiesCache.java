@@ -30,6 +30,7 @@ class PropertiesCache {
             throw new RuntimeException("Couldn't load default distributions from resource");
         }
     }
+
     Properties getProperties(Path path) {
         if (path == null) {
             return getDefaultProperties();
