@@ -20,59 +20,50 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.process.ExecSpec;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.*;
 
 @CacheableTask
 public abstract class JextractGenerateTask extends JextractBaseTask {
     /** All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1 */
     @Input
-    @NotNull
-    public abstract ListProperty<@NotNull String> getDefinedMacros();
+    public abstract ListProperty<@NonNull String> getDefinedMacros();
 
     /** The package name for the generated classes (`unnamed` if missing). */
     @Optional
     @Input
-    @NotNull
-    public abstract Property<@NotNull String> getTargetPackage();
+    public abstract Property<@NonNull String> getTargetPackage();
 
     /** Name of the generated header class (derived from header file name if missing) */
     @Optional
     @Input
-    @NotNull
-    public abstract Property<@NotNull String> getHeaderClassName();
+    public abstract Property<@NonNull String> getHeaderClassName();
 
     /** All symbols to be included in the generated bindings, grouped by their category */
     @Input
-    @NotNull
-    public abstract MapProperty<@NotNull String, @NotNull Set<String>> getWhitelist();
+    public abstract MapProperty<@NonNull String, @NonNull Set<String>> getWhitelist();
 
     /** An optional arg file for includes filtering */
     @Optional
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
-    @NotNull
     public abstract RegularFileProperty getArgFile();
 
     /** The names of the libraries that should be loaded by the generated header class */
     @Input
-    @NotNull
-    public abstract ListProperty<@NotNull String> getLibraries();
+    public abstract ListProperty<@NonNull String> getLibraries();
 
     /** If true, this instructs Jextract to load the shared libraries in the loader symbol lookup */
     @Optional
     @Input
-    @NotNull
-    public abstract Property<@NotNull Boolean> getUseSystemLoadLibrary();
+    public abstract Property<@NonNull Boolean> getUseSystemLoadLibrary();
 
     /** If true, this instructs Jextract 21 and older to generate source files instead of class files */
     @Optional
     @Input
-    @NotNull
-    public abstract Property<@NotNull Boolean> getGenerateSourceFiles();
+    public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
 
     /** The directory where to place the generated source files */
     @OutputDirectory
-    @NotNull
     public abstract DirectoryProperty getSources();
 
     @TaskAction

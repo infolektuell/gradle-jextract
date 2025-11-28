@@ -16,13 +16,13 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class GradleJextractPlugin implements Plugin<@NotNull Project> {
+public class GradleJextractPlugin implements Plugin<@NonNull Project> {
     public static final String PLUGIN_NAME = "de.infolektuell.jextract";
     public void apply(Project project) {
         final JextractExtension extension = project.getExtensions().create(JextractExtension.EXTENSION_NAME, JextractExtension.class);
@@ -56,9 +56,9 @@ public class GradleJextractPlugin implements Plugin<@NotNull Project> {
             }
         });
 
-        final Map<String, TaskProvider<@NotNull JextractGenerateTask>> jextractGenerateTasks = new HashMap<>();
+        final Map<String, TaskProvider<@NonNull JextractGenerateTask>> jextractGenerateTasks = new HashMap<>();
         extension.getLibraries().all(lib -> {
-            final TaskProvider<@NotNull JextractGenerateTask> generateTaskProvider = project.getTasks().register(lib.getName() + "JextractGenerateBindings", JextractGenerateTask.class, task -> {
+            final TaskProvider<@NonNull JextractGenerateTask> generateTaskProvider = project.getTasks().register(lib.getName() + "JextractGenerateBindings", JextractGenerateTask.class, task -> {
                 task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                 task.getHeader().set(lib.getHeader());
                 task.getIncludes().set(lib.getIncludes());
@@ -92,7 +92,7 @@ public class GradleJextractPlugin implements Plugin<@NotNull Project> {
         project.getExtensions().getByType(SourceSetContainer.class).all((s -> {
             final SourceSetExtension sourceSetExtension = s.getExtensions().create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension.class, project.getObjects());
             sourceSetExtension.getLibraries().all(lib -> {
-                final Provider<@NotNull Directory> src = jextractGenerateTasks.get(lib.getName()).flatMap(JextractGenerateTask::getSources);
+                final Provider<@NonNull Directory> src = jextractGenerateTasks.get(lib.getName()).flatMap(JextractGenerateTask::getSources);
                 s.getJava().srcDir(src);
                 s.getResources().srcDir(src);
                 s.setCompileClasspath(s.getCompileClasspath().plus(project.getLayout().files(src)));

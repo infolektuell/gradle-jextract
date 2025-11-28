@@ -11,7 +11,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
 import org.gradle.process.ExecSpec;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.*;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.regex.*;
 import javax.inject.Inject;
 
-public abstract class JextractStore implements BuildService<JextractStore.@NotNull Parameters> {
+public abstract class JextractStore implements BuildService<JextractStore.@NonNull Parameters> {
     public static final String SERVICE_NAME = "jextractStore";
     private static final Pattern versionPattern = Pattern.compile("jextract (?<version>\\d+)\\n+", Pattern.CASE_INSENSITIVE);
     static int parseExecutableVersion(String str) {
@@ -73,11 +73,11 @@ public abstract class JextractStore implements BuildService<JextractStore.@NotNu
         this.localInstallations = new HashMap<>();
     }
 
-    private Provider<@NotNull Directory> getDownloadsDir() {
+    private Provider<@NonNull Directory> getDownloadsDir() {
         return getParameters().getCacheDir().dir("downloads");
     }
 
-    private Provider<@NotNull Directory> getInstallDir() {
+    private Provider<@NonNull Directory> getInstallDir() {
         return getParameters().getCacheDir().dir("installation");
     }
 
@@ -96,7 +96,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NotNu
      * <p>
      * This is intended to be used by tasks.
      */
-    public ExecResult exec(JavaLanguageVersion version, Action<@NotNull ExecSpec> action) {
+    public ExecResult exec(JavaLanguageVersion version, Action<@NonNull ExecSpec> action) {
         return exec(version.asInt(), action);
     }
 
@@ -105,14 +105,14 @@ public abstract class JextractStore implements BuildService<JextractStore.@NotNu
      * <p>
      * This is intended to be used by tasks.
      */
-    public ExecResult exec(Path root, Action<@NotNull ExecSpec> action) {
+    public ExecResult exec(Path root, Action<@NonNull ExecSpec> action) {
         return execOperations.exec(spec -> {
             spec.executable(install(root).executable.toAbsolutePath());
             action.execute(spec);
         });
     }
 
-    private ExecResult exec(int version, Action<@NotNull ExecSpec> action) {
+    private ExecResult exec(int version, Action<@NonNull ExecSpec> action) {
         return execOperations.exec(spec -> {
             spec.executable(install(version).installation.executable.toAbsolutePath());
             action.execute(spec);
