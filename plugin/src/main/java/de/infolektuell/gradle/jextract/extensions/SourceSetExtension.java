@@ -3,7 +3,7 @@ package de.infolektuell.gradle.jextract.extensions;
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectSet;
 import org.gradle.api.model.ObjectFactory;
-import org.jspecify.annotations.*;
+import org.jspecify.annotations.NonNull;
 
 import javax.inject.Inject;
 

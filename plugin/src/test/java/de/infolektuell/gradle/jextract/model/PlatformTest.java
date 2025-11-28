@@ -1,9 +1,10 @@
 package de.infolektuell.gradle.jextract.model;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PlatformTest {
     @Test
@@ -14,7 +15,7 @@ class PlatformTest {
             var platform = new Platform(os, Platform.Architecture.AARCH64);
             assertEquals(Platform.OperatingSystem.WINDOWS, os);
             assertTrue(platform.isWindows());
-                assertFalse(platform.isMac());
+            assertFalse(platform.isMac());
             assertFalse(platform.isLinux());
         });
     }
@@ -38,7 +39,7 @@ class PlatformTest {
             var platform = new Platform(os, Platform.Architecture.AARCH64);
             assertEquals(Platform.OperatingSystem.LINUX, os);
             assertTrue(platform.isLinux());
-                assertFalse(platform.isMac());
+            assertFalse(platform.isMac());
             assertFalse(platform.isWindows());
         });
     }

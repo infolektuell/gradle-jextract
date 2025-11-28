@@ -40,7 +40,8 @@ public class DownloadClient {
             .build();
         try {
             var response = client.send(request, BodyHandlers.ofInputStream());
-            if (response.statusCode() != 200) throw new RuntimeException(String.format("Downloading from %s failed with status code %d.", resource.url, response.statusCode()));
+            if (response.statusCode() != 200)
+                throw new RuntimeException(String.format("Downloading from %s failed with status code %d.", resource.url, response.statusCode()));
             var md = MessageDigest.getInstance(resource.algorithm);
             var input = new DigestInputStream(response.body(), md);
             Files.createDirectories(target.getParent());
