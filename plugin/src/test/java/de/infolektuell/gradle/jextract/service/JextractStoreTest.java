@@ -1,7 +1,7 @@
 package de.infolektuell.gradle.jextract.service;
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
 
 class JextractStoreTest {
     @Test
@@ -12,7 +12,7 @@ class JextractStoreTest {
             LibClang version clang version 13.0.0
         """;
         int version = JextractStore.parseExecutableVersion(output);
-        Assertions.assertEquals(25, version);
+        assertEquals(25, version);
     }
 
     @Test
@@ -23,7 +23,7 @@ class JextractStoreTest {
             LibClang version clang version 13.0.0
         """;
         int version = JextractStore.parseExecutableVersion(output);
-        Assertions.assertEquals(22, version);
+        assertEquals(22, version);
     }
 
     @Test
@@ -34,11 +34,11 @@ class JextractStoreTest {
             LibClang version clang version 13.0.0
         """;
         int version = JextractStore.parseExecutableVersion(output);
-        Assertions.assertEquals(21, version);
+        assertEquals(21, version);
     }
     @Test
     void shouldFailParsingFromMalformedString() {
-        Assertions.assertThrows(Exception.class, () -> JextractStore.parseExecutableVersion("\nJextract 22"));
+        assertThrows(Exception.class, () -> JextractStore.parseExecutableVersion("\nJextract 22"));
     }
 
 }

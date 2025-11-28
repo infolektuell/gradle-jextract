@@ -1,6 +1,6 @@
 package de.infolektuell.gradle.jextract.model;
 
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -12,10 +12,10 @@ class PlatformTest {
         l.forEach(it -> {
             var os = Platform.OperatingSystem.create(it);
             var platform = new Platform(os, Platform.Architecture.AARCH64);
-            Assertions.assertEquals(Platform.OperatingSystem.WINDOWS, os);
-            Assertions.assertTrue(platform.isWindows());
-                Assertions.assertFalse(platform.isMac());
-            Assertions.assertFalse(platform.isLinux());
+            assertEquals(Platform.OperatingSystem.WINDOWS, os);
+            assertTrue(platform.isWindows());
+                assertFalse(platform.isMac());
+            assertFalse(platform.isLinux());
         });
     }
 
@@ -24,10 +24,10 @@ class PlatformTest {
         List.of("mac os x", "macOS", "MAC").forEach(it -> {
             var os = Platform.OperatingSystem.create(it);
             var platform = new Platform(os, Platform.Architecture.AARCH64);
-            Assertions.assertEquals(Platform.OperatingSystem.MAC, os);
-            Assertions.assertTrue(platform.isMac());
-            Assertions.assertFalse(platform.isLinux());
-            Assertions.assertFalse(platform.isWindows());
+            assertEquals(Platform.OperatingSystem.MAC, os);
+            assertTrue(platform.isMac());
+            assertFalse(platform.isLinux());
+            assertFalse(platform.isWindows());
         });
     }
 
@@ -36,10 +36,10 @@ class PlatformTest {
         List.of("Linux", "linux", "Unix").forEach(it -> {
             var os = Platform.OperatingSystem.create(it);
             var platform = new Platform(os, Platform.Architecture.AARCH64);
-            Assertions.assertEquals(Platform.OperatingSystem.LINUX, os);
-            Assertions.assertTrue(platform.isLinux());
-                Assertions.    assertFalse(platform.isMac());
-            Assertions.assertFalse(platform.isWindows());
+            assertEquals(Platform.OperatingSystem.LINUX, os);
+            assertTrue(platform.isLinux());
+                assertFalse(platform.isMac());
+            assertFalse(platform.isWindows());
         });
     }
 }
