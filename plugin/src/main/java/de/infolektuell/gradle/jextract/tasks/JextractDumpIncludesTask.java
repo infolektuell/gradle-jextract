@@ -5,7 +5,6 @@ import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
@@ -18,7 +17,6 @@ public abstract class JextractDumpIncludesTask extends JextractBaseTask {
      * The location of the generated arg file
      */
     @OutputFile
-    @NotNull
     public abstract RegularFileProperty getArgFile();
 
     @TaskAction

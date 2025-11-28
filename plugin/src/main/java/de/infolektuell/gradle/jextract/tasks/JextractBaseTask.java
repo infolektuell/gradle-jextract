@@ -10,7 +10,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.services.ServiceReference;
 import org.gradle.api.tasks.*;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /** Holds common properties for Jextract-related tasks, does nothing itself */
 public abstract class JextractBaseTask extends DefaultTask {
@@ -23,8 +23,7 @@ public abstract class JextractBaseTask extends DefaultTask {
     public non-sealed interface RemoteJextractInstallation extends JextractInstallation {
         /** The [Java version][javaLanguageVersion] the code should be generated for */
         @Input
-        @NotNull
-        Property<@NotNull JavaLanguageVersion> getJavaLanguageVersion();
+        Property<@NonNull JavaLanguageVersion> getJavaLanguageVersion();
     }
 
     /** Configuration of a local Jextract installation */
@@ -32,29 +31,24 @@ public abstract class JextractBaseTask extends DefaultTask {
         /** A directory containing a JExtract installation */
         @InputDirectory
         @PathSensitive(PathSensitivity.RELATIVE)
-        @NotNull
         DirectoryProperty getLocation();
     }
 
     /** A build service to run Jextract commands */
     @ServiceReference("jextractStore")
-    @NotNull
-    protected abstract Property<@NotNull JextractStore> getJextractStore();
+    protected abstract Property<@NonNull JextractStore> getJextractStore();
 
     /** Configures which Jextract installation should be used */
     @Nested
-    @NotNull
-    public abstract Property<@NotNull JextractInstallation> getInstallation();
+    public abstract Property<@NonNull JextractInstallation> getInstallation();
 
     /** All directories to append to the list of include search paths */
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
-    @NotNull
-    public abstract ListProperty<@NotNull Directory> getIncludes();
+    public abstract ListProperty<@NonNull Directory> getIncludes();
 
     /** The library header file to generate bindings for */
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
-    @NotNull
     public abstract RegularFileProperty getHeader();
 }
