@@ -1,68 +1,78 @@
 package de.infolektuell.gradle.jextract.tasks;
 
 import de.infolektuell.gradle.jextract.service.JextractStore;
-
-import java.nio.file.Path;
-import java.util.Set;
-
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.CacheableTask;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.OutputDirectory;
-import org.gradle.api.tasks.PathSensitive;
-import org.gradle.api.tasks.PathSensitivity;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.*;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.process.ExecSpec;
-import org.jspecify.annotations.*;
+import org.jspecify.annotations.NonNull;
+
+import java.nio.file.Path;
+import java.util.Set;
 
 @CacheableTask
 public abstract class JextractGenerateTask extends JextractBaseTask {
-    /** All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1 */
+    /**
+     * All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1
+     */
     @Input
     public abstract ListProperty<@NonNull String> getDefinedMacros();
 
-    /** The package name for the generated classes (`unnamed` if missing). */
+    /**
+     * The package name for the generated classes (`unnamed` if missing).
+     */
     @Optional
     @Input
     public abstract Property<@NonNull String> getTargetPackage();
 
-    /** Name of the generated header class (derived from header file name if missing) */
+    /**
+     * Name of the generated header class (derived from header file name if missing)
+     */
     @Optional
     @Input
     public abstract Property<@NonNull String> getHeaderClassName();
 
-    /** All symbols to be included in the generated bindings, grouped by their category */
+    /**
+     * All symbols to be included in the generated bindings, grouped by their category
+     */
     @Input
     public abstract MapProperty<@NonNull String, @NonNull Set<String>> getWhitelist();
 
-    /** An optional arg file for includes filtering */
+    /**
+     * An optional arg file for includes filtering
+     */
     @Optional
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract RegularFileProperty getArgFile();
 
-    /** The names of the libraries that should be loaded by the generated header class */
+    /**
+     * The names of the libraries that should be loaded by the generated header class
+     */
     @Input
     public abstract ListProperty<@NonNull String> getLibraries();
 
-    /** If true, this instructs Jextract to load the shared libraries in the loader symbol lookup */
+    /**
+     * If true, this instructs Jextract to load the shared libraries in the loader symbol lookup
+     */
     @Optional
     @Input
     public abstract Property<@NonNull Boolean> getUseSystemLoadLibrary();
 
-    /** If true, this instructs Jextract 21 and older to generate source files instead of class files */
+    /**
+     * If true, this instructs Jextract 21 and older to generate source files instead of class files
+     */
     @Optional
     @Input
     public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
 
-    /** The directory where to place the generated source files */
+    /**
+     * The directory where to place the generated source files
+     */
     @OutputDirectory
     public abstract DirectoryProperty getSources();
 

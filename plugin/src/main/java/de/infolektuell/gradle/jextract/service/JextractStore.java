@@ -11,9 +11,11 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
 import org.gradle.process.ExecSpec;
-import org.jspecify.annotations.*;
+import org.jspecify.annotations.NonNull;
 
-import java.io.*;
+import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -21,17 +23,18 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.*;
-import javax.inject.Inject;
+import java.util.regex.Pattern;
 
 public abstract class JextractStore implements BuildService<JextractStore.@NonNull Parameters> {
     public static final String SERVICE_NAME = "jextractStore";
     private static final Pattern versionPattern = Pattern.compile("jextract (?<version>\\d+)\\n+", Pattern.CASE_INSENSITIVE);
+
     static int parseExecutableVersion(String str) {
         var matcher = versionPattern.matcher(str);
         if (!matcher.find()) throw new RuntimeException("Couldn't parse version from local Jextract installation");
         return Integer.parseInt(matcher.group("version"));
     }
+
     static Path findExecutable(Path root, String filename) throws IOException {
         PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:**/bin/" + filename);
         try (var s = Files.walk(root)) {
@@ -44,10 +47,15 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
 
     public interface Parameters extends BuildServiceParameters {
         DirectoryProperty getCacheDir();
+
         RegularFileProperty getDistributions();
     }
-    record Installation(Path root, Path executable, int version) {}
-    record RemoteInstallation(DownloadClient.Resource resource, Path archive, Installation installation) {}
+
+    record Installation(Path root, Path executable, int version) {
+    }
+
+    record RemoteInstallation(DownloadClient.Resource resource, Path archive, Installation installation) {
+    }
 
     private final FileSystemOperations fileSystem;
     private final ArchiveOperations archives;
@@ -81,12 +89,16 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
         return getParameters().getCacheDir().dir("installation");
     }
 
-    /** returns the Jextract version for a given [Java language version][JavaLanguageVersion] */
+    /**
+     * returns the Jextract version for a given [Java language version][JavaLanguageVersion]
+     */
     public int getVersion(JavaLanguageVersion javaLanguageVersion) {
         return dataStore.version(javaLanguageVersion.asInt());
     }
 
-    /** Returns the version of a given [local installation][path], null if this is not installed */
+    /**
+     * Returns the version of a given [local installation][path], null if this is not installed
+     */
     public int getVersion(Path path) {
         return install(path).version;
     }
@@ -128,14 +140,15 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
                     spec.args("--version");
                     spec.setErrorOutput(s);
                 });
-                    var output = s.toString(Charset.defaultCharset());
+                var output = s.toString(Charset.defaultCharset());
                 var version = parseExecutableVersion(output);
                 return new Installation(k, executable, version);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException("Root does not contain a Jextract installation");
             }
         });
     }
+
     private RemoteInstallation install(int version) {
         return remoteInstallations.computeIfAbsent(version, k -> {
             DownloadClient.Resource resource;
@@ -166,6 +179,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
             return new RemoteInstallation(resource, archive, installation);
         });
     }
+
     private Boolean uninstall(int version) {
         if (!remoteInstallations.containsKey(version)) return false;
         var data = remoteInstallations.get(version);
@@ -176,6 +190,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
         remoteInstallations.remove(version);
         return true;
     }
+
     private void clean() {
         remoteInstallations.forEach((k, v) -> uninstall(k));
     }

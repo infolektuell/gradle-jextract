@@ -40,7 +40,7 @@ class PropertiesCache {
                 var p = new Properties(getDefaultProperties());
                 p.load(f);
                 return p;
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException("Couldn't load properties from path");
             }
         });

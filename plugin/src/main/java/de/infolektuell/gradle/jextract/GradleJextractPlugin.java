@@ -4,9 +4,10 @@ import de.infolektuell.gradle.jextract.extensions.JextractExtension;
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension;
 import de.infolektuell.gradle.jextract.service.JextractStore;
 import de.infolektuell.gradle.jextract.tasks.JextractBaseTask;
+import de.infolektuell.gradle.jextract.tasks.JextractBaseTask.LocalJextractInstallation;
+import de.infolektuell.gradle.jextract.tasks.JextractBaseTask.RemoteJextractInstallation;
 import de.infolektuell.gradle.jextract.tasks.JextractDumpIncludesTask;
 import de.infolektuell.gradle.jextract.tasks.JextractGenerateTask;
-import de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
@@ -16,7 +17,7 @@ import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.jspecify.annotations.*;
+import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.Objects;
 
 public class GradleJextractPlugin implements Plugin<@NonNull Project> {
     public static final String PLUGIN_NAME = "de.infolektuell.jextract";
+
     public void apply(Project project) {
         final JextractExtension extension = project.getExtensions().create(JextractExtension.EXTENSION_NAME, JextractExtension.class);
         extension.getInstallation().getJavaLanguageVersion().convention(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
@@ -38,7 +40,7 @@ public class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
         });
 
-        extension.getLibraries().configureEach( lib -> {
+        extension.getLibraries().configureEach(lib -> {
             lib.getUseSystemLoadLibrary().convention(false);
             lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
             lib.getGenerateSourceFiles().convention(extension.getGenerateSourceFiles());
@@ -50,9 +52,9 @@ public class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 installation.getLocation().convention(extension.getInstallation().getLocation());
                 task.getInstallation().set(installation);
             } else {
-                var installation  = project.getObjects().newInstance(RemoteJextractInstallation.class);
+                var installation = project.getObjects().newInstance(RemoteJextractInstallation.class);
                 installation.getJavaLanguageVersion().convention(extension.getInstallation().getJavaLanguageVersion());
-                    task.getInstallation().set(installation);
+                task.getInstallation().set(installation);
             }
         });
 
@@ -88,17 +90,17 @@ public class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
         project.getPluginManager().withPlugin("java", p -> {
             final JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
-        extension.getInstallation().getJavaLanguageVersion().convention(javaExtension.getToolchain().getLanguageVersion());
-        project.getExtensions().getByType(SourceSetContainer.class).all((s -> {
-            final SourceSetExtension sourceSetExtension = s.getExtensions().create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension.class, project.getObjects());
-            sourceSetExtension.getLibraries().all(lib -> {
-                final Provider<@NonNull Directory> src = jextractGenerateTasks.get(lib.getName()).flatMap(JextractGenerateTask::getSources);
-                s.getJava().srcDir(src);
-                s.getResources().srcDir(src);
-                s.setCompileClasspath(s.getCompileClasspath().plus(project.getLayout().files(src)));
-                s.setRuntimeClasspath(s.getRuntimeClasspath().plus(project.getLayout().files(src)));
-            });
-        }));
+            extension.getInstallation().getJavaLanguageVersion().convention(javaExtension.getToolchain().getLanguageVersion());
+            project.getExtensions().getByType(SourceSetContainer.class).all((s -> {
+                final SourceSetExtension sourceSetExtension = s.getExtensions().create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension.class, project.getObjects());
+                sourceSetExtension.getLibraries().all(lib -> {
+                    final Provider<@NonNull Directory> src = jextractGenerateTasks.get(lib.getName()).flatMap(JextractGenerateTask::getSources);
+                    s.getJava().srcDir(src);
+                    s.getResources().srcDir(src);
+                    s.setCompileClasspath(s.getCompileClasspath().plus(project.getLayout().files(src)));
+                    s.setRuntimeClasspath(s.getRuntimeClasspath().plus(project.getLayout().files(src)));
+                });
+            }));
         });
     }
 }

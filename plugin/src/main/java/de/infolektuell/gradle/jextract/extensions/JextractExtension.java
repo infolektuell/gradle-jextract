@@ -9,7 +9,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Nested;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
-import org.jspecify.annotations.*;
+import org.jspecify.annotations.NonNull;
 
 import javax.inject.Inject;
 
