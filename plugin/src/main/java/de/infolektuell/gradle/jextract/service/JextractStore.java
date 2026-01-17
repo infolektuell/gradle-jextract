@@ -64,7 +64,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
 
     public JextractStore() {
         super();
-        this.dataStore = new JextractDataStore();
+        this.dataStore = getParameters().getDistributions().isPresent() ? JextractDataStore.create(getParameters().getDistributions().get().getAsFile().toPath()) : JextractDataStore.create();
         this.downloadClient = new DownloadClient();
         this.remoteInstallations = new HashMap<>();
         this.localInstallations = new HashMap<>();
@@ -149,29 +149,24 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
 
     private RemoteInstallation install(int version) {
         return remoteInstallations.computeIfAbsent(version, k -> {
-            DownloadClient.Resource resource;
-            if (getParameters().getDistributions().isPresent()) {
-                Path distributionsPath = getParameters().getDistributions().get().getAsFile().toPath();
-                resource = Files.exists(distributionsPath) ? dataStore.resource(k, distributionsPath) : dataStore.resource(k, null);
-            } else {
-                resource = dataStore.resource(k, null);
-            }
-            var archive = getDownloadsDir().get().getAsFile().toPath().resolve(dataStore.filename(k, null));
+            final var resource = dataStore.resource(k);
+            var archive = getDownloadsDir().get().file(dataStore.filename(k)).getAsFile().toPath();
             boolean isDownloaded = downloadClient.verify(resource, archive);
             if (!isDownloaded) downloadClient.download(resource, archive);
-            var root = getInstallDir().get().getAsFile().toPath().resolve(k.toString());
-            getFileSystem().sync(spec -> {
-                spec.from(getArchives().tarTree(archive.toFile()));
-                spec.into(root);
-            });
-            Path executable;
+            var root = getInstallDir().get().dir(k.toString()).getAsFile().toPath();
+            if (!isDownloaded) {
+                getFileSystem().copy(spec -> {
+                    spec.from(getArchives().tarTree(archive.toFile()));
+                    spec.into(root);
+                });
+            }
             try {
-                executable = findExecutable(root, dataStore.getExecutableFilename());
+                Path executable = findExecutable(root, dataStore.getExecutableFilename());
+                var installation = new Installation(root, executable, version);
+                return new RemoteInstallation(resource, archive, installation);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            var installation = new Installation(root, executable, version);
-            return new RemoteInstallation(resource, archive, installation);
         });
     }
 }
