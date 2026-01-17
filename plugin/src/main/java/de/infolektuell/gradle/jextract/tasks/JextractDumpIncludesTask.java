@@ -21,21 +21,21 @@ public abstract class JextractDumpIncludesTask extends JextractBaseTask {
 
     @TaskAction
     protected final void dump() {
-        JextractStore jextract = this.getJextractStore().get();
-        JextractInstallation config = this.getInstallation().get();
-        if (config instanceof RemoteJextractInstallation) {
-            jextract.exec(((RemoteJextractInstallation) config).getJavaLanguageVersion().get(), spec -> {
+        JextractStore jextract = getJextractStore().get();
+        switch (getInstallation().get()) {
+            case RemoteJextractInstallation config -> jextract.exec(config.getJavaLanguageVersion().get(), spec -> {
                 this.getIncludes().get().forEach(it -> spec.args("-I", it.getAsFile().getAbsolutePath()));
                 spec.args("--dump-includes", getArgFile().get().getAsFile().getAbsolutePath());
                 spec.args(getHeader().get().getAsFile().getAbsolutePath());
             });
-        } else if (config instanceof LocalJextractInstallation) {
-            Path installationPath = ((LocalJextractInstallation) config).getLocation().getAsFile().get().toPath();
-            jextract.exec(installationPath, spec -> {
-                getIncludes().get().forEach(it -> spec.args("-I", it.getAsFile().getAbsolutePath()));
-                spec.args("--dump-includes", getArgFile().get().getAsFile().getAbsolutePath());
-                spec.args(getHeader().get().getAsFile().getAbsolutePath());
-            });
+            case LocalJextractInstallation config -> {
+                Path installationPath = config.getLocation().getAsFile().get().toPath();
+                jextract.exec(installationPath, spec -> {
+                    getIncludes().get().forEach(it -> spec.args("-I", it.getAsFile().getAbsolutePath()));
+                    spec.args("--dump-includes", getArgFile().get().getAsFile().getAbsolutePath());
+                    spec.args(getHeader().get().getAsFile().getAbsolutePath());
+                });
+            }
         }
     }
 }

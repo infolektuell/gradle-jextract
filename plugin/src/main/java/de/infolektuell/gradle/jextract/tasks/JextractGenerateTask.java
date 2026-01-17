@@ -78,16 +78,18 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
 
     @TaskAction
     protected final void generateBindings() {
-        JextractStore jextract = this.getJextractStore().get();
-        JextractInstallation config = this.getInstallation().get();
-        if (config instanceof RemoteJextractInstallation) {
-            final JavaLanguageVersion javaVersion = ((RemoteJextractInstallation) config).getJavaLanguageVersion().get();
-            final int version = jextract.getVersion(javaVersion);
-            jextract.exec(javaVersion, spec -> commonExec(version, spec));
-        } else if (config instanceof LocalJextractInstallation) {
-            Path installationPath = ((LocalJextractInstallation) config).getLocation().getAsFile().get().toPath();
-            final int version = jextract.getVersion(installationPath);
-            jextract.exec(installationPath, spec -> commonExec(version, spec));
+        JextractStore jextract = getJextractStore().get();
+        switch (getInstallation().get()) {
+            case RemoteJextractInstallation config -> {
+                final JavaLanguageVersion javaVersion = config.getJavaLanguageVersion().get();
+                final int version = jextract.getVersion(javaVersion);
+                jextract.exec(javaVersion, spec -> commonExec(version, spec));
+            }
+            case LocalJextractInstallation config -> {
+                Path installationPath = config.getLocation().getAsFile().get().toPath();
+                final int version = jextract.getVersion(installationPath);
+                jextract.exec(installationPath, spec -> commonExec(version, spec));
+            }
         }
     }
 
