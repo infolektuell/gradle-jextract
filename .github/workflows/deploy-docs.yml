@@ -52,15 +52,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: docs/package-lock.json
 
-      - name: Build API Docs
-        env:
-          ORG_GRADLE_PROJECT_signingKeyId: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEYID }}"
-          ORG_GRADLE_PROJECT_signingKey: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}"
-          ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}"
-          GRADLE_PUBLISH_KEY: "${{ secrets.GRADLE_PUBLISH_KEY }}"
-          GRADLE_PUBLISH_SECRET: "${{ secrets.GRADLE_PUBLISH_SECRET }}"
-        run: ./gradlew dokkaGenerate
-
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
@@ -72,6 +63,9 @@ jobs:
       - name: Check for formatting or typing errors
         run: npm run check
         working-directory: ${{ env.BUILD_PATH }}
+
+      - name: Build API Docs
+        run: ./gradlew javadoc
 
       - name: Build with Astro
         run: |

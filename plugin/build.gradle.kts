@@ -35,6 +35,11 @@ java {
     }
 }
 
+tasks.withType(Javadoc::class).named("javadoc") {
+    options.destinationDirectory = rootProject.layout.projectDirectory.dir("docs/public/reference").asFile
+    options.quiet()
+}
+
 repositories {
     mavenCentral()
 }
