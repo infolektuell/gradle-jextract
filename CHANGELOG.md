@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Requires Gradle 8.5 or above that is compatible with Java 21.
   - This doesn't affect Java toolchains.
 
+### Changed
+
+- The code has been migrated to Java to get rid of the Kotlin dependency. This shouldn't be a breaking change.
+- If the plugin finds a cached version of a file to be downloaded, its validity is checked by comparing its checksum with that of the download resource.
+- The `JextractStore` build service loads the distribution data once when it is created.
+
 ## [1.1.0] - 2025-11-04
 [1.1.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0...v1.1.0
 

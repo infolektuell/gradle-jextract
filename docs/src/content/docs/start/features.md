@@ -16,7 +16,7 @@ This plugin enables developing Java code that makes use of native libraries usin
 ### Requirements
 
 This plugin was created to get rid of a local Jextract installation requirement and to retain the “Clone&Build” Gradle experience.
-All you need is at least JVM 17 and your project should use at least Gradle v8.8.
+All you need is at least JVM 21 and your project should use at least Gradle v8.8.
 
 - Downloads Jextract for the current build platform and architecture, no additional installation steps are needed.
 - Preset conventions for Jextract versions 19 up to 25.
