@@ -57,35 +57,33 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
     record RemoteInstallation(DownloadClient.Resource resource, Path archive, Installation installation) {
     }
 
-    private final FileSystemOperations fileSystem;
-    private final ArchiveOperations archives;
-    private final ExecOperations execOperations;
     private final JextractDataStore dataStore;
     private final DownloadClient downloadClient;
-    Map<Integer, RemoteInstallation> remoteInstallations;
-    Map<Path, Installation> localInstallations;
+    private final Map<Integer, RemoteInstallation> remoteInstallations;
+    private final Map<Path, Installation> localInstallations;
 
-    @Inject
-    public JextractStore(
-        FileSystemOperations fileSystem,
-        ArchiveOperations archives,
-        ExecOperations execOperations
-    ) {
+    public JextractStore() {
         super();
-        this.fileSystem = fileSystem;
-        this.archives = archives;
-        this.execOperations = execOperations;
         this.dataStore = new JextractDataStore();
         this.downloadClient = new DownloadClient();
         this.remoteInstallations = new HashMap<>();
         this.localInstallations = new HashMap<>();
     }
 
-    private Provider<@NonNull Directory> getDownloadsDir() {
+    @Inject
+    protected abstract FileSystemOperations getFileSystem();
+
+    @Inject
+    protected abstract ArchiveOperations getArchives();
+
+    @Inject
+    protected abstract ExecOperations getExecOperations();
+
+    protected Provider<@NonNull Directory> getDownloadsDir() {
         return getParameters().getCacheDir().dir("downloads");
     }
 
-    private Provider<@NonNull Directory> getInstallDir() {
+    protected Provider<@NonNull Directory> getInstallDir() {
         return getParameters().getCacheDir().dir("installation");
     }
 
@@ -118,14 +116,14 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
      * This is intended to be used by tasks.
      */
     public ExecResult exec(Path root, Action<@NonNull ExecSpec> action) {
-        return execOperations.exec(spec -> {
+        return getExecOperations().exec(spec -> {
             spec.executable(install(root).executable.toAbsolutePath());
             action.execute(spec);
         });
     }
 
     private ExecResult exec(int version, Action<@NonNull ExecSpec> action) {
-        return execOperations.exec(spec -> {
+        return getExecOperations().exec(spec -> {
             spec.executable(install(version).installation.executable.toAbsolutePath());
             action.execute(spec);
         });
@@ -135,7 +133,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
         return localInstallations.computeIfAbsent(root, k -> {
             try (var s = new ByteArrayOutputStream()) {
                 var executable = findExecutable(k, dataStore.getExecutableFilename());
-                execOperations.exec(spec -> {
+                getExecOperations().exec(spec -> {
                     spec.executable(executable);
                     spec.args("--version");
                     spec.setErrorOutput(s);
@@ -164,8 +162,8 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
             }
             var root = getInstallDir().get().getAsFile().toPath().resolve(k.toString());
             if (!Files.exists(root)) {
-                fileSystem.copy(spec -> {
-                    spec.from(archives.tarTree(archive.toFile()));
+                getFileSystem().copy(spec -> {
+                    spec.from(getArchives().tarTree(archive.toFile()));
                     spec.into(root);
                 });
             }
@@ -183,7 +181,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
     private Boolean uninstall(int version) {
         if (!remoteInstallations.containsKey(version)) return false;
         var data = remoteInstallations.get(version);
-        fileSystem.delete(spec -> {
+        getFileSystem().delete(spec -> {
             spec.delete(data.installation.root);
             spec.delete(data.archive);
         });
