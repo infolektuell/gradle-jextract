@@ -157,16 +157,13 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
                 resource = dataStore.resource(k, null);
             }
             var archive = getDownloadsDir().get().getAsFile().toPath().resolve(dataStore.filename(k, null));
-            if (!Files.exists(archive)) {
-                downloadClient.download(resource, archive);
-            }
+            boolean isDownloaded = downloadClient.verify(resource, archive);
+            if (!isDownloaded) downloadClient.download(resource, archive);
             var root = getInstallDir().get().getAsFile().toPath().resolve(k.toString());
-            if (!Files.exists(root)) {
-                getFileSystem().copy(spec -> {
-                    spec.from(getArchives().tarTree(archive.toFile()));
-                    spec.into(root);
-                });
-            }
+            getFileSystem().sync(spec -> {
+                spec.from(getArchives().tarTree(archive.toFile()));
+                spec.into(root);
+            });
             Path executable;
             try {
                 executable = findExecutable(root, dataStore.getExecutableFilename());
@@ -177,20 +174,4 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
             return new RemoteInstallation(resource, archive, installation);
         });
     }
-
-    private Boolean uninstall(int version) {
-        if (!remoteInstallations.containsKey(version)) return false;
-        var data = remoteInstallations.get(version);
-        getFileSystem().delete(spec -> {
-            spec.delete(data.installation.root);
-            spec.delete(data.archive);
-        });
-        remoteInstallations.remove(version);
-        return true;
-    }
-
-    private void clean() {
-        remoteInstallations.forEach((k, v) -> uninstall(k));
-    }
-
 }

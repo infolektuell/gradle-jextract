@@ -33,12 +33,12 @@ public class DownloadClient {
      * Downloads a [resource], checks its integrity, and stores it to a [target] path
      */
     public void download(Resource resource, Path target) {
-        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1).build();
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(resource.url)
-            .GET()
-            .build();
-        try {
+        var builder = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1);
+        try (HttpClient client = builder.build()) {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(resource.url)
+                .GET()
+                .build();
             var response = client.send(request, BodyHandlers.ofInputStream());
             if (response.statusCode() != 200)
                 throw new RuntimeException(String.format("Downloading from %s failed with status code %d.", resource.url, response.statusCode()));
@@ -53,6 +53,24 @@ public class DownloadClient {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Checks that a given file is the downloaded file for a given resource by comparing their checksums.
+     *
+     * @return True if the checksums match, false otherwise.
+     */
+    public boolean verify(Resource resource, Path file) {
+        if (!Files.exists(file)) return false;
+        try (var s = Files.newInputStream(file)) {
+            var md = MessageDigest.getInstance(resource.algorithm);
+            var input = new DigestInputStream(s, md);
+            input.readAllBytes();
+            String calculatedChecksum = HexFormat.of().formatHex(input.getMessageDigest().digest());
+            return Objects.equals(resource.checksum, calculatedChecksum);
+        } catch (Exception ignored) {
+            return false;
         }
     }
 }
