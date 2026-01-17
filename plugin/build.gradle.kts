@@ -31,7 +31,7 @@ java {
     withSourcesJar()
     withJavadocJar()
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 

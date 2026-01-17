@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.1.0...HEAD
 
+### Breaking
+
+- Upgraded required JRE and Gradle versions for the plugin:
+  - Requires Java 21 or higher, was Java 17 before.
+  - Requires Gradle 8.5 or above that is compatible with Java 21.
+  - This doesn't affect Java toolchains.
+
 ## [1.1.0] - 2025-11-04
 [1.1.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.0.0...v1.1.0
 
