@@ -1,2 +1,2 @@
-- Added support for Jextract 25 binaries.
-- Migrated example project to pure Java because Kotlin still doesn't support Java 25 compile target.
+- Upgraded required JRE to version 21
+- The code has been migrated to Java to get rid of the Kotlin dependency. This shouldn't be a breaking change.
