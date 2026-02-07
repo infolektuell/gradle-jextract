@@ -2,38 +2,23 @@ package de.infolektuell.gradle.jextract;
 
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GradleJextractPluginFunctionalTest {
-    @TempDir
-    Path projectDir;
-
-    private Path getBuildFile() {
-        return projectDir.resolve("build.gradle");
-    }
-
-    private Path getSettingsFile() {
-        return projectDir.resolve("settings.gradle");
-    }
+    private final Path projectDir = Paths.get("..", "examples");
 
     @Test
-    void canRun() throws IOException {
-        String buildScript = """
-            plugins {
-                id('de.infolektuell.jextract') version '1.0'
-            }
-            """;
-        Files.writeString(getSettingsFile(), "");
-        Files.writeString(getBuildFile(), buildScript);
+    void canRun() {
         var runner = GradleRunner.create();
         runner.forwardOutput();
         runner.withPluginClasspath();
-        // runner.withArguments("greeting")
         runner.withProjectDir(projectDir.toFile());
+        runner.withArguments("build");
         var result = runner.build();
+        assertTrue(result.getOutput().contains("BUILD SUCCESSFUL"));
     }
 }
