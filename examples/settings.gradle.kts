@@ -4,6 +4,5 @@ plugins {
 }
 
 rootProject.name = "jextract-example-project"
-include("lib")
 include("app")
 includeBuild("../")

@@ -1,3 +1,3 @@
-module de.infolektuell.bass.app {
-    requires de.infolektuell.bass.main;
+module de.infolektuell.bass {
+    exports de.infolektuell.bass;
 }

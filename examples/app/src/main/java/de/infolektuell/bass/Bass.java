@@ -3,10 +3,6 @@ package de.infolektuell.bass;
 import java.nio.ByteBuffer;
 
 public final class Bass {
-    public Bass() {
-        LibLoader.loadLibraries();
-    }
-
     public VersionNumber getVersion() {
         int version = com.un4seen.bass.Bass.BASS_GetVersion();
         ByteBuffer buf = ByteBuffer.allocate(4);

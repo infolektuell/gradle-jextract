@@ -1,5 +1,4 @@
-package de.infolektuell.bass.app;
-import de.infolektuell.bass.Bass;
+package de.infolektuell.bass;
 
 public class Main {
     public static void main(String[] arg) {
