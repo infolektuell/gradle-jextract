@@ -11,6 +11,7 @@ class GradleJextractPluginTest {
     @Test
     void registersExtension() {
         Project project = ProjectBuilder.builder().build();
+        project.getPlugins().apply("application");
         project.getPlugins().apply(GradleJextractPlugin.PLUGIN_NAME);
         assertNotNull(project.getExtensions().findByType(JextractExtension.class));
     }

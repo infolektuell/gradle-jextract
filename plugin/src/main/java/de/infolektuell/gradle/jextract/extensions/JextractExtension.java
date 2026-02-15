@@ -16,11 +16,9 @@ import javax.inject.Inject;
 public abstract class JextractExtension {
     public static final String EXTENSION_NAME = "jextract";
     private final NamedDomainObjectContainer<@NonNull LibraryHandler> libraries;
-
-    @Inject
-    public JextractExtension(ObjectFactory objects) {
+    public JextractExtension() {
         super();
-        this.libraries = objects.domainObjectContainer(LibraryHandler.class);
+        this.libraries = getObjects().domainObjectContainer(LibraryHandler.class);
     }
 
     /**
@@ -78,4 +76,6 @@ public abstract class JextractExtension {
      * Generate source files instead of class files for all libraries where not set explicitly (Jextract 21 and below)
      */
     public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
+
+    @Inject protected abstract ObjectFactory getObjects();
 }
