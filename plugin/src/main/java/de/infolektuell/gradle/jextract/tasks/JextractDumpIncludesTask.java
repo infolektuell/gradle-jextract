@@ -24,16 +24,16 @@ public abstract class JextractDumpIncludesTask extends JextractBaseTask {
         JextractStore jextract = getJextractStore().get();
         switch (getInstallation().get()) {
             case RemoteJextractInstallation config -> jextract.exec(config.getJavaLanguageVersion().get(), spec -> {
-                this.getIncludes().get().forEach(it -> spec.args("-I", it.getAsFile().getAbsolutePath()));
+                this.getIncludes().get().forEach(it -> spec.args("-I", it));
                 spec.args("--dump-includes", getArgFile().get().getAsFile().getAbsolutePath());
-                spec.args(getHeader().get().getAsFile().getAbsolutePath());
+                getHeaders().get().forEach(spec::args);
             });
             case LocalJextractInstallation config -> {
                 Path installationPath = config.getLocation().getAsFile().get().toPath();
                 jextract.exec(installationPath, spec -> {
-                    getIncludes().get().forEach(it -> spec.args("-I", it.getAsFile().getAbsolutePath()));
+                    getIncludes().get().forEach(it -> spec.args("-I", it));
                     spec.args("--dump-includes", getArgFile().get().getAsFile().getAbsolutePath());
-                    spec.args(getHeader().get().getAsFile().getAbsolutePath());
+                    getHeaders().get().forEach(spec::args);
                 });
             }
         }

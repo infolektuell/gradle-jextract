@@ -1,10 +1,9 @@
 package de.infolektuell.gradle.jextract.extensions;
 
-import de.infolektuell.gradle.jextract.tasks.LibraryPathProvider;
 import org.gradle.api.Action;
-import org.gradle.api.NamedDomainObjectSet;
+import org.gradle.api.NamedDomainObjectContainer;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
-import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.SetProperty;
 import org.jspecify.annotations.NonNull;
@@ -23,48 +22,64 @@ public abstract class SourceSetExtension {
 
     private final String name;
     private final Pattern firstCharPattern = Pattern.compile("^.");
-    private final NamedDomainObjectSet<@NonNull LibraryHandler> libraries;
-    private final SourceDirectorySet headers;
-    private final SourceDirectorySet binaries;
-    private final LibraryPathProvider libraryPath;
+    private final NamedDomainObjectContainer<@NonNull LibraryHandler> libraries;
 
     @Inject
     public SourceSetExtension(String name) {
         super();
         this.name = name;
-        this.libraries = getObjects().namedDomainObjectSet(LibraryHandler.class);
-        this.headers = getObjects().sourceDirectorySet("headers", "Native Header Files");
-        this.binaries = getObjects().sourceDirectorySet("binaries", "Native binary Files");
-        this.libraryPath = getObjects().newInstance(LibraryPathProvider.class);
+        this.libraries = getObjects().domainObjectContainer(LibraryHandler.class);
     }
+
+    /**
+     * Contains all header include directories configured as library includes. These are part of the created JMOD archive and are published by the project.
+     * @return A collection of directories.
+     */
+    public abstract ConfigurableFileCollection getIncludePath();
+
+    /**
+     * Contains all configured library search paths. These are part of the generated JMOD archive and published by the project.
+     * @return A collection of directories.
+     */
+    public abstract ConfigurableFileCollection getLibraryPath();
+
+    /**
+     * Contains all configured directories for legal notices. These are part of the created JMOD archive.
+     * @return A set property of directories.
+     */
+    public abstract SetProperty<@NonNull Directory> getLegalNotices();
 
     /**
      * Libraries that were defined in the jextract extension. Their generated source and class outputs will be added to the source set.
      */
-    public final NamedDomainObjectSet<@NonNull LibraryHandler> getLibraries() {
+    public final NamedDomainObjectContainer<@NonNull LibraryHandler> getLibraries() {
         return this.libraries;
     }
 
     /**
      * Configures the libraries that were defined in the jextract extension. Their generated source and class outputs will be added to the source set.
      */
-    public final void libraries(Action<@NonNull NamedDomainObjectSet<@NonNull LibraryHandler>> action) {
+    public final void libraries(Action<@NonNull NamedDomainObjectContainer<@NonNull LibraryHandler>> action) {
         action.execute(this.libraries);
     }
 
-    public SourceDirectorySet getHeaders() { return headers; }
-    public SourceDirectorySet getBinaries() { return binaries; }
-    public LibraryPathProvider getLibraryPath() { return libraryPath; }
+    /**
+     * The name of the scope to declare native dependencies for the current source set.
+     * @return The name of a declarable configuration
+     */
+    public String getNativeImplementationConfigurationName() { return getConfigurationName("nativeImplementation", ""); }
 
     /**
-     * Directories containing legal notice documents that can be included in the generated JMOD archive.
-     * @return A set property to add the directories.
+     * The name of the configuration that resolves native API dependencies
+     * @return The name of a resolvable configuration
      */
-    public abstract SetProperty<@NonNull Directory> getLegalNotices();
+    public String getIncludePathConfigurationName() { return getConfigurationName("process", "includePath"); }
 
-    public String getNativeImplementationConfigurationName() { return getConfigurationName("nativeImplementation", ""); }
-    public String getArchiveHeaderFilesConfigurationName() { return getConfigurationName("archive", "headerFiles"); }
-    public String getArchiveBinaryConfigurationName() { return getConfigurationName("archive", "binaries"); }
+    /**
+     * The name of the configuration that resolves native binary dependencies.
+     * @return The name of a resolvable configuration
+     */
+    public String getArchivePathConfigurationName() { return getConfigurationName("archive", "libraryPath"); }
 
     @Inject protected abstract ObjectFactory getObjects();
 

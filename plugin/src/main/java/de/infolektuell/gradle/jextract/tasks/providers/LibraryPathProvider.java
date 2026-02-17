@@ -1,4 +1,4 @@
-package de.infolektuell.gradle.jextract.tasks;
+package de.infolektuell.gradle.jextract.tasks.providers;
 
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.tasks.InputFiles;
@@ -9,7 +9,14 @@ import org.gradle.process.CommandLineArgumentProvider;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Configures the native library path for Java execution.
+ */
 public abstract class LibraryPathProvider implements CommandLineArgumentProvider {
+    /**
+     * The directories containing native libraries that are necessary for Java runtime
+     * @return a file collection of directories
+     */
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract ConfigurableFileCollection getFiles();

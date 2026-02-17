@@ -4,9 +4,9 @@ import org.gradle.api.Action;
 import org.gradle.api.Named;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.Nested;
 import org.jspecify.annotations.NonNull;
 
@@ -15,24 +15,37 @@ import org.jspecify.annotations.NonNull;
  */
 public abstract class LibraryHandler implements Named {
     /**
-     * The header file to generate bindings for
+     * The header files to generate bindings for
      */
-    public abstract RegularFileProperty getHeader();
+    public abstract ListProperty<@NonNull String> getHeaders();
 
     /**
-     * Additional directories to be appended to include search paths
+     * Directories to be appended to include search paths, searched from left to right.
+     * @return A list property to add the header directories.
      */
-    public abstract ListProperty<@NonNull Directory> getIncludes();
+    public abstract ListProperty<@NonNull Directory> getIncludeSearchPath();
+
+    /**
+     * Directories containing native binaries to be appended to the library search path.
+     * @return A list property to add the binaries directories.
+     */
+    public abstract ListProperty<@NonNull Directory> getLibraryPath();
+
+    /**
+     * Native libraries to be loaded by generated code (either names or paths starting with colon)
+     */
+    public abstract ListProperty<@NonNull String> getLibraries();
+
+    /**
+     * Directories containing legal notice documents for this library.
+     * @return A set property to add the directories.
+     */
+    public abstract SetProperty<@NonNull Directory> getLegalNotices();
 
     /**
      * Macros to be defined, in the format `name=value`
      */
     public abstract ListProperty<@NonNull String> getDefinedMacros();
-
-    /**
-     * The package name for the generated code
-     */
-    public abstract Property<@NonNull String> getTargetPackage();
 
     /**
      * The name for the class generated from the header file, derived from the header file if missing
@@ -53,9 +66,9 @@ public abstract class LibraryHandler implements Named {
     }
 
     /**
-     * Native libraries to be loaded by generated code (either names or paths starting with colon)
+     * The package name for the generated code
      */
-    public abstract ListProperty<@NonNull String> getLibraries();
+    public abstract Property<@NonNull String> getTargetPackage();
 
     /**
      * Load libraries in the library symbol lookup, using either `System.load` or `System.loadLibrary`, useful for libraries in java.library.path

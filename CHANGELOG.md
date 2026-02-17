@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added task to create JMOD archives. These contain compiled classes, but also native headers and binaries. They can be linked into custom JRE runtime images and the native libs can load more efficiently than unpacking them from JAR resources.
-- Libraries with `use-system-load-library` becomes testable, so the JMOD scenario is no problem for testing. The required binaries are added to the library path in runtime tasks. The directories that contain binaries or headers are configurable via source directory sets in the DSL extension.
+- Libraries with `use-system-load-library` become testable, so the JMOD scenario is no problem for testing. The required binaries are added to the library path in runtime tasks. The directories that contain binaries or headers are configurable via source directory sets in the DSL extension.
 - Gradle Native projects can be added as dependency. Their outgoing API headers and runtime libs become available for Jextract and will be part of the created JMOD archive. Jextract only understands C-compatible libs and headers, no C++. The Native project must be a C project.
-- The header file and libs to load in configured libraries got a convention. The plugin tries to guess the names of header and lib files for a given library based on its name. A library named `brotlicommen`, e.g., will be searched for as `brotlicommon.h` and `brotlicommon` is added as a lib to be loaded. If this doesn't exist or is incorrect (probable), they must be explicitly set as usual.
+- Per convention, the plugin guesses header and library filenames by the library's name.
+
+### Breaking changes
+
+- The API to define headers has changed. A configured library has an include search path of directories to search for header files, and the actual headers are configured as filename strings. This was necessary to integrate search directories coming from resolved configurations. Per convention, `src/<source set>/public` is configured as includes directory.
+- Libraries are configured directly per source set, not in the top-level extension anymore. The test source set anyway inherits the main source set, and such inheritance can be defined by extending configurations
 
 ### Improvements
 
