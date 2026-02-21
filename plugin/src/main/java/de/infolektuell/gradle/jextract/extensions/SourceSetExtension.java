@@ -17,14 +17,17 @@ public abstract class SourceSetExtension {
      */
     public static final String EXTENSION_NAME = "jextract";
 
-    @Inject
-    public SourceSetExtension(@NonNull ObjectFactory objects) {
+    /**
+     * Creates a new instance
+     */
+    public SourceSetExtension() {
         super();
-        this.libraries = objects.namedDomainObjectSet(LibraryHandler.class);
+        this.libraries = getObjects().namedDomainObjectSet(LibraryHandler.class);
     }
 
     /**
      * Libraries that were defined in the jextract extension. Their generated source and class outputs will be added to the source set.
+     * @return A set that contains the libraries to be added to a certain source set.
      */
     public final NamedDomainObjectSet<@NonNull LibraryHandler> getLibraries() {
         return this.libraries;
@@ -32,8 +35,16 @@ public abstract class SourceSetExtension {
 
     /**
      * Configures the libraries that were defined in the jextract extension. Their generated source and class outputs will be added to the source set.
+     * @param action An action that is applied to the libraries set
      */
     public final void libraries(Action<@NonNull NamedDomainObjectSet<@NonNull LibraryHandler>> action) {
         action.execute(this.libraries);
     }
+
+    /**
+     * Inject an available instance of the object factory service
+     * @return The injected service instance
+     */
+    @Inject
+    protected abstract ObjectFactory getObjects();
 }

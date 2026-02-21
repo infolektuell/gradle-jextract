@@ -23,11 +23,14 @@ import java.util.Map;
 import java.util.Objects;
 
 public class GradleJextractPlugin implements Plugin<@NonNull Project> {
+    /// The plugin ID that must be used in build scripts to apply the plugin
     public static final String PLUGIN_NAME = "de.infolektuell.jextract";
 
+    /// Configures the plugin if it is applied
     public void apply(Project project) {
         project.getPlugins().apply(JavaPlugin.class);
-        final JextractExtension extension = project.getExtensions().create(JextractExtension.EXTENSION_NAME, JextractExtension.class);
+        final JextractExtension extension = project.getObjects().newInstance(JextractExtension.class);
+        project.getExtensions().add(JextractExtension.EXTENSION_NAME, extension);
         project.getPluginManager().withPlugin("java", javaPlugin -> {
             final JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
             final Provider<@NonNull JavaLanguageVersion> javaVersion = javaExtension.getToolchain().getLanguageVersion()
@@ -93,7 +96,8 @@ public class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
 
             javaExtension.getSourceSets().configureEach(s -> {
-                final SourceSetExtension sourceSetExtension = s.getExtensions().create(SourceSetExtension.EXTENSION_NAME, SourceSetExtension.class, project.getObjects());
+                final SourceSetExtension sourceSetExtension = project.getObjects().newInstance(SourceSetExtension.class);
+                s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
                     final TaskProvider<@NonNull JextractGenerateTask> task = jextractGenerateTasks.get(lib.getName());
                     s.getJava().srcDir(task);
