@@ -21,10 +21,9 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-sourceSets.named("main") {
+sourceSets.main {
     // The native BASS audio library.
-    val bass by jextract.libraries.registering {
-
+    jextract.libraries.register("bass") {
         headerClassName = "Bass"
         targetPackage = "com.un4seen.bass"
         // For large headers it is good practice to generate only the symbols you need.
