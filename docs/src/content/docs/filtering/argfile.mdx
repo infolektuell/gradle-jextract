@@ -21,7 +21,7 @@ It is a configuration file to be checked into source control
 
 This example demonstrates the format using some filtering arguments from Jextract:
 
-```bash
+```sh
 # bass-includes.txt
 --include-function BASS_Update
 --include-constant
@@ -33,7 +33,7 @@ Jextract can dump all symbols used in a given library into an arg file.
 This file is meant to be edited and reduced to include only the needed symbols.
 This plugin makes this feature available through the `dumpIncludes` task.
 
-```bash title="Dumping all library symbols into an arg file"
+```sh title="Dumping all library symbols into an arg file"
 ./gradlew dumpIncludes
 ```
 
@@ -41,7 +41,7 @@ This will output the generated arg file to a predefined location in the build di
 
 <FileTree>
 
-- lib
+- project
   - build
     - reports
       - jextract
@@ -62,11 +62,11 @@ Lastly, the prepared arg file must be associated with its library config.
 
 ```kts "argFile" "<libname>"
 // build.gradle.kts
-jextract.libraries {
-    register("<libname>") {
-            whitelist {
-                argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
-            }
+sourceSets.main {
+    jextract.libraries.register("<libname>") {
+        whitelist {
+            argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
+        }
     }
 }
 ```
@@ -76,12 +76,12 @@ jextract.libraries {
 
 ```groovy "argFile" "<libname>"
 // build.gradle
-jextract.libraries {
-    register("<libname>") {
-            whitelist {
-                argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
-            }
+sourceSets.main {
+  jextract.libraries.register("<libname>") {
+    whitelist {
+      argFile = layout.projectDirectory.file "src/main/includes/<libname>-includes.txt"
     }
+  }
 }
 ```
 

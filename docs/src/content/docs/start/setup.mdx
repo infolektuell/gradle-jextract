@@ -11,24 +11,30 @@ This setup guide covers the standard use-case of generating and integrating nati
 
 You should have these things in place before you start:
 
-- JVM 17 or above
-- A Gradle project using Gradle v8.8 or above
+- JVM 21+
+- A Gradle project using Gradle v8.8+
+- A native and C-compatible library with header and binary files
+
+:::caution
+Jextract doesn't understand C++ headers.
+:::
 
 ## Including the Plugin
 
-This will configure the project to download and use Jextract 22 which is determined from the Java toolchain.
+This will configure the project to download and use the latest Jextract version that works with the configured Java toolchain.
 
 :::tip
-See the [latest version](https://plugins.gradle.org/plugin/de.infolektuell.jextract) on Gradle plugin portal.
+See the [latest Jextract version](https://jdk.java.net/jextract/) on their releases page.
 :::
 
+<!--suppress ALL -->
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
 ```kts
 // build.gradle.kts
 plugins {
-    `java-library`
+    application
     id("de.infolektuell.jextract") version "x.y.z"
 }
 
@@ -41,6 +47,12 @@ java {
         languageVersion = JavaLanguageVersion.of(25)
     }
 }
+
+application {
+  mainModule = "company.sample.app"
+  mainClass = "com.company.sample.Main"
+  applicationDefaultJvmArgs = listOf("--enable-native-access=company.sample.app")
+}
 ```
 
 </TabItem>
@@ -49,7 +61,7 @@ java {
 ```groovy
 // build.gradle
 plugins {
-    id 'java-library'
+    id 'application'
     id 'de.infolektuell.jextract' version 'x.y.z'
 }
 
@@ -62,55 +74,54 @@ java {
         languageVersion = JavaLanguageVersion.of 25
     }
 }
+
+application {
+  mainModule = "company.sample.app"
+  mainClass = "com.company.sample.Main"
+  applicationDefaultJvmArgs = listOf("--enable-native-access=company.sample.app")
+}
 ```
 
 </TabItem>
 </Tabs>
 
-## Adding a Library
+:::caution
+Make sure a module descriptor named `module-info.java` exists in the source root directory.
+:::
 
-Libraries often consist of a `name.h` file and binaries like `libname.dylib` or `name.dll`.
-Put them in your source folder like this:
+## Compile-time: Adding headers
+
+Jextract needs C-compatible header files (*.h) to generate Java bindings for.
+They can reside in the src folder and have to be configured in the Gradle build script.
 
 <FileTree>
 
-- lib
+- sample-project
   - src
     - main
-      - java
-        - com
-          - example
-            - greeting
-              - greeting.java
-      - native
-        - macos
-          - **libgreeting.dylib** the macOS binary
-        - windows
-          - **greeting.dll** the windows binary
+      - …
       - public
-        - **greeting.h** the header file
-  - build.gradle.kts
-- settings.gradle.kts
+        - sample.h
+    - …
 
 </FileTree>
 
-## Configuring the plugin
+:::note
+The locations are fully customizable, but the plugin assumes a default directory structure and filenames.
+:::
 
-Configure the plugin via DSL extension, so it can find the library files.
+Configure the sample library in the gradle build:
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
 ```kts
 // build.gradle.kts
-jextract.libraries {
-    val greeting by registering {
-        header = layout.projectDirectory.file("src/main/public/greeting.h")
-        headerClassName = "Greeting"
-        targetPackage = "com.example.greeting"
-    }
-    sourceSets.named("main") {
-        jextract.libraries.addLater(greeting)
+sourceSets.main {
+  // Header file is <name>.h by default 
+  jextract.libraries.register("sample") {
+        headerClassName = "Sample"
+        targetPackage = "com.company.sample"
     }
 }
 ```
@@ -120,14 +131,11 @@ jextract.libraries {
 
 ```groovy
 // build.gradle
-jextract.libraries {
-    def greeting = register('greeting') {
-        header = layout.projectDirectory.file("src/main/public/greeting.h")
-        headerClassName = "Greeting"
-        targetPackage = "com.example.greeting"
-    }
-    sourceSets.named("main") {
-        jextract.libraries.addLater(greeting)
+sourceSets.main {
+  // Header file is <name>.h by default 
+  jextract.libraries.register("sample") {
+        headerClassName = "Sample"
+        targetPackage = "com.company.sample"
     }
 }
 ```
@@ -135,22 +143,20 @@ jextract.libraries {
 </TabItem>
 </Tabs>
 
-## Build and use
-
-Now the project is ready for its first build.
+Run the `assemble` task to generate bindings and compile sources. Testing won't work yet.
 
 <Tabs syncKey="os">
 <TabItem label="Windows">
 
 ```shell title="Building the project"
-gradlew.bat build
+gradlew.bat assemble
 ```
 
 </TabItem>
 <TabItem label="Linux">
 
 ```shell title="Building the project"
-./gradlew build
+./gradlew assemble
 ```
 
 </TabItem>
@@ -169,38 +175,84 @@ This will result in the following output file structure:
     - ...
     - generated
       - sources
-        - jextract
-          - **greeting** the library bindings
-            - com
-              - example
-                - greeting
-                  - **Greeting.java** the bindings to import and use in Java code
+        - java
+          - jextract
+            - **sample** the library bindings
+              - com
+                - company
+                  - sample
+                    - **Sample.java** the bindings to import and use in Java code
     - ...
   - build.gradle.kts
 - settings.gradle.kts
 
 </FileTree>
 
-## Loading libraries
+## Runtime: Adding binaries
 
 There are mainly two approaches how the generated code can load and access the correct binaries.
 Please see this [stackoverflow question] for more details and explanation.
 
+:::note
+Most shared libraries are files with the extensions .dll, .dylib, or .so.
+:::
+
+### Manual Loading
+
+This is the classical approach for bundling natives as resources of a jar file for more portable deployment.
+To get this working, the loading logic must be implemented as part of the program that loads the correct files.
+no more build configuration is needed, because everything is handled by the program implementation.
+
 ### Automatic Loading
 
-The code searches in the OS-specific paths for the binary files and tries to load them via `system.loadLibrary`.
-The `java.library.path` property can be augmented to search in more paths or in the deployed app distribution.
-This approach is activated in a library config in the plugin DSL.
+The `java.library.path` system property indicates the directories to search for native binaries (system-specific paths by default).
+jextract is able to generate code that tries to load the binaries automatically via `system.loadLibrary`.
+
+:::note
+`system.loadLibrary` infers the conventional name for an OS-Specific dynamic library from the base name, e.g. sample.dll, libsample.dylib, or libsample.so.
+:::
+
+:::tip[Sample Project]
+The [example project] demonstrates this approach.
+:::
+
+The second approach is doable in this quick start guide to get a running example by augmenting the build logic.
+The native libs should be somewhere in your source set (not under resources) like this:
+
+<FileTree>
+
+- sample-project
+  - src
+    - main
+      - …
+      - lib File names can differ from this
+        - sample.dll
+        - libsample.dylib
+        - libsample.so
+  - build.gradle.kts
+- settings.gradle.kts
+
+</FileTree>
+
+## Configuring the plugin
+
+Configure the plugin via DSL extension, so it can find the library files.
+
+:::note
+If the libs for different OS and architectures reside in separate directories, the build script needs a bit of custom logic to determine the matching directories for the build OS.
+:::
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts {4-5}
+```kts ins={6-7}
 // build.gradle.kts
-jextract.libraries {
-    val greeting by registering {
-        useSystemLoadLibrary = true
-        libraries.add("greeting")
+sourceSets.main {
+    jextract.libraries.register("sample") {
+        headerClassName = "Sample"
+        targetPackage = "com.company.sample"
+      useSystemLoadLibrary = true
+      libraryPath = listOf(layout.projectDirectory.dir("src/main/lib"))
     }
 }
 ```
@@ -208,31 +260,67 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy {4-5}
+```groovy ins={6-7}
 // build.gradle
-jextract.libraries {
-    def greeting = register('greeting') {
-        useSystemLoadLibrary = true
-        libraries.add("greeting")
-    }
+sourceSets.main {
+  jextract.libraries.register("sample") {
+    headerClassName = "Sample"
+    targetPackage = "com.company-sample"
+    useSystemLoadLibrary = true
+    libraryPath = [layout.projectDirectory.dir("[src/main/lib")]
+  }
 }
 ```
 
 </TabItem>
 </Tabs>
 
-:::note
-`system.loadLibrary` infers the conventional name for an OS-Specific dynamic library from the base name, e.g. greeting.dll, libgreeting.dylib, or libgreeting.so.
-:::
+## Test and Run
 
-### Manual Loading
+Now the native libs are findable and the program can be tested and runs.
 
-Instead of configuring the libraries in the DSL, custom logic for loading the files can be implemented.
-This is a typical approach for bundling natives as resources of a jar file for more portable deployment.
+<Tabs syncKey="os">
+<TabItem label="Windows">
 
-:::tip[Sample Project]
-The [example project] demonstrates this approach.
-:::
+```shell title="Testing"
+# Implies testing
+gradlew.bat build
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```shell title="Testing"
+# Implies testing
+./gradlew build
+```
+
+</TabItem>
+</Tabs>
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+```shell title="Running"
+gradlew.bat run
+```
+
+</TabItem>
+<TabItem label="Linux">
+
+```shell title="running"
+./gradlew run
+```
+
+</TabItem>
+</Tabs>
+
+## Deployment
+
+Packaging and deploying as standalone artifact is easier with the manual approach, because the binaries are part of the JAR.
+
+To benefit from the automatic approach, the plugin can package the project as a JMOD archive.
+This is the preferable solution for creating runtime images or applications packaged with Jpackage.
 
 [stackoverflow question]: https://stackoverflow.com/questions/78528174/gradle-java-include-native-library-project-panama
 [example project]: https://github.com/infolektuell/gradle-jextract/tree/main/examples/
