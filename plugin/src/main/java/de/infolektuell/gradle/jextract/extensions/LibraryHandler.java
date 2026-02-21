@@ -23,7 +23,7 @@ public abstract class LibraryHandler implements Named {
      * Directories to be appended to include search paths, searched from left to right.
      * @return A list property to add the header directories.
      */
-    public abstract ListProperty<@NonNull Directory> getIncludeSearchPath();
+    public abstract ListProperty<@NonNull Directory> getIncludePath();
 
     /**
      * Directories containing native binaries to be appended to the library search path.

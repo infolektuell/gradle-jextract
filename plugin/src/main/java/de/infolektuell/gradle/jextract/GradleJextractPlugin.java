@@ -90,14 +90,14 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 });
 
                 sourceSetExtension.getLibraries().all(lib -> {
-                    lib.getIncludeSearchPath().add(project.getLayout().getProjectDirectory().dir(String.format("src/%s/public", s.getName())));
+                    lib.getIncludePath().add(project.getLayout().getProjectDirectory().dir(String.format("src/%s/public", s.getName())));
                     lib.getLibraryPath().add(project.getLayout().getProjectDirectory().dir(String.format("src/%s/lib", s.getName())));
                     lib.getHeaders().add(lib.getName() + ".h");
                     lib.getLibraries().add(lib.getName());
                     lib.getUseSystemLoadLibrary().convention(false);
                     lib.getGenerateSourceFiles().convention(false);
                     lib.getOutput().convention(outputBaseDir.map(d -> d.dir(lib.getName())));
-                    sourceSetExtension.getIncludePath().from(lib.getIncludeSearchPath());
+                    sourceSetExtension.getIncludePath().from(lib.getIncludePath());
                     sourceSetExtension.getLibraryPath().from(lib.getLibraryPath());
                     sourceSetExtension.getLegalNotices().addAll(lib.getLegalNotices());
 
@@ -105,7 +105,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     final TaskProvider<@NonNull JextractGenerateTask> generateTaskProvider = project.getTasks().register(s.getTaskName("generate", lib.getName() + "bindings"), JextractGenerateTask.class, task -> {
                         task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                         task.getHeaders().set(lib.getHeaders());
-                        task.getIncludes().addAll(lib.getIncludeSearchPath());
+                        task.getIncludes().addAll(lib.getIncludePath());
                         task.getIncludes().addAll(includeSearchPath);
                         task.getDefinedMacros().set(lib.getDefinedMacros());
                         task.getHeaderClassName().set(lib.getHeaderClassName());
@@ -126,7 +126,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     project.getTasks().register(lib.getName() + "JextractDumpIncludes", JextractDumpIncludesTask.class, task -> {
                         task.setDescription("Uses Jextract to dump all includes of the " + lib.getName() + " native library into an arg file");
                         task.getHeaders().set(lib.getHeaders());
-                        task.getIncludes().addAll(lib.getIncludeSearchPath());
+                        task.getIncludes().addAll(lib.getIncludePath());
                         task.getIncludes().addAll(includeSearchPath);
                         task.getArgFile().set(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
                     });
