@@ -13,15 +13,15 @@ This approach might be more beginner-friendly or facilitate exploration of avail
 
 ```kts "typedefs" "functions" "constants"
 // build.gradle.kts
-jextract.libraries {
-    register("<libname>") {
-            whitelist {
-                typedefs.add("MY_TYPE")
-                functions.add("MY_FN")
-                constants.add("MY_CONST")
-                // more categories
-            }
+sourceSets.main {
+  jextract.libraries.register("<libname>") {
+    whitelist {
+      typedefs.add("MY_TYPE")
+      functions.add("MY_FN")
+      constants.add("MY_CONST")
+      // more categories
     }
+  }
 }
 ```
 
@@ -30,15 +30,15 @@ jextract.libraries {
 
 ```groovy "typedefs" "functions" "constants"
 // build.gradle
-jextract.libraries {
-    register("<libname>") {
-            whitelist {
-                typedefs += "MY_TYPE"
-                functions += "MY_FN"
-                constants += "MY_CONST"
-                // more categories
-            }
+sourceSets.main {
+  jextract.libraries.register("<libname>") {
+    whitelist {
+      typedefs += "MY_TYPE"
+      functions += "MY_FN"
+      constants += "MY_CONST"
+      // more categories
     }
+  }
 }
 ```
 
