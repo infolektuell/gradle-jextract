@@ -8,7 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.2.0...HEAD
 
-## [1.2.0] - 2026-01-017
+### Improvements
+
+- The plugin first applies the Java plugin, and then applies itself. So the occurrence order of this plugin and Java plugins in the build script doesn't matter under any circumstances. A Java plugin could even be omitted in the build script.
+- Removed an occurrence of eager configuration.
+- Consolidated the plugin's implementation.
+
+## [1.2.0] - 2026-01-17
 [1.2.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.1.0...v1.2.0
 
 ### Breaking
