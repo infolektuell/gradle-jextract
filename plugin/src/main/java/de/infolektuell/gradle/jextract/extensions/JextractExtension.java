@@ -26,41 +26,33 @@ public abstract class JextractExtension {
     }
 
     /// Configuration of a Jextract installation to be used by the plugin
+    /// @return a managed type to configure the jextract installation
     @Nested
     public abstract InstallationHandler getInstallation();
 
-    /// Configures the plugin to download Jextract for a given Java language version
-    public final void download(@NonNull final JavaLanguageVersion javaLanguageVersion) {
-        getInstallation().getJavaLanguageVersion().set(javaLanguageVersion);
-    }
-
-    /// Configures a local Jextract installation to be used by the plugin
-    public final void local(@NonNull final DirectoryProperty location) {
-        getInstallation().getLocation().set(location);
-    }
-
-    /// Configures a local Jextract installation to be used by the plugin
-    public final void local(@NonNull final Directory location) {
-        getInstallation().getLocation().set(location);
-    }
-
-    /// A [properties][java.util.Properties] file containing the remote locations where to download the Jextract distributions
+    /// A [java.util.Properties] file containing the remote locations where to download the Jextract distributions
+    /// @return a property
     public abstract RegularFileProperty getDistributions();
 
     /// The libraries Jextract should generate bindings for
+    /// @return a container to register libraries
     public final NamedDomainObjectContainer<@NonNull LibraryHandler> getLibraries() {
         return this.libraries;
     }
 
     /// Configures the libraries Jextract should generate bindings for
+    /// @param action A configuration action that is applied to the libraries container
     public final void libraries(@NonNull Action<@NonNull NamedDomainObjectContainer<@NonNull LibraryHandler>> action) {
         action.execute(this.libraries);
     }
 
     /// specify the directory to place generated files of all libraries by default
+    /// @return a property
     public abstract DirectoryProperty getOutput();
 
     /// Generate source files instead of class files for all libraries where not set explicitly (Jextract 21 and below)
+    /// This becomes the convention for all libraries.
+    /// @return a boolean property
     public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
 
     /// Inject an available instance of the object factory service

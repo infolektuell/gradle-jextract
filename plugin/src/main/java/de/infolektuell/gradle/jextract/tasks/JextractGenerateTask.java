@@ -14,68 +14,64 @@ import org.jspecify.annotations.NonNull;
 import java.nio.file.Path;
 import java.util.Set;
 
+/// Task that uses Jextract to generate Java bindings for given C headers
 @CacheableTask
 public abstract class JextractGenerateTask extends JextractBaseTask {
-    /**
-     * All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1
-     */
+    /// Creates a new [JextractGenerateTask] instance
+    public JextractGenerateTask() { super(); }
+    /// All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1
+    /// @return A list property to add defined macros
     @Input
     public abstract ListProperty<@NonNull String> getDefinedMacros();
 
-    /**
-     * The package name for the generated classes (`unnamed` if missing).
-     */
+    /// The package name for the generated classes (`unnamed` if missing).
+    /// @return A property to configure the package name
     @Optional
     @Input
     public abstract Property<@NonNull String> getTargetPackage();
 
-    /**
-     * Name of the generated header class (derived from header file name if missing)
-     */
+    /// Name of the generated header class (derived from header file name if missing)
+    /// @return a property to configure the header name
     @Optional
     @Input
     public abstract Property<@NonNull String> getHeaderClassName();
 
-    /**
-     * All symbols to be included in the generated bindings, grouped by their category
-     */
+    /// All symbols to be included in the generated bindings, grouped by their category
+    /// The key of each entry denotes a category, the value is a list of symbols.
+    /// @return A map property to add pairs of category and symbols
     @Input
     public abstract MapProperty<@NonNull String, @NonNull Set<String>> getWhitelist();
 
-    /**
-     * An optional arg file for includes filtering
-     */
+    /// An optional arg file for includes filtering
+    /// @return a property to configure the file
     @Optional
     @InputFile
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract RegularFileProperty getArgFile();
 
-    /**
-     * The names of the libraries that should be loaded by the generated header class
-     */
+    /// Native libraries to be loaded by generated code (either names or paths starting with colon)
+    /// @return A property to add library names
     @Input
     public abstract ListProperty<@NonNull String> getLibraries();
 
-    /**
-     * If true, this instructs Jextract to load the shared libraries in the loader symbol lookup
-     */
+    /// Load libraries in the library symbol lookup, using either `System.load` or `System.loadLibrary`, useful for libraries in java.library.path
+    /// @return A boolean property
     @Optional
     @Input
     public abstract Property<@NonNull Boolean> getUseSystemLoadLibrary();
 
-    /**
-     * If true, this instructs Jextract 21 and older to generate source files instead of class files
-     */
+    /// Generate source files instead of class files (Jextract 21 and below)
+    /// @return a boolean property
     @Optional
     @Input
     public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
 
-    /**
-     * The directory where to place the generated source files
-     */
+    /// The directory where to place the generated source files
+    /// @return a directory property
     @OutputDirectory
     public abstract DirectoryProperty getSources();
 
+    /// Task action that uses Jextract to generate Java bindings
     @TaskAction
     protected final void generateBindings() {
         JextractStore jextract = getJextractStore().get();

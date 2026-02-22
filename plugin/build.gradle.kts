@@ -36,8 +36,8 @@ java {
 }
 
 tasks.withType(Javadoc::class).named("javadoc") {
+    javadocTool = javaToolchains.javadocToolFor { languageVersion = JavaLanguageVersion.of(25) }
     options.destinationDirectory = rootProject.layout.projectDirectory.dir("docs/public/reference").asFile
-    options.quiet()
 }
 
 repositories {

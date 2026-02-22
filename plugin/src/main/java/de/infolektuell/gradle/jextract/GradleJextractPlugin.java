@@ -22,9 +22,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/// A Gradle plugin to add Jextract to the build
 public class GradleJextractPlugin implements Plugin<@NonNull Project> {
     /// The plugin ID that must be used in build scripts to apply the plugin
     public static final String PLUGIN_NAME = "de.infolektuell.jextract";
+
+    ///  Creates a new instance
+    public GradleJextractPlugin() { super(); }
 
     /// Configures the plugin if it is applied
     public void apply(Project project) {

@@ -15,23 +15,24 @@ import java.time.Duration;
 import java.util.HexFormat;
 import java.util.Objects;
 
-/**
- * A service class for downloading files
- */
+/// A service class for downloading files
 public class DownloadClient {
 
-    /**
-     * Data describing a downloadable file
-     * A resource consists of a [location][url] and a [checksum] and [algorithm] to verify the integrity of the downloaded file.
-     */
+    /// Describes a downloadable file
+    /// @param url The remote location of the downloadable file
+    /// @param checksum A checksum to verify the integrity of the downloaded file
+    /// @param algorithm The algorithm that was used to generate the checksum, e.g., SHA-256
     public record Resource(URI url, String checksum, String algorithm) implements Serializable {
         @Serial
         private static final long serialVersionUID = 2L;
     }
 
-    /**
-     * Downloads a [resource], checks its integrity, and stores it to a [target] path
-     */
+    ///  Creates a new instance
+    public DownloadClient() { super(); }
+
+    /// Downloads a resource, checks its integrity, and stores it to a target path
+    /// @param resource Data describing the download location and file checksum
+    /// @param target The file path to store the downloaded file
     public void download(Resource resource, Path target) {
         var builder = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).version(HttpClient.Version.HTTP_1_1);
         try (HttpClient client = builder.build()) {
@@ -56,11 +57,10 @@ public class DownloadClient {
         }
     }
 
-    /**
-     * Checks that a given file is the downloaded file for a given resource by comparing their checksums.
-     *
-     * @return True if the checksums match, false otherwise.
-     */
+    /// Checks that a given file is the downloaded file for a given resource by comparing their checksums.
+    /// @param resource Data describing the remote downloadable file
+    /// @param file The file to verify
+    /// @return True if the checksums match, false otherwise.
     public boolean verify(Resource resource, Path file) {
         if (!Files.exists(file)) return false;
         try (var s = Files.newInputStream(file)) {

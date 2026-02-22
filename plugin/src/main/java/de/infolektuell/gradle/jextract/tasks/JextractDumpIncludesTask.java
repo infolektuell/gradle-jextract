@@ -8,17 +8,18 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.nio.file.Path;
 
-/**
- * Uses Jextract to dump all included symbols of a library header into an arg file
- */
+/// Uses Jextract to dump all included symbols of a library header into an arg file
 @CacheableTask
 public abstract class JextractDumpIncludesTask extends JextractBaseTask {
-    /**
-     * The location of the generated arg file
-     */
+    /// Creates a new [JextractDumpIncludesTask] instance
+    public JextractDumpIncludesTask() { super(); }
+
+    /// The location of the generated arg file
+    /// @return a property to configure the arg file location
     @OutputFile
     public abstract RegularFileProperty getArgFile();
 
+    /// The task action that dumps all includes into an arg file
     @TaskAction
     protected final void dump() {
         JextractStore jextract = getJextractStore().get();

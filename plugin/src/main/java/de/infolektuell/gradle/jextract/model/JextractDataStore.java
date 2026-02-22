@@ -8,12 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+/// Helpers for consistent paths and filenames for Jextract, depending on version and platform
 public class JextractDataStore {
-    /**
-     * Tries to create an instance of JextractDataStore using data from a properties file
-     * @param path The file that contains the Jextract distribution data to be loaded
-     * @return a JextractDataStore instance
-     */
+    /// Tries to create an instance of JextractDataStore using data from a properties file
+    /// @param path The file that contains the Jextract distribution data to be loaded
+    /// @return a JextractDataStore instance
     public static JextractDataStore create(Path path) {
         try (var f = Files.newBufferedReader(path)) {
             var data = new Properties();
@@ -24,10 +23,8 @@ public class JextractDataStore {
         }
     }
 
-    /**
-     * Tries to create an instance of JextractDataStore using the default distribution data
-     * @return a JextractDataStore instance
-     */
+    /// Tries to create an instance of JextractDataStore using the default distribution data
+    /// @return a JextractDataStore instance
     public static JextractDataStore create() {
         try (InputStream s = JextractDataStore.class.getResourceAsStream("/jextract.properties")) {
             var data = new Properties();
@@ -44,16 +41,15 @@ public class JextractDataStore {
         this.data = data;
     }
 
-    /**
-     * Returns the file name of the Jextract executable for the current operating system
-     */
+    /// Constructs the file name of the Jextract executable depending on the current operating system
+    /// @return The constructed file name
     public String getExecutableFilename() {
         return platform.isWindows() ? "jextract.bat" : "jextract";
     }
 
-    /**
-     * Returns the matching Jextract version for a given [Java major version][javaVersion]
-     */
+    /// Finds the matching Jextract version for a given Java major version
+    /// @param javaVersion A major Java language version
+    /// @return The most appropriate Jextract version
     public int version(int javaVersion) {
         if (javaVersion == 25) {
             return 25;
@@ -61,9 +57,9 @@ public class JextractDataStore {
         return Integer.max(Integer.min(javaVersion, 22), 19);
     }
 
-    /**
-     * Returns a downloadable resource for the specified Jextract [version],  using the data from an optional [file], falls back to the official distribution data
-     */
+    /// Creates a downloadable resource for the specified Jextract version
+    /// @param javaVersion A major Java language version
+    /// @return The constructed resource matching the java version
     public Resource resource(int javaVersion) {
         int version = version(javaVersion);
         String os = platform.operatingSystem().name().toLowerCase();
@@ -75,9 +71,9 @@ public class JextractDataStore {
         return new Resource(URI.create(url), checksum, "SHA-256");
     }
 
-    /**
-     * Returns an archive filename for the specified Jextract [version],  using the data from an optional [file], falls back to the official distribution data
-     */
+    /// Constructs an archive filename for the specified Jextract version
+    /// @param javaVersion A major Java language version
+    /// @return the constructed file name
     public String filename(int javaVersion) {
         int version = version(javaVersion);
         String os = platform.operatingSystem().name().toLowerCase();
