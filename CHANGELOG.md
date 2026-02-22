@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.2.0...HEAD
 
+### Added
+
+- The plugin registers a task that can create JMOD archives containing compiled classes and resources, C headers, and native binaries. The JMOD is exposed as a secondary variant, so it can be consumed by other projects.
+- Testing and running in conjunction with `System.loadLibrary` became easier. Directories containing native runtime binaries can be configured per library, and the plugin adds them via `java.library.path` property of test and run tasks.
+
 ### Improvements
 
 - The plugin first applies the Java plugin, and then applies itself. So the occurrence order of this plugin and Java plugins in the build script doesn't matter under any circumstances. A Java plugin could even be omitted in the build script.

@@ -18,9 +18,13 @@ public abstract class LibraryHandler implements Named {
     /// @return A property to configure the header file
     public abstract RegularFileProperty getHeader();
 
-    /// Additional directories to be appended to include search paths
+    /// Additional directories where Jextract and Jmod should search for header files
     /// @return A property to add more include directories
     public abstract ListProperty<@NonNull Directory> getIncludes();
+
+    /// Additional directories where Jmod should search for native runtime binaries
+    /// @return A property to add more library search directories
+    public abstract ListProperty<@NonNull Directory> getLibraryPath();
 
     /// Macros to be defined, in the format `name=value`
     /// @return A property to add defined macros
