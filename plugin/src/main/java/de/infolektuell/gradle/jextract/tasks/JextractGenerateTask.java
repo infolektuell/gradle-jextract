@@ -90,28 +90,18 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
     }
 
     private void commonExec(int version, ExecSpec spec) {
-        getIncludes().get().forEach(it -> spec.args("-I", it.getAsFile().getAbsolutePath()));
-        spec.args("--output", getSources().get().getAsFile().getAbsolutePath());
-        if (getTargetPackage().isPresent()) {
-            spec.args("-t", getTargetPackage().get());
-        }
-        if (getHeaderClassName().isPresent()) {
-            spec.args("--header-class-name", getHeaderClassName().get());
-        }
+        getIncludes().get().forEach(it -> spec.args("-I", it));
+        spec.args("--output", getSources().get());
+        if (getTargetPackage().isPresent()) spec.args("-t", getTargetPackage().get());
+        if (getHeaderClassName().isPresent()) spec.args("--header-class-name", getHeaderClassName().get());
         getDefinedMacros().get().forEach(it -> spec.args("-D", it));
         getWhitelist().get().forEach((k, v) -> v.forEach(it -> spec.args("--include-" + k, it)));
-        getLibraries().get().forEach(it -> spec.args("-l", it));
-        switch (version) {
-            case 19, 20, 21 -> {
-                if (getGenerateSourceFiles().get()) spec.args("--source");
-            }
-            default -> {
-                if (getUseSystemLoadLibrary().get()) spec.args("--use-system-load-library");
-            }
+        if (getUseSystemLoadLibrary().getOrElse(false) && version >= 22) {
+            spec.args("--use-system-load-library");
+            getLibraries().get().forEach(it -> spec.args("-l", it));
         }
-        if (getArgFile().isPresent()) {
-            spec.args("@" + getArgFile().get());
-        }
+        if (getGenerateSourceFiles().getOrElse(false) && version <= 21) spec.args("--source");
+        if (getArgFile().isPresent()) spec.args("@" + getArgFile().get());
         spec.args(getHeader().get());
     }
 }

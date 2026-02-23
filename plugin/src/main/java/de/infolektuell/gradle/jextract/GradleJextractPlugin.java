@@ -84,6 +84,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
             final Map<String, TaskProvider<@NonNull JextractGenerateTask>> jextractGenerateTasks = new HashMap<>();
             extension.getLibraries().configureEach(lib -> {
+                lib.getLibraries().add(lib.getName());
                 lib.getUseSystemLoadLibrary().convention(false);
                 lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
                 lib.getGenerateSourceFiles().convention(extension.getGenerateSourceFiles());
