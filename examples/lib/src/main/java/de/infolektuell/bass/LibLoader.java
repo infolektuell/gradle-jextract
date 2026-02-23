@@ -6,29 +6,16 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 
 final class LibLoader {
     private static boolean loaded = false;
 
     static synchronized void loadLibraries() {
-        if (loaded) {
-            return;
-        }
+        if (loaded) return;
         final String libName = System.mapLibraryName("bass");
-        String osName;
-        if (libName.endsWith(".dylib")) {
-            osName = "macos";
-        } else if (libName.endsWith(".dll")) {
-            osName = "windows";
-        } else {
-            osName = "linux";
-        }
-        final String archName = "x64";
-        try (InputStream s = Bass.class.getResourceAsStream("/native/" + osName + "/" + archName + "/" + libName)) {
-            if (s == null) {
-                loaded = false;
-                return;
-            }
+        try (InputStream s = Bass.class.getResourceAsStream("/" + libName)) {
+            if (Objects.isNull(s)) return;
             Path tmpDir = Files.createTempDirectory("bass");
             tmpDir.toFile().deleteOnExit();
             Path file = tmpDir.resolve(libName);

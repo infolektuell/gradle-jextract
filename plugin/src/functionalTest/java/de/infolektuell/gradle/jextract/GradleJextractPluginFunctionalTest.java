@@ -17,7 +17,7 @@ class GradleJextractPluginFunctionalTest {
         runner.withProjectDir(getProjectDir().toFile());
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("build", "--stacktrace");
+        runner.withArguments("lib:clean", "lib:build", "--stacktrace");
         var result = runner.build();
         assertTrue(result.getOutput().contains("BUILD SUCCESSFUL"));
     }
@@ -28,7 +28,7 @@ class GradleJextractPluginFunctionalTest {
         runner.withProjectDir(getProjectDir().toFile());
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("run", "--stacktrace");
+        runner.withArguments("app:clean", "app:run", "--stacktrace");
         var result = runner.build();
         assertTrue(result.getOutput().contains("BUILD SUCCESSFUL"));
     }
