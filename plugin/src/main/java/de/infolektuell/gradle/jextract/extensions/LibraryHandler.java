@@ -26,6 +26,10 @@ public abstract class LibraryHandler implements Named {
     /// @return A property to add more library search directories
     public abstract ListProperty<@NonNull Directory> getLibraryPath();
 
+    /// Directories containing legal notice documents, to be included in the JMOD archive
+    /// @return A property to add legal documents directories
+    public abstract ListProperty<@NonNull Directory> getLegalNotices();
+
     /// Macros to be defined, in the format `name=value`
     /// @return A property to add defined macros
     public abstract ListProperty<@NonNull String> getDefinedMacros();

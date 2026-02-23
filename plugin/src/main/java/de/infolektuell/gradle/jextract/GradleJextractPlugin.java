@@ -162,6 +162,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     createJmodTask.configure(task -> {
                         task.getHeaderFiles().from(lib.getIncludes());
                         task.getLibs().from(lib.getLibraryPath());
+                        task.getLegalNotices().from(lib.getLegalNotices());
                     });
                 });
             });
