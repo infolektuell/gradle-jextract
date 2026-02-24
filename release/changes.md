@@ -1,2 +1,3 @@
-- Upgraded required JRE to version 21
-- The code has been migrated to Java to get rid of the Kotlin dependency. This shouldn't be a breaking change.
+- This release primarily contains features for better interoperability with Jlink and Jpackage.
+- It creates a JMOD archive from classes, headers, binaries, and legal notices.
+- Improved support for testing and running with loading native binaries from the library search path.

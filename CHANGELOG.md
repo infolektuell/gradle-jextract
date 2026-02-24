@@ -6,19 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.2.0...HEAD
+[unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.3.0...HEAD
+
+## [1.3.0] - 2026-02-24
+[1.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.2.0...v1.3.0
 
 ### Added
 
-- The plugin registers a task that can create JMOD archives containing compiled classes and resources, C headers, and native binaries. The JMOD is exposed as a secondary variant, so it can be consumed by other projects.
-- Testing and running in conjunction with `System.loadLibrary` became easier. Directories containing native runtime binaries can be configured per library, and the plugin adds them via `java.library.path` property of test and run tasks.
+- This release primarily contains features for better interoperability with Jlink and Jpackage.
+  - The plugin registers a task that can create JMOD archives containing compiled classes and resources, C headers, and native binaries. The JMOD is exposed as a secondary variant, so it can be consumed by other projects.
+  - Added better support for testing and running projects where binaries are loaded from the library search path. This can also be useful for linking the artifact into a custom runtime image or native application.
 
 ### Improvements
 
-- The plugin first applies the Java plugin, and then applies itself. So the occurrence order of this plugin and Java plugins in the build script doesn't matter under any circumstances. A Java plugin could even be omitted in the build script.
+- The occurrence order of this plugin and Java plugins in the build script doesn't matter under any circumstances. A Java plugin could even be omitted in the build script.
 - Removed an occurrence of eager configuration.
 - Consolidated the plugin's implementation.
 - Added missing Javadoc comments
+- Updated example project to reflect the plugin features
 
 ## [1.2.0] - 2026-01-17
 [1.2.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.1.0...v1.2.0
