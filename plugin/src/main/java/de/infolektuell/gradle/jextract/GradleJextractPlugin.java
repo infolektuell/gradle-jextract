@@ -7,8 +7,7 @@ import de.infolektuell.gradle.jextract.tasks.*;
 
 import static de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*;
 
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
+import org.gradle.api.*;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaApplication;
@@ -17,6 +16,7 @@ import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaCompiler;
@@ -133,14 +133,16 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
             javaExtension.getSourceSets().named("main", s -> {
                 final var isModularProject = s.getJava().getSourceDirectories().filter(this::isModule).getElements().map(e -> !e.isEmpty());
+                final TaskProvider<@NonNull Jar> jarTask = project.getTasks().named(s.getJarTaskName(), Jar.class);
                 final TaskProvider<@NonNull JmodCreateTask> createJmodTask = project.getTasks().register(s.getTaskName("create", "Jmod"), JmodCreateTask.class, task -> {
                     task.setGroup("build");
-                    task.setDescription("Converts a jar into a jmod file");
+                    task.setDescription("Assembles a jmod archive containing the classes of the 'main' feature.");
                     task.onlyIf(t -> isModularProject.get());
                     task.getMetadata().convention(javaVersion.flatMap(v -> getJavaToolchainService().compilerFor(spec -> spec.getLanguageVersion().set(v)).map(JavaCompiler::getMetadata)));
-                    task.getClasspath().from(s.getOutput());
-                    task.getJmod().convention(project.getLayout().getBuildDirectory().file(String.format("libs/%s.jmod", project.getName())));
+                    task.getClasspath().from(jarTask);
+                    task.getJmod().convention(jarTask.flatMap(t -> t.getDestinationDirectory().map(d -> d.file(project.getName() + ".jmod"))));
                 });
+                project.getTasks().named("assemble", task -> task.dependsOn(createJmodTask));
 
                 project.getConfigurations().named(s.getApiElementsConfigurationName(), config -> {
                     config.getOutgoing().getVariants().register("jmod", jmod -> {

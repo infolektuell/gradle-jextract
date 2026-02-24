@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 /// Creates a new JMOD archive.
 @CacheableTask
 public abstract class JmodCreateTask extends DefaultTask {
+
     /// Creates a new instance
     public JmodCreateTask() { super(); }
 
