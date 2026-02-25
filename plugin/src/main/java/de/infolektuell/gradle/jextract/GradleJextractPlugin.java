@@ -15,6 +15,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.testing.Test;
@@ -29,8 +30,6 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.PathMatcher;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /// A Gradle plugin to add Jextract to the build
@@ -44,24 +43,34 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
     /// Configures the plugin if it is applied
     public void apply(Project project) {
-        project.getPlugins().apply(JavaPlugin.class);
         final JextractExtension extension = project.getObjects().newInstance(JextractExtension.class);
         project.getExtensions().add(JextractExtension.EXTENSION_NAME, extension);
+        extension.getOutput().convention(project.getLayout().getBuildDirectory().dir("generated/sources/jextract/java"));
+        extension.getGenerateSourceFiles().convention(false);
+        final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
+        extension.getLibraries().configureEach(lib -> {
+            lib.getLibraries().add(lib.getName());
+            lib.getUseSystemLoadLibrary().convention(false);
+            lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
+            lib.getGenerateSourceFiles().convention(extension.getGenerateSourceFiles());
+            lib.getIncludes().add(lib.getHeader().map(h -> project.getLayout().getProjectDirectory().dir(h.getAsFile().getParentFile().getAbsolutePath())));
+            libraryPathProvider.getFiles().from(lib.getLibraryPath());
+        });
+
+        project.getGradle().getSharedServices().registerIfAbsent(JextractStore.SERVICE_NAME, JextractStore.class, s -> {
+            s.getMaxParallelUsages().convention(1);
+            s.parameters(parameters -> {
+                parameters.getCacheDir().convention(project.getRootProject().getLayout().getProjectDirectory().dir(".gradle/jextract"));
+                parameters.getDistributions().convention(extension.getDistributions());
+            });
+        });
+
+        project.getPlugins().apply(JavaPlugin.class);
         project.getPluginManager().withPlugin("java", javaPlugin -> {
             final JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
             final Provider<@NonNull JavaLanguageVersion> javaVersion = javaExtension.getToolchain().getLanguageVersion()
                     .orElse(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
             extension.getInstallation().getJavaLanguageVersion().convention(javaVersion);
-            extension.getOutput().convention(project.getLayout().getBuildDirectory().dir("generated/sources/jextract"));
-            extension.getGenerateSourceFiles().convention(false);
-
-            project.getGradle().getSharedServices().registerIfAbsent(JextractStore.SERVICE_NAME, JextractStore.class, s -> {
-                s.getMaxParallelUsages().convention(1);
-                s.parameters(parameters -> {
-                    parameters.getCacheDir().convention(project.getRootProject().getLayout().getProjectDirectory().dir(".gradle/jextract"));
-                    parameters.getDistributions().convention(extension.getDistributions());
-                });
-            });
 
             project.getTasks().withType(JextractBaseTask.class, task -> {
                 final var jextractInstallation = extension.getInstallation().getLocation().map(location -> {
@@ -77,21 +86,8 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 task.getInstallation().convention(jextractInstallation);
             });
 
-            final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
-            project.getTasks().withType(Test.class, task -> {
-                task.getJvmArgumentProviders().add(libraryPathProvider);
-            });
-
-            final Map<String, TaskProvider<@NonNull JextractGenerateTask>> jextractGenerateTasks = new HashMap<>();
             extension.getLibraries().configureEach(lib -> {
-                lib.getLibraries().add(lib.getName());
-                lib.getUseSystemLoadLibrary().convention(false);
-                lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
-                lib.getGenerateSourceFiles().convention(extension.getGenerateSourceFiles());
-                lib.getIncludes().add(lib.getHeader().map(h -> project.getLayout().getProjectDirectory().dir(h.getAsFile().getParentFile().getAbsolutePath())));
-                libraryPathProvider.getFiles().from(lib.getLibraryPath());
-
-                final TaskProvider<@NonNull JextractGenerateTask> generateTaskProvider = project.getTasks().register(lib.getName() + "JextractGenerateBindings", JextractGenerateTask.class, task -> {
+                project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getHeader().set(lib.getHeader());
                     task.getIncludes().set(lib.getIncludes());
@@ -110,8 +106,8 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.getGenerateSourceFiles().set(lib.getGenerateSourceFiles());
                     task.getSources().set(lib.getOutput());
                 });
-                jextractGenerateTasks.put(lib.getName(), generateTaskProvider);
-                project.getTasks().register(lib.getName() + "JextractDumpIncludes", JextractDumpIncludesTask.class, task -> {
+
+                project.getTasks().register(lib.getDumpIncludesTaskName(), JextractDumpIncludesTask.class, task -> {
                     task.setDescription("Uses Jextract to dump all includes of the " + lib.getName() + " native library into an arg file");
                     task.getHeader().set(lib.getHeader());
                     task.getIncludes().set(lib.getIncludes());
@@ -123,7 +119,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 final SourceSetExtension sourceSetExtension = project.getObjects().newInstance(SourceSetExtension.class);
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
-                    final TaskProvider<@NonNull JextractGenerateTask> task = jextractGenerateTasks.get(lib.getName());
+                    final TaskProvider<@NonNull JextractGenerateTask> task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
                     s.getJava().srcDir(task);
                     s.getResources().srcDir(task);
                     final FileCollection src = project.getLayout().files(task);
@@ -131,42 +127,9 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     s.setRuntimeClasspath(s.getRuntimeClasspath().plus(src));
                 });
             });
-            javaExtension.getSourceSets().named("main", s -> {
-                final var isModularProject = s.getJava().getSourceDirectories().filter(this::isModule).getElements().map(e -> !e.isEmpty());
-                final TaskProvider<@NonNull Jar> jarTask = project.getTasks().named(s.getJarTaskName(), Jar.class);
-                final TaskProvider<@NonNull JmodCreateTask> createJmodTask = project.getTasks().register(s.getTaskName("create", "Jmod"), JmodCreateTask.class, task -> {
-                    task.setGroup("build");
-                    task.setDescription("Assembles a jmod archive containing the classes of the 'main' feature.");
-                    task.onlyIf(t -> isModularProject.get());
-                    task.getMetadata().convention(javaVersion.flatMap(v -> getJavaToolchainService().compilerFor(spec -> spec.getLanguageVersion().set(v)).map(JavaCompiler::getMetadata)));
-                    task.getClasspath().from(jarTask);
-                    task.getJmod().convention(jarTask.flatMap(t -> t.getDestinationDirectory().map(d -> d.file(project.getName() + ".jmod"))));
-                });
-                project.getTasks().named("assemble", task -> task.dependsOn(createJmodTask));
-
-                project.getConfigurations().named(s.getApiElementsConfigurationName(), config -> {
-                    config.getOutgoing().getVariants().register("jmod", jmod -> {
-                        jmod.getDescription().set("A jmod file containing classes, resources, libs, headers, and legal notices if available.");
-                        jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, "jmod"));
-                        jmod.artifact(createJmodTask, artifact -> artifact.setType("jmod"));
-                    });
-                });
-                project.getConfigurations().named(s.getRuntimeElementsConfigurationName(), config -> {
-                    config.getOutgoing().getVariants().register("jmod", jmod -> {
-                        jmod.getDescription().set("A jmod file containing classes, resources, libs, headers, and legal notices if available.");
-                        jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, "jmod"));
-                        jmod.artifact(createJmodTask, artifact -> artifact.setType("jmod"));
-                    });
-                });
-
-                final SourceSetExtension sourceSetExtension = s.getExtensions().getByType(SourceSetExtension.class);
-                sourceSetExtension.getLibraries().all(lib -> {
-                    createJmodTask.configure(task -> {
-                        task.getHeaderFiles().from(lib.getIncludes());
-                        task.getLibs().from(lib.getLibraryPath());
-                        task.getLegalNotices().from(lib.getLegalNotices());
-                    });
-                });
+            javaExtension.getSourceSets().named("main", s -> configureJmod(project, s));
+            project.getTasks().withType(Test.class, task -> {
+                task.getJvmArgumentProviders().add(libraryPathProvider);
             });
         });
 
@@ -179,10 +142,6 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 });
             });
 
-            final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
-            extension.getLibraries().all(lib -> {
-                libraryPathProvider.getFiles().from(lib.getLibraryPath());
-            });
             project.getTasks().named("run", JavaExec.class, task -> {
                 task.getJvmArgumentProviders().add(libraryPathProvider);
             });
@@ -193,6 +152,47 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
     /// @return A property holding the injected build service
     @Inject
     protected abstract JavaToolchainService getJavaToolchainService();
+
+    private void configureJmod(Project project, SourceSet sourceSet) {
+        final JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+        final Provider<@NonNull JavaLanguageVersion> javaVersion = javaExtension.getToolchain().getLanguageVersion()
+            .orElse(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
+
+        final Provider<@NonNull Boolean> isModularProject = sourceSet.getJava().getSourceDirectories().filter(this::isModule).getElements().map(e -> !e.isEmpty());
+        final TaskProvider<@NonNull Jar> jarTask = project.getTasks().named(sourceSet.getJarTaskName(), Jar.class);
+        final TaskProvider<@NonNull JmodCreateTask> createJmodTask = project.getTasks().register(sourceSet.getTaskName("create", "Jmod"), JmodCreateTask.class, task -> {
+            task.setGroup("build");
+            task.setDescription("Assembles a jmod archive containing the classes of the 'main' feature.");
+            task.onlyIf(t -> isModularProject.get());
+            task.getMetadata().convention(javaVersion.flatMap(v -> getJavaToolchainService().compilerFor(spec -> spec.getLanguageVersion().set(v)).map(JavaCompiler::getMetadata)));
+            task.getClasspath().from(jarTask);
+            task.getJmod().convention(jarTask.flatMap(t -> t.getDestinationDirectory().map(d -> d.file(project.getName() + ".jmod"))));
+        });
+
+        project.getConfigurations().named(sourceSet.getApiElementsConfigurationName(), config -> {
+            config.getOutgoing().getVariants().register("jmod", jmod -> {
+                jmod.getDescription().set("A jmod file containing classes, resources, libs, headers, and legal notices if available.");
+                jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, "jmod"));
+                jmod.artifact(createJmodTask, artifact -> artifact.setType("jmod"));
+            });
+        });
+        project.getConfigurations().named(sourceSet.getRuntimeElementsConfigurationName(), config -> {
+            config.getOutgoing().getVariants().register("jmod", jmod -> {
+                jmod.getDescription().set("A jmod file containing classes, resources, libs, headers, and legal notices if available.");
+                jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, "jmod"));
+                jmod.artifact(createJmodTask, artifact -> artifact.setType("jmod"));
+            });
+        });
+
+        final SourceSetExtension sourceSetExtension = sourceSet.getExtensions().getByType(SourceSetExtension.class);
+        sourceSetExtension.getLibraries().all(lib -> {
+            createJmodTask.configure(task -> {
+                task.getHeaderFiles().from(lib.getIncludes());
+                task.getLibs().from(lib.getLibraryPath());
+                task.getLegalNotices().from(lib.getLegalNotices());
+            });
+        });
+    }
 
     private boolean isModule(File file) {
         if (file.isFile() && file.getName().endsWith(".jmod")) return true;
