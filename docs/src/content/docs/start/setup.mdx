@@ -11,15 +11,15 @@ This setup guide covers the standard use-case of generating and integrating nati
 
 You should have these things in place before you start:
 
-- JVM 17 or above
+- JVM 21 or above
 - A Gradle project using Gradle v8.8 or above
 
 ## Including the Plugin
 
-This will configure the project to download and use Jextract 22 which is determined from the Java toolchain.
+This will configure the project to download and use Jextract 25 which is determined from the Java toolchain.
 
 :::tip
-See the [latest version](https://plugins.gradle.org/plugin/de.infolektuell.jextract) on Gradle plugin portal.
+See the [latest Jextract releases](https://jdk.java.net/jextract/) on their download page.
 :::
 
 <Tabs syncKey="dsl">
@@ -109,7 +109,7 @@ jextract.libraries {
         headerClassName = "Greeting"
         targetPackage = "com.example.greeting"
     }
-    sourceSets.named("main") {
+    sourceSets.main {
         jextract.libraries.addLater(greeting)
     }
 }
@@ -126,7 +126,7 @@ jextract.libraries {
         headerClassName = "Greeting"
         targetPackage = "com.example.greeting"
     }
-    sourceSets.named("main") {
+    sourceSets.main {
         jextract.libraries.addLater(greeting)
     }
 }
@@ -186,11 +186,15 @@ This will result in the following output file structure:
 There are mainly two approaches how the generated code can load and access the correct binaries.
 Please see this [stackoverflow question] for more details and explanation.
 
+:::tip[Sample Project]
+The [example project] demonstrates both approaches.
+:::
+
 ### Automatic Loading
 
-The code searches in the OS-specific paths for the binary files and tries to load them via `system.loadLibrary`.
+The code searches in the OS-specific paths for the binary files and tries to load them by their name via `system.loadLibrary`.
 The `java.library.path` property can be augmented to search in more paths or in the deployed app distribution.
-This approach is activated in a library config in the plugin DSL.
+This approach is activated with Jextract's `--use-system-load-library` command line option and can be configured in a library config in the plugin DSL.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
@@ -200,7 +204,7 @@ This approach is activated in a library config in the plugin DSL.
 jextract.libraries {
     val greeting by registering {
         useSystemLoadLibrary = true
-        libraries.add("greeting")
+        libraryPath.add(layout.projectDirectory.dir("src/main/lib/<os>/<arch>"))
     }
 }
 ```
@@ -211,9 +215,9 @@ jextract.libraries {
 ```groovy {4-5}
 // build.gradle
 jextract.libraries {
-    def greeting = register('greeting') {
+    register('greeting') {
         useSystemLoadLibrary = true
-        libraries.add("greeting")
+        libraryPath.add(layout.projectDirectory.dir("src/main/lib/<os>/<arch>"))
     }
 }
 ```
@@ -222,17 +226,15 @@ jextract.libraries {
 </Tabs>
 
 :::note
-`system.loadLibrary` infers the conventional name for an OS-Specific dynamic library from the base name, e.g. greeting.dll, libgreeting.dylib, or libgreeting.so.
+The plugin uses the name of the registered library configuration as library namee per default.
 :::
 
 ### Manual Loading
 
 Instead of configuring the libraries in the DSL, custom logic for loading the files can be implemented.
 This is a typical approach for bundling natives as resources of a jar file for more portable deployment.
-
-:::tip[Sample Project]
-The [example project] demonstrates this approach.
-:::
+The implementation has to extract and load the binary files using `System.load`.
+The build doesn't need further configuration.
 
 [stackoverflow question]: https://stackoverflow.com/questions/78528174/gradle-java-include-native-library-project-panama
 [example project]: https://github.com/infolektuell/gradle-jextract/tree/main/examples/

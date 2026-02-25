@@ -33,6 +33,7 @@ So importing and configuring tasks directly is not necessary.
 - Add the generated code to any Java source sets.
 - Filter which symbols in your lib should be included, via DSL or arg file.
 - Dump all includes into an arg file for further usage and filtering.
+- Assemble a JMOD archive of compiled classes, native binaries, headers, and legal notices
 
 ### Gradle
 
