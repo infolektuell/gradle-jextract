@@ -3,6 +3,7 @@ title: Downloading from custom locations
 description: How to download and use Jextract from custom locations with the Gradle Jextract plugin
 sidebar:
   order: 3
+  label: Custom Download
 ---
 
 Jextract can be downloaded from custom locations.
@@ -31,7 +32,7 @@ The following excerpt from the default data declares all resources for Jextract 
 Every key follows the `jextract.<major-version>.<os>.<arch>.key` pattern.
 
 ```properties
-# jextract.properties
+# company-jextract.properties
 jextract.22.linux.aarch64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_linux-aarch64_bin.tar.gz
 jextract.22.linux.aarch64.sha-256=e218579a43dd1cb77e94cdbfa5b7b30eaed682aef8f40300c9916e59b1194fa7
 jextract.22.linux.x64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_linux-x64_bin.tar.gz
@@ -65,14 +66,16 @@ Put it somewhere in your project and check it into source control.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
-```kts "distributions"
+```kts {3}
+// build.gradle.kts
 jextract {
     distributions = rootProject.layout.file("company-jextract.properties")
 }
 ```
 </TabItem>
 <TabItem label="Groovy">
-```groovy "distributions"
+```groovy {3}
+// build.gradle
 jextract {
     distributions = rootProject.layout.file "company-jextract.properties"
 }

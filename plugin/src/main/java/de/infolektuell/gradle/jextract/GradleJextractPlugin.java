@@ -9,6 +9,7 @@ import static de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*;
 
 import org.gradle.api.*;
 import org.gradle.api.attributes.LibraryElements;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
@@ -37,6 +38,9 @@ import java.util.Objects;
 public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
     /// The plugin ID that must be used in build scripts to apply the plugin
     public static final String PLUGIN_NAME = "de.infolektuell.jextract";
+
+    ///  The gradle property to set a local Jextract installation path
+    public static final String JEXTRACT_LOCAL_INSTALLATION_PROPERTY = "org.openjdk.jextract.installation-path";
 
     ///  Creates a new instance
     public GradleJextractPlugin() { super(); }
@@ -72,23 +76,27 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     .orElse(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
             extension.getInstallation().getJavaLanguageVersion().convention(javaVersion);
 
-            project.getTasks().withType(JextractBaseTask.class, task -> {
-                final var jextractInstallation = extension.getInstallation().getLocation().map(location -> {
-                        final var installation = project.getObjects().newInstance(LocalJextractInstallation.class);
-                        installation.getLocation().convention(location);
-                        return (JextractInstallation) installation;
-                    })
-                    .orElse(extension.getInstallation().getJavaLanguageVersion().map(version -> {
-                        final var installation = project.getObjects().newInstance(RemoteJextractInstallation.class);
-                        installation.getJavaLanguageVersion().convention(version);
-                        return (JextractInstallation) installation;
-                    }));
-                task.getInstallation().convention(jextractInstallation);
-            });
+            final var localInstallationPath = project.getProviders().gradleProperty(JEXTRACT_LOCAL_INSTALLATION_PROPERTY);
+            if (localInstallationPath.isPresent()) {
+                final Directory location = project.getLayout().getProjectDirectory().dir(localInstallationPath.get());
+                if (!location.getAsFile().isDirectory()) throw new GradleException(String.format("The path %s doesn't point to a directory.", location));
+                extension.getInstallation().getLocation().convention(location);
+            }
+            final Provider<@NonNull JextractInstallation> jextractInstallation = extension.getInstallation().getLocation().map(location -> {
+                    final var installation = project.getObjects().newInstance(LocalJextractInstallation.class);
+                    installation.getLocation().convention(location);
+                    return (JextractInstallation) installation;
+                })
+                .orElse(extension.getInstallation().getJavaLanguageVersion().map(version -> {
+                    final var installation = project.getObjects().newInstance(RemoteJextractInstallation.class);
+                    installation.getJavaLanguageVersion().convention(version);
+                    return (JextractInstallation) installation;
+                }));
 
             extension.getLibraries().configureEach(lib -> {
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
+                    task.getInstallation().convention(jextractInstallation);
                     task.getHeader().set(lib.getHeader());
                     task.getIncludes().set(lib.getIncludes());
                     task.getDefinedMacros().set(lib.getDefinedMacros());
@@ -109,6 +117,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
                 project.getTasks().register(lib.getDumpIncludesTaskName(), JextractDumpIncludesTask.class, task -> {
                     task.setDescription("Uses Jextract to dump all includes of the " + lib.getName() + " native library into an arg file");
+                    task.getInstallation().convention(jextractInstallation);
                     task.getHeader().set(lib.getHeader());
                     task.getIncludes().set(lib.getIncludes());
                     task.getArgFile().set(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));

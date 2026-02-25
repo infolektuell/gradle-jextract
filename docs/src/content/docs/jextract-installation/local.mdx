@@ -1,34 +1,40 @@
 ---
-title: Using local path
+title: Using a Local Jextract Installation
 description: How to use a locally installed version of Jextract with the Gradle Jextract plugin
 sidebar:
   order: 4
+  label: Local Installation
 ---
 
-## Use a Local Installation
+Setting the Gradle property `org.openjdk.jextract.installation-path` to a directory path tells the plugin to use a local Jextract version.
+This can be useful to avoid network requests or for specific development/testing scenarios.
 
-The plugin can also use a local Jextract installation.
-Setting the installation path in the DSL activates this alternative mode.
+```properties {2}
+# gradle.properties
+org.openjdk.jextract.installation-path=/usr/local/opt/jextract-22/
+```
 
-:::caution
-This method meets an offline-requirement, but your build becomes dependent of your local setup.
+:::tip
+Relative paths are resolved from the project directory.
 :::
+
+Alternately, a local installation directory can be configured in the dSL extension.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
-
-```kts
+```kts {3}
 // build.gradle.kts
-jextract.local(layout.projectDirectory.dir("/usr/local/opt/jextract-22/"))
+jextract {
+    installation.location = layout.projectDirectory.dir("/home/user/bin/jextract-25/")
+}
 ```
-
 </TabItem>
 <TabItem label="Groovy">
-
-```groovy
+```groovy {3}"
 // build.gradle
-jextract.local(layout.projectDirectory.dir "/usr/local/opt/jextract-22/")
+jextract {
+    installation.location = layout.projectDirectory.dir '/home/user/bin/jextract-25/'
+}
 ```
-
 </TabItem>
 </Tabs>

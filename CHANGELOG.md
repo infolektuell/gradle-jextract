@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.3.0...HEAD
 
+### Added
+
+- A local Jextract installation can be configured with the Gradle property `org.openjdk.jextract.installation-path` instead of the build script DSL. This is the cleaner solution and recommended in the future.
+
+### Deprecated
+
+- The `jextract.installation.location` property shouldn't be used anymore and will be removed in the next major release. Local Jextract installation should be configured via user-specific Gradle property.
+
 ## [1.3.0] - 2026-02-24
 [1.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.2.0...v1.3.0
 
