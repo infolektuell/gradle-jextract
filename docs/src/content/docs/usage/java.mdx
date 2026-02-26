@@ -17,7 +17,7 @@ A source set may depend on multiple libraries, and a library may be added to mul
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts {10-11}
+```kts {10,13}
 // build.gradle.kts
 jextract.libraries {
     val greeting by registering {
@@ -38,7 +38,7 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy {10-11}
+```groovy {10,13}
 // build.gradle
 jextract.libraries {
     def greeting = register('greeting') {

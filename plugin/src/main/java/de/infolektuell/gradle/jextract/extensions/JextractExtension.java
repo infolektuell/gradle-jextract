@@ -2,13 +2,11 @@ package de.infolektuell.gradle.jextract.extensions;
 
 import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectContainer;
-import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Nested;
-import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.jspecify.annotations.NonNull;
 
 import javax.inject.Inject;
@@ -32,6 +30,7 @@ public abstract class JextractExtension {
 
     /// A [java.util.Properties] file containing the remote locations where to download the Jextract distributions
     /// @return a property
+    /// @deprecated This moved to [JextractExtension#getInstallation]
     public abstract RegularFileProperty getDistributions();
 
     /// The libraries Jextract should generate bindings for

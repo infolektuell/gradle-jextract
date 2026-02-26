@@ -69,7 +69,7 @@ Put it somewhere in your project and check it into source control.
 ```kts {3}
 // build.gradle.kts
 jextract {
-    distributions = rootProject.layout.file("company-jextract.properties")
+    installation.distributions = rootProject.layout.file("company-jextract.properties")
 }
 ```
 </TabItem>
@@ -77,7 +77,7 @@ jextract {
 ```groovy {3}
 // build.gradle
 jextract {
-    distributions = rootProject.layout.file "company-jextract.properties"
+    installation.distributions = rootProject.layout.file "company-jextract.properties"
 }
 ```
 </TabItem>

@@ -51,6 +51,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         project.getExtensions().add(JextractExtension.EXTENSION_NAME, extension);
         extension.getOutput().convention(project.getLayout().getBuildDirectory().dir("generated/sources/jextract/java"));
         extension.getGenerateSourceFiles().convention(false);
+        extension.getInstallation().getDistributions().convention(extension.getDistributions());
         final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
         extension.getLibraries().configureEach(lib -> {
             lib.getLibraries().add(lib.getName());
@@ -65,7 +66,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             s.getMaxParallelUsages().convention(1);
             s.parameters(parameters -> {
                 parameters.getCacheDir().convention(project.getRootProject().getLayout().getProjectDirectory().dir(".gradle/jextract"));
-                parameters.getDistributions().convention(extension.getDistributions());
+                parameters.getDistributions().convention(extension.getInstallation().getDistributions());
             });
         });
 
