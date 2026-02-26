@@ -31,7 +31,10 @@ import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.PathMatcher;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /// A Gradle plugin to add Jextract to the build
 @SuppressWarnings("UnstableApiUsage")
@@ -54,11 +57,11 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
         final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
         extension.getLibraries().configureEach(lib -> {
-            lib.getLibraries().add(lib.getName());
+            lib.getIncludes().convention(lib.getHeader().map(h -> List.of(project.getLayout().getProjectDirectory().dir(h.getAsFile().getParentFile().getAbsolutePath()))));
+            lib.getLibraries().convention(List.of(lib.getName()));
             lib.getUseSystemLoadLibrary().convention(false);
             lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
             lib.getGenerateSourceFiles().convention(extension.getGenerateSourceFiles());
-            lib.getIncludes().add(lib.getHeader().map(h -> project.getLayout().getProjectDirectory().dir(h.getAsFile().getParentFile().getAbsolutePath())));
             libraryPathProvider.getFiles().from(lib.getLibraryPath());
         });
 
@@ -98,30 +101,35 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getInstallation().convention(jextractInstallation);
-                    task.getHeader().set(lib.getHeader());
-                    task.getIncludes().set(lib.getIncludes());
-                    task.getDefinedMacros().set(lib.getDefinedMacros());
-                    task.getHeaderClassName().set(lib.getHeaderClassName());
-                    task.getTargetPackage().set(lib.getTargetPackage());
-                    task.getWhitelist().put("function", lib.getWhitelist().getFunctions());
-                    task.getWhitelist().put("constant", lib.getWhitelist().getConstants());
-                    task.getWhitelist().put("struct", lib.getWhitelist().getStructs());
-                    task.getWhitelist().put("union", lib.getWhitelist().getUnions());
-                    task.getWhitelist().put("typedef", lib.getWhitelist().getTypedefs());
-                    task.getWhitelist().put("var", lib.getWhitelist().getVariables());
-                    task.getArgFile().set(lib.getWhitelist().getArgFile());
-                    task.getLibraries().set(lib.getLibraries());
-                    task.getUseSystemLoadLibrary().set(lib.getUseSystemLoadLibrary());
-                    task.getGenerateSourceFiles().set(lib.getGenerateSourceFiles());
-                    task.getSources().set(lib.getOutput());
+                    task.getHeader().convention(lib.getHeader());
+                    task.getIncludes().convention(lib.getIncludes());
+                    task.getDefinedMacros().convention(lib.getDefinedMacros());
+                    task.getHeaderClassName().convention(lib.getHeaderClassName());
+                    task.getTargetPackage().convention(lib.getTargetPackage());
+                    final Provider<@NonNull Map<@NonNull String, @NonNull Set<@NonNull String>>> whitelist = project.getProviders().provider(() -> {
+                        return Map.of(
+                            "function", lib.getWhitelist().getFunctions().get(),
+                            "constant", lib.getWhitelist().getConstants().get(),
+                            "struct", lib.getWhitelist().getStructs().get(),
+                            "union", lib.getWhitelist().getUnions().get(),
+                            "typedef", lib.getWhitelist().getTypedefs().get(),
+                            "var", lib.getWhitelist().getVariables().get()
+                        );
+                    });
+                    task.getWhitelist().convention(whitelist);
+                    task.getArgFile().convention(lib.getWhitelist().getArgFile());
+                    task.getLibraries().convention(lib.getLibraries());
+                    task.getUseSystemLoadLibrary().convention(lib.getUseSystemLoadLibrary());
+                    task.getGenerateSourceFiles().convention(lib.getGenerateSourceFiles());
+                    task.getSources().convention(lib.getOutput());
                 });
 
                 project.getTasks().register(lib.getDumpIncludesTaskName(), JextractDumpIncludesTask.class, task -> {
                     task.setDescription("Uses Jextract to dump all includes of the " + lib.getName() + " native library into an arg file");
                     task.getInstallation().convention(jextractInstallation);
-                    task.getHeader().set(lib.getHeader());
-                    task.getIncludes().set(lib.getIncludes());
-                    task.getArgFile().set(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
+                    task.getHeader().convention(lib.getHeader());
+                    task.getIncludes().convention(lib.getIncludes());
+                    task.getArgFile().convention(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
                 });
             });
 
