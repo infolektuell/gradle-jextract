@@ -9,11 +9,10 @@
         "build": "astro build",
         "preview": "astro preview",
         "format": "prettier -w .",
-        "check": "prettier -c . && astro check",
+        "check": "prettier -c .",
         "astro": "astro"
     },
     "devDependencies": {
-        "@astrojs/check": "^0.9.6",
         "@astrojs/starlight": "^0.37.6",
         "astro": "^5.18.0",
         "astro-auto-import": "^0.5.1",

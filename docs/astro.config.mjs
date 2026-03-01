@@ -11,10 +11,7 @@ export default defineConfig({
     trailingSlash: 'always',
     integrations: [
         starlight({
-            plugins: [
-                starlightChangelogs(),
-                starlightAutoImport(),
-            ],
+            plugins: [starlightChangelogs(), starlightAutoImport()],
             title: 'Gradle Jextract Plugin',
             description: 'Generates Java bindings from native library headers using Jextract',
             logo: {
