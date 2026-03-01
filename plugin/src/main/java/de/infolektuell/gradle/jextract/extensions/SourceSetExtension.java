@@ -13,7 +13,7 @@ public abstract class SourceSetExtension {
     /// The name of this extension how it is accessible from build.gradle or build.gradle.kts
     public static final String EXTENSION_NAME = "jextract";
 
-    /// Creates a new instance
+    /// Used by Gradle
     public SourceSetExtension() {
         super();
         this.libraries = getObjects().namedDomainObjectSet(LibraryHandler.class);

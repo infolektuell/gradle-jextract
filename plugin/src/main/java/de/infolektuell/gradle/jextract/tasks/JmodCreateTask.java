@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 @CacheableTask
 public abstract class JmodCreateTask extends DefaultTask {
 
-    /// Creates a new instance
+    /// Used by Gradle
     public JmodCreateTask() { super(); }
 
     /// The toolchain where the JMOD executable is used from.

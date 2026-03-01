@@ -11,7 +11,7 @@ import java.util.List;
 
 /// Configures the native library path for Java execution.
 public abstract class LibraryPathProvider implements CommandLineArgumentProvider {
-    /// Creates a new instance
+    /// Used by Gradle
     public LibraryPathProvider() { super(); }
 
     /// The directories containing native libraries that are necessary for Java runtime

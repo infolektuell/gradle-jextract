@@ -8,7 +8,7 @@ import org.jspecify.annotations.NonNull;
 
 ///  DSL extension to configure which Jextract installation should be used by the Jextract plugin
 public abstract class InstallationHandler {
-    /// Creates a new instance
+    /// Used by Gradle
     public InstallationHandler() { super(); }
     /// The Java version the code should be generated for
     /// @return A property to configure the Java version

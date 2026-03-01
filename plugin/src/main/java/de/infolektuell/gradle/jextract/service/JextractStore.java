@@ -75,7 +75,7 @@ public abstract class JextractStore implements BuildService<JextractStore.@NonNu
     private final Map<Integer, RemoteInstallation> remoteInstallations;
     private final Map<Path, Installation> localInstallations;
 
-    /// Creates a new service instance
+    /// Used by Gradle
     public JextractStore() {
         super();
         this.dataStore = getParameters().getDistributions().isPresent() ? JextractDataStore.create(getParameters().getDistributions().get().getAsFile().toPath()) : JextractDataStore.create();

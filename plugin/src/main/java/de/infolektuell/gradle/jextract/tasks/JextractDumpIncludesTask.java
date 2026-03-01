@@ -12,7 +12,7 @@ import java.nio.file.Path;
 /// Uses Jextract to dump all included symbols of a library header into an arg file
 @CacheableTask
 public abstract class JextractDumpIncludesTask extends JextractBaseTask {
-    /// Creates a new [JextractDumpIncludesTask] instance
+    /// Used by Gradle
     public JextractDumpIncludesTask() { super(); }
 
     /// The location of the generated arg file

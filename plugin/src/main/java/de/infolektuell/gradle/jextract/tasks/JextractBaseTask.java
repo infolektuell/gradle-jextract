@@ -34,7 +34,7 @@ public abstract class JextractBaseTask extends DefaultTask {
         DirectoryProperty getLocation();
     }
 
-    /// Creates a new [JextractBaseTask] instance
+    /// Used by Gradle
     public JextractBaseTask() { super(); }
 
     /// A build service to run Jextract commands

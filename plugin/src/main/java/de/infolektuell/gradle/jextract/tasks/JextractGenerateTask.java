@@ -17,7 +17,7 @@ import java.util.Set;
 /// Task that uses Jextract to generate Java bindings for given C headers
 @CacheableTask
 public abstract class JextractGenerateTask extends JextractBaseTask {
-    /// Creates a new [JextractGenerateTask] instance
+    /// Used by Gradle
     public JextractGenerateTask() { super(); }
     /// All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1
     /// @return A list property to add defined macros

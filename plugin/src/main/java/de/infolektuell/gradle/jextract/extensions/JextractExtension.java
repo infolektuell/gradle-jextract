@@ -17,7 +17,7 @@ public abstract class JextractExtension {
     public static final String EXTENSION_NAME = "jextract";
     private final NamedDomainObjectContainer<@NonNull LibraryHandler> libraries;
 
-    ///  Creates a new [JextractExtension] instance
+    /// Used by Gradle
     public JextractExtension() {
         super();
         this.libraries = getObjects().domainObjectContainer(LibraryHandler.class);

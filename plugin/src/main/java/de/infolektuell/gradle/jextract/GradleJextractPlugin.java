@@ -45,7 +45,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
     ///  The gradle property to set a local Jextract installation path
     public static final String JEXTRACT_LOCAL_INSTALLATION_PROPERTY = "org.openjdk.jextract.installation-path";
 
-    ///  Creates a new instance
+    /// Used by Gradle
     public GradleJextractPlugin() { super(); }
 
     /// Configures the plugin if it is applied
