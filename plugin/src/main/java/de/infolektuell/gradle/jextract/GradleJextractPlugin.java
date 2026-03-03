@@ -122,6 +122,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.getUseSystemLoadLibrary().convention(lib.getUseSystemLoadLibrary());
                     task.getGenerateSourceFiles().convention(lib.getGenerateSourceFiles());
                     task.getSources().convention(lib.getOutput());
+                    task.getClasses().convention(project.getLayout().getBuildDirectory().dir("generated/classes/jextract/java/" + lib.getName()));
                 });
 
                 project.getTasks().register(lib.getDumpIncludesTaskName(), JextractDumpIncludesTask.class, task -> {
@@ -138,11 +139,11 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
                     final TaskProvider<@NonNull JextractGenerateTask> task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
-                    s.getJava().srcDir(task);
-                    s.getResources().srcDir(task);
-                    final FileCollection src = project.getLayout().files(task);
-                    s.setCompileClasspath(s.getCompileClasspath().plus(src));
-                    s.setRuntimeClasspath(s.getRuntimeClasspath().plus(src));
+                    s.getJava().srcDir(task.flatMap(t -> t.getSources()));
+                    s.getResources().srcDir(task.flatMap(t -> t.getSources()));
+                    final FileCollection classes = project.getLayout().files(task.flatMap(t -> t.getClasses()));
+                    s.setCompileClasspath(s.getCompileClasspath().plus(classes));
+                    s.setRuntimeClasspath(s.getRuntimeClasspath().plus(classes));
                 });
             });
             javaExtension.getSourceSets().named("main", s -> configureJmod(project, s));
