@@ -2,6 +2,7 @@ package de.infolektuell.gradle.jextract.tasks;
 
 import de.infolektuell.gradle.jextract.service.JextractStore;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
@@ -11,6 +12,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.process.ExecSpec;
 import org.jspecify.annotations.NonNull;
 
+import javax.inject.Inject;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -71,6 +73,11 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
     @OutputDirectory
     public abstract DirectoryProperty getSources();
 
+    /// The directory where to place generated compiled class files
+    /// @return a directory property
+    @OutputDirectory
+    public abstract DirectoryProperty getClasses();
+
     /// Task action that uses Jextract to generate Java bindings
     @TaskAction
     protected final void generateBindings() {
@@ -87,7 +94,18 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
                 jextract.exec(installationPath, spec -> commonExec(version, spec));
             }
         }
+        getFileSystemOperations().copy(spec -> {
+            spec.from(getSources());
+            spec.into(getClasses());
+            spec.include("**/*.class");
+        });
+        getFileSystemOperations().delete(spec -> spec.delete(getSources().getAsFileTree().matching(m -> m.include("**/*.class"))));
     }
+
+    /// Inject the build service for file system operations.
+    /// @return The injected build service
+    @Inject
+    protected abstract FileSystemOperations getFileSystemOperations();
 
     private void commonExec(int version, ExecSpec spec) {
         getIncludes().get().forEach(it -> spec.args("-I", it));
