@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The distributions file should be configured with the `jextract.installation.distributions` property.
 - The plugin uses conventions to configure properties instead of setting them. So plugin conventions and user settings won't be joined anymore.
-  - The header file's parent directory  of a configured library is either used as include path per convention, or the include path can be completely set by the user in the build script.
   - The name of a configured library is either used as library name to be loaded per convention, or the list of library names can be completely set by the user in the build script.
 
 ### Deprecated

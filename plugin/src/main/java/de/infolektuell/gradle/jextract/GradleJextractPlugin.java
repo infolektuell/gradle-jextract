@@ -57,7 +57,6 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
         final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
         extension.getLibraries().configureEach(lib -> {
-            lib.getIncludes().convention(lib.getHeader().map(h -> List.of(project.getLayout().getProjectDirectory().dir(h.getAsFile().getParentFile().getAbsolutePath()))));
             lib.getLibraries().convention(List.of(lib.getName()));
             lib.getUseSystemLoadLibrary().convention(false);
             lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
