@@ -102,6 +102,8 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
         getFileSystemOperations().delete(spec -> spec.delete(getSources().getAsFileTree().matching(m -> m.include("**/*.class"))));
     }
 
+    /// Inject the build service for file system operations.
+    /// @return The injected build service
     @Inject
     protected abstract FileSystemOperations getFileSystemOperations();
 

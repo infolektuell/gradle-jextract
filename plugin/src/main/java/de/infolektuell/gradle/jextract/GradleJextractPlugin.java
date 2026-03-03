@@ -139,9 +139,9 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
                     final TaskProvider<@NonNull JextractGenerateTask> task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
-                    s.getJava().srcDir(task.flatMap(t -> t.getSources()));
-                    s.getResources().srcDir(task.flatMap(t -> t.getSources()));
-                    final FileCollection classes = project.getLayout().files(task.flatMap(t -> t.getClasses()));
+                    s.getJava().srcDir(task.flatMap(JextractGenerateTask::getSources));
+                    s.getResources().srcDir(task.flatMap(JextractGenerateTask::getSources));
+                    final FileCollection classes = project.getLayout().files(task.flatMap(JextractGenerateTask::getClasses));
                     s.setCompileClasspath(s.getCompileClasspath().plus(classes));
                     s.setRuntimeClasspath(s.getRuntimeClasspath().plus(classes));
                 });
