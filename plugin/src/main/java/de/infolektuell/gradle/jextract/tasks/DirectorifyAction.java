@@ -13,6 +13,9 @@ import javax.inject.Inject;
 
 /// An artifact transform that wraps a file into a directory
 public abstract class DirectorifyAction implements TransformAction<TransformParameters.@NonNull None> {
+    /// Used by gradle
+    public DirectorifyAction() { super(); }
+
     /// The artifact to be transformed
     /// @return a provider to query the artifact
     @InputArtifact
