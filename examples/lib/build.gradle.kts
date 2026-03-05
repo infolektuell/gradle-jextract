@@ -42,7 +42,7 @@ jextract.libraries {
 
     sourceSets.main {
         resources.srcDir(findLibraryPath().get())
-            jextract.libraries.addLater(bass)
+        jextract.libraries.addLater(bass)
     }
 }
 

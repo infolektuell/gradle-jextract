@@ -12,7 +12,7 @@ class GradleJextractPluginFunctionalTest {
     private Path getProjectDir() { return Path.of("..", "examples"); }
 
     @Test
-    void canbuild() {
+    void canBuild() {
         var runner = GradleRunner.create();
         runner.withProjectDir(getProjectDir().toFile());
         runner.forwardOutput();
