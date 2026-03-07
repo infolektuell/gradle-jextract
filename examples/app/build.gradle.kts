@@ -25,35 +25,24 @@ tasks.named<Test>("test") {
 }
 
 jextract.libraries {
-    // The native BASS audio library.
-    val bass by registering {
-        header = layout.projectDirectory.file("src/main/public/bass.h")
-        headerClassName = "Bass"
-        targetPackage = "com.un4seen.bass"
-        // For large headers it is good practice to generate only the symbols you need.
-        whitelist {
-            // We only want to access the BASS version
-            functions.add("BASS_GetVersion")
+    // A library from a project dependency
+    val hello by registering {
+        dependencies {
+            header(project(":nativelib"))
         }
+        headerClassName = "Hello"
+        targetPackage = "de.infolektuell.hello.bindings"
         useSystemLoadLibrary = true // name guessed from library name
-        libraryPath.add(findLibraryPath().get())
-        legalNotices.add(layout.projectDirectory.dir("src/main/lib/legal"))
+        libraries.add("nativelib")
     }
 
     sourceSets.main {
-        jextract.libraries.addLater(bass)
+        jextract.libraries.addLater(hello)
     }
 }
 
 application {
-    mainModule = "de.infolektuell.bass.app"
-    mainClass = "de.infolektuell.bass.app.Main"
-    applicationDefaultJvmArgs = listOf("--enable-native-access=de.infolektuell.bass.app")
-}
-
-fun findLibraryPath() = providers.systemProperty("os.name").map {
-    val basePath = layout.projectDirectory.dir("src/main/lib")
-    if (it.contains("windows", true)) basePath.dir("windows/x64")
-    else if (it.contains("mac", true)) basePath.dir("macos/x64")
-    else basePath.dir("linux/x64")
+    mainModule = "de.infolektuell.hello.app"
+    mainClass = "de.infolektuell.hello.app.Main"
+    applicationDefaultJvmArgs = listOf("--enable-native-access=de.infolektuell.hello.app")
 }

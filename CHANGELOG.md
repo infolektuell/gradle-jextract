@@ -11,18 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - A local Jextract installation can be configured with the Gradle property `org.openjdk.jextract.installation-path` instead of the build script DSL. This is the cleaner solution and recommended in the future.
+- Native header and binary files for a Jextract library can be consumed from dependencies, e.g., another project that uses [Gradle Native].
+
+[gradle native]: https://blog.gradle.org/introducing-the-new-cpp-plugins
 
 ### changed
 
 - The distributions file should be configured with the `jextract.installation.distributions` property.
 - The plugin uses conventions to configure properties instead of setting them. So plugin conventions and user settings won't be joined anymore.
-  - The header file's parent directory  of a configured library is either used as include path per convention, or the include path can be completely set by the user in the build script.
   - The name of a configured library is either used as library name to be loaded per convention, or the list of library names can be completely set by the user in the build script.
 
 ### Deprecated
 
 - The `jextract.installation.location` property shouldn't be used anymore and will be removed in the next major release. Local Jextract installation should be configured via user-specific Gradle property.
-- The `jextract.distributions` property will be removed soon. Use `jextract.installation.distributions`.
+- The `jextract.distributions` property will be moved to `jextract.installation.distributions`.
 
 ## [1.3.0] - 2026-02-24
 [1.3.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.2.0...v1.3.0

@@ -16,6 +16,16 @@ import java.util.regex.Pattern;
 public abstract class LibraryHandler implements Named {
     /// Used by Gradle
     public LibraryHandler() { super(); }
+
+    /// Configurable dependencies for this library
+    /// @return A DSL object where dependencies can be added
+    @Nested
+    public abstract JextractLibraryDependencies getDependencies();
+
+    /// Configurable dependencies block
+    /// @param action The action to be applied to the dependencies object
+    public void dependencies(Action<? super @NonNull JextractLibraryDependencies> action) { action.execute(getDependencies()); }
+
     /// The header file to generate bindings for
     /// @return A property to configure the header file
     public abstract RegularFileProperty getHeader();
@@ -49,9 +59,9 @@ public abstract class LibraryHandler implements Named {
     @Nested
     public abstract WhitelistHandler getWhitelist();
 
-    /// Configures the list of definitions to be included
+    /// Configurable block for the included definitions
     /// @param action The configuration action to be applied to the white-list
-    public final void whitelist(Action<@NonNull WhitelistHandler> action) {
+    public final void whitelist(Action<? super @NonNull WhitelistHandler> action) {
         action.execute(this.getWhitelist());
     }
 
