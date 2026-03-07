@@ -270,8 +270,8 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         final SourceSetExtension sourceSetExtension = sourceSet.getExtensions().getByType(SourceSetExtension.class);
         sourceSetExtension.getLibraries().all(lib -> {
             createJmodTask.configure(task -> {
-                task.getHeaderFiles().from(lib.getIncludes());
-                task.getLibs().from(lib.getLibraryPath());
+                task.getHeaderFiles().from(lib.getIncludes(), project.getConfigurations().named(lib.getName() + "HeaderDirectories"));
+                task.getLibs().from(lib.getLibraryPath(), project.getConfigurations().named(lib.getName() + "LibraryPath"));
                 task.getLegalNotices().from(lib.getLegalNotices());
             });
         });
