@@ -122,22 +122,23 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 final NamedDomainObjectProvider<@NonNull DependencyScopeConfiguration> runtimeOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractRuntimeOnly", config -> config.fromDependencyCollector(lib.getDependencies().getRuntimeOnly()));
 
                 final NamedDomainObjectProvider<@NonNull ResolvableConfiguration> headerDirectoriesConfig = project.getConfigurations().resolvable(lib.getName() + "HeaderDirectories", config -> {
-                    config.extendsFrom(headerOnlyScope.get());
-                    config.extendsFrom(headerScope.get());
+                    config.setDescription(String.format("The directories to search the %s library's public header file", lib.getName()));
+                    config.extendsFrom(headerOnlyScope.get(), headerScope.get());
                     config.attributes(a -> {
                         a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
                 final NamedDomainObjectProvider<@NonNull ResolvableConfiguration> includePathConfig = project.getConfigurations().resolvable(lib.getName() + "IncludePath", config -> {
-                    config.extendsFrom(includeOnlyScope.get());
-                    config.extendsFrom(includeScope.get());
+                    config.setDescription(String.format("The directories to be added to the %s library's include path", lib.getName()));
+                    config.extendsFrom(includeOnlyScope.get(), includeScope.get());
                     config.attributes(a -> {
                         a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
                 final NamedDomainObjectProvider<@NonNull ResolvableConfiguration> libraryPathConfig = project.getConfigurations().resolvable(lib.getName() + "LibraryPath", config -> {
+                    config.setDescription(String.format("The directories to be added to the %s library's library path", lib.getName()));
                     config.extendsFrom(headerScope.get(), includeScope.get(), runtimeOnlyScope.get());
                     config.attributes(a -> {
                         a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.NATIVE_RUNTIME));

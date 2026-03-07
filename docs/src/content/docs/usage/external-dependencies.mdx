@@ -1,0 +1,75 @@
+---
+title: Using External Dependencies
+description: How to add native library headers and binaries from external dependencies
+sidebar:
+  label: Dependencies
+  order: 4
+---
+
+The Jextract plugin can consume native headers and binaries from external dependencies.
+These might be produced by the C++ plugins from [Gradle Native].
+
+## Dependency Scopes
+
+Each library configuration in the plugin DSL offers a custom dependencies block where native dependencies can be added to certain dependency scopes.
+
+- `header` dependencies contain public header and binary files.
+- `headerOnly` dependencies contain header files.
+- `include` dependencies contain headers to be added to the include path and corresponding binary files.
+- `inclodeOnly` dependencies contain header files to be added to the include path.
+- `runtimeOnly` dependencies contain binary files.
+
+Header files are used by Jextract, whereas binary files are added to the library path of Java execution tasks like test or run.
+Local headers, includes, and binaries added to the library configuration take precedence over those coming from dependencies.
+
+:::note
+In the [example project], the app subproject demonstrates this use-case by using a Gradle Native dependency.
+:::
+
+## Finding the Header File
+
+The Jextract plugin needs exactly one header file.
+In case the header dependencies contain multiple header files, a `headerFilter` property can be configured with a set of glob search patterns to narrow down the set to one file.
+This enables traversing subdirectories or resolving file name ambiguities.
+Per convention, this set is configured with a pattern inferred from the library's name.
+For a library named `foo`, the plugin would look for a header file named `foo.h` by default.
+
+## Example Configuration
+
+The following example demonstrates the usage of a Gradle Native subproject as dependency in a library named `foo`, setting `bar.h` as its header file.
+
+<Tabs syncKey="dsl">
+<TabItem label="Kotlin">
+
+```kts {4-7} title="Configuring a library with external dependencies"
+// build.gradle.kts
+jextract.libraries {
+    register("foo") {
+        dependencies {
+            header(project(":foo-project")) // Headers and binaries
+            headerFilter = setOf("bar.h")
+        }
+    }
+}
+```
+
+</TabItem>
+<TabItem label="Groovy">
+
+```groovy {4-7} title="Configuring a library with external dependencies"
+// build.gradle
+jextract.libraries {
+    register('foo') {
+        dependencies {
+            header(project(":foo-project")) // Headers and binaries
+            headerFilter = ["bar.h"]
+        }
+    }
+}
+```
+
+</TabItem>
+</Tabs>
+
+[gradle native]: https://blog.gradle.org/introducing-the-new-cpp-plugins
+[example project]: https://github.com/infolektuell/gradle-jextract/tree/main/examples/
