@@ -13,10 +13,10 @@
         "astro": "astro"
     },
     "devDependencies": {
-        "@astrojs/starlight": "^0.37.6",
+        "@astrojs/starlight": "^0.37.7",
         "astro": "^5.18.0",
         "astro-auto-import": "^0.5.1",
-        "fast-xml-parser": "^5.4.1",
+        "fast-xml-parser": "^5.4.2",
         "prettier": "^3.8.1",
         "prettier-plugin-astro": "^0.14.1",
         "sharp": "^0.34.5",
