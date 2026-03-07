@@ -17,18 +17,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          distribution: temurin
-          java-version-file: .tool-versions
+          distribution: oracle
+          java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Validate Plugin
         run: ./gradlew check
+  docs:
+    name: Check code style in docs
+    runs-on: ubuntu-latest
+    env:
+      BUILD_PATH: docs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{ env.BUILD_PATH }}
+
+      - name: Check for formatting or typing errors
+        run: npm run check
+        working-directory: ${{ env.BUILD_PATH }}
