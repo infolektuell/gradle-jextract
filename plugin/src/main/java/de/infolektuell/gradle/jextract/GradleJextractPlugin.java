@@ -154,7 +154,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                         .map(f -> project.getLayout().getProjectDirectory().file(f.getAbsolutePath()))
                         .findFirst().orElse(null);
                 });
-                final var includeDirectories = includePathConfig.zip(lib.getIncludes(), (config, includes) -> {
+                final Provider<@NonNull List<@NonNull Directory>> includeDirectories = includePathConfig.zip(lib.getIncludes(), (config, includes) -> {
                     return Stream.concat(
                         includes.stream(),
                             config.resolve().stream()
@@ -165,7 +165,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getInstallation().convention(jextractInstallation);
-                    task.getHeader().convention(headerFile.orElse(lib.getHeader()));
+                    task.getHeader().convention(lib.getHeader().orElse(headerFile));
                     task.getIncludes().convention(includeDirectories);
                     task.getDefinedMacros().convention(lib.getDefinedMacros());
                     task.getHeaderClassName().convention(lib.getHeaderClassName());
@@ -192,7 +192,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 project.getTasks().register(lib.getDumpIncludesTaskName(), JextractDumpIncludesTask.class, task -> {
                     task.setDescription("Uses Jextract to dump all includes of the " + lib.getName() + " native library into an arg file");
                     task.getInstallation().convention(jextractInstallation);
-                    task.getHeader().convention(headerFile.orElse(lib.getHeader()));
+                    task.getHeader().convention(lib.getHeader().orElse(headerFile));
                     task.getIncludes().convention(includeDirectories);
                     task.getArgFile().convention(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
                 });
