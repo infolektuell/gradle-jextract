@@ -25,7 +25,7 @@ See the [latest Jextract releases](https://jdk.java.net/jextract/) on their down
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts
+```kts title="Minimal build script for a Java library"
 // build.gradle.kts
 plugins {
     `java-library`
@@ -46,7 +46,7 @@ java {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy
+```groovy title="Minimal build script for a Java library"
 // build.gradle
 plugins {
     id 'java-library'
@@ -101,7 +101,7 @@ Configure the plugin via DSL extension, so it can find the library files.
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts
+```kts title="Adding a Jextract library to a Java project"
 // build.gradle.kts
 jextract.libraries {
     val greeting by registering {
@@ -118,7 +118,7 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy
+```groovy title="Adding a Jextract library to a Java project"
 // build.gradle
 jextract.libraries {
     def greeting = register('greeting') {
@@ -168,13 +168,16 @@ This will result in the following output file structure:
   - build
     - ...
     - generated
+      - classes
+        - jextract
+          - java
+          - **greeting** Generated compiled classes for the library bindings
+            - …
       - sources
         - jextract
-          - **greeting** the library bindings
-            - com
-              - example
-                - greeting
-                  - **Greeting.java** the bindings to import and use in Java code
+          - java
+            - **greeting** the library bindings
+          - …
     - ...
   - build.gradle.kts
 - settings.gradle.kts
@@ -194,12 +197,12 @@ The [example project] demonstrates both approaches.
 
 The code searches in the OS-specific paths for the binary files and tries to load them by their name via `system.loadLibrary`.
 The `java.library.path` property can be augmented to search in more paths or in the deployed app distribution.
-This approach is activated with Jextract's `--use-system-load-library` command line option and can be configured in a library config in the plugin DSL.
+This approach is activated in Jextract with the `--use-system-load-library` command line option and can be configured in a library config in the plugin DSL.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts {4-5}
+```kts {4-5} title="Configuring a library to load its binaries from the library path"
 // build.gradle.kts
 jextract.libraries {
     val greeting by registering {
@@ -212,7 +215,7 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy {4-5}
+```groovy {4-5} title="Configuring a library to load its binaries from the library path"
 // build.gradle
 jextract.libraries {
     register('greeting') {

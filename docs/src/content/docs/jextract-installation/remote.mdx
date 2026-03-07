@@ -31,7 +31,7 @@ If a needed resource is not supplied, the default data is used as fallback.
 The following excerpt from the default data declares all resources for Jextract 22.
 Every key follows the `jextract.<major-version>.<os>.<arch>.key` pattern.
 
-```properties
+```properties title="Sample partial distributions data file"
 # company-jextract.properties
 jextract.22.linux.aarch64.url=https://download.java.net/java/early_access/jextract/22/6/openjdk-22-jextract+6-47_linux-aarch64_bin.tar.gz
 jextract.22.linux.aarch64.sha-256=e218579a43dd1cb77e94cdbfa5b7b30eaed682aef8f40300c9916e59b1194fa7
@@ -66,7 +66,7 @@ Put it somewhere in your project and check it into source control.
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
-```kts {3}
+```kts {3} title="Configuring custom Jextract distributions"
 // build.gradle.kts
 jextract {
     installation.distributions = rootProject.layout.file("company-jextract.properties")
@@ -74,7 +74,7 @@ jextract {
 ```
 </TabItem>
 <TabItem label="Groovy">
-```groovy {3}
+```groovy {3} title="Configuring custom Jextract distributions"
 // build.gradle
 jextract {
     installation.distributions = rootProject.layout.file "company-jextract.properties"

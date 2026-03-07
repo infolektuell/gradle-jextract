@@ -15,7 +15,7 @@ The setup involves two steps:
 
 ### What is an arg file?
 
-Jextract is a command line tool, and arg files are files containing command line arguments, separated by linebreaks.
+Jextract is a command line tool, and arg files are files containing command line arguments, separated by line-breaks.
 Instead of passing each of them to a shell command by hand, an arg file is passed to the CLI that reads the contained arguments.
 It is a configuration file to be checked into source control
 
@@ -45,7 +45,7 @@ This will output the generated arg file to a predefined location in the build di
   - build
     - reports
       - jextract
-        - **\<libname\>-includes.txt**
+        - **\<libName\>-includes.txt**
 
 </FileTree>
 
@@ -60,12 +60,12 @@ Lastly, the prepared arg file must be associated with its library config.
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
 
-```kts "argFile" "<libname>"
+```kts "argFile" "<libname>" title="Configuring an arg file in the plugin DSL"
 // build.gradle.kts
 jextract.libraries {
-    register("<libname>") {
+    register("<libName>") {
             whitelist {
-                argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
+                argFile = layout.projectDirectory.file("src/main/includes/<libName>-includes.txt")
             }
     }
 }
@@ -74,12 +74,12 @@ jextract.libraries {
 </TabItem>
 <TabItem label="Groovy">
 
-```groovy "argFile" "<libname>"
+```groovy "argFile" "<libname>" title="Configuring an arg file in the plugin DSL"
 // build.gradle
 jextract.libraries {
-    register("<libname>") {
+    register("<libName>") {
             whitelist {
-                argFile = layout.projectDirectory.file("src/main/includes/<libname>-includes.txt")
+                argFile = layout.projectDirectory.file("src/main/includes/<libName>-includes.txt")
             }
     }
 }
