@@ -1,3 +1,2 @@
-- This release primarily contains features for better interoperability with Jlink and Jpackage.
-- It creates a JMOD archive from classes, headers, binaries, and legal notices.
-- Improved support for testing and running with loading native binaries from the library search path.
+- A local Jextract installation is also configurable via Gradle property instead of using the plugin DSL.
+- The plugin can consume dependencies that expose native headers and binaries.
