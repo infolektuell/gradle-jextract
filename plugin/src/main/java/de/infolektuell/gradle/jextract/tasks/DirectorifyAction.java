@@ -1,17 +1,19 @@
 package de.infolektuell.gradle.jextract.tasks;
 
-import org.gradle.api.artifacts.transform.InputArtifact;
-import org.gradle.api.artifacts.transform.TransformAction;
-import org.gradle.api.artifacts.transform.TransformOutputs;
-import org.gradle.api.artifacts.transform.TransformParameters;
+import org.gradle.api.artifacts.transform.*;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
+import org.gradle.work.DisableCachingByDefault;
 import org.jspecify.annotations.NonNull;
 
 import javax.inject.Inject;
 
 /// An artifact transform that wraps a file into a directory
+@CacheableTransform
+@DisableCachingByDefault(because = "Copying files not worth caching")
 public abstract class DirectorifyAction implements TransformAction<TransformParameters.@NonNull None> {
     /// Used by gradle
     public DirectorifyAction() { super(); }
@@ -19,6 +21,7 @@ public abstract class DirectorifyAction implements TransformAction<TransformPara
     /// The artifact to be transformed
     /// @return a provider to query the artifact
     @InputArtifact
+    @PathSensitive(PathSensitivity.RELATIVE)
     public abstract Provider<@NonNull FileSystemLocation> getInput();
 
     @Override
