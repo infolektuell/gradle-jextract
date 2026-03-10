@@ -1,3 +1,3 @@
 module de.infolektuell.hello.app {
-    requires java.base;
+    requires de.infolektuell.hello;
 }
