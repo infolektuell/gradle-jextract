@@ -10,6 +10,13 @@ version = releaseVersion.get()
 gradlePlugin {
     website = "https://infolektuell.github.io/gradle-jextract/"
     vcsUrl = "https://github.com/infolektuell/gradle-jextract.git"
+    plugins.create("jmodPlugin") {
+        id = "de.infolektuell.jmod"
+        displayName = "jmod gradle plugin"
+        description = releaseNotes.get()
+        tags = listOf("java", "modules", "jmod", "jlink")
+        implementationClass = "de.infolektuell.gradle.jmod.GradleJmodPlugin"
+    }
     plugins.create("jextractPlugin") {
         id = "de.infolektuell.jextract"
         displayName = "jextract gradle plugin"

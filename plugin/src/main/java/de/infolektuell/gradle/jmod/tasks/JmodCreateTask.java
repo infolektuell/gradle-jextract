@@ -1,4 +1,4 @@
-package de.infolektuell.gradle.jextract.tasks;
+package de.infolektuell.gradle.jmod.tasks;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
