@@ -9,17 +9,17 @@
         "build": "astro build",
         "preview": "astro preview",
         "format": "prettier -w .",
-        "check": "prettier -c .",
+        "check": "astro check && prettier -c .",
         "astro": "astro"
     },
     "devDependencies": {
-        "@astrojs/starlight": "^0.37.7",
-        "astro": "^5.18.0",
+        "@astrojs/check": "^0.9.8",
+        "@astrojs/starlight": "^0.38.2",
+        "astro": "^6.0.8",
         "astro-auto-import": "^0.5.1",
         "prettier": "^3.8.1",
         "prettier-plugin-astro": "^0.14.1",
         "sharp": "^0.34.5",
-        "starlight-changelogs": "^0.4.0",
         "typescript": "^5.9.3"
     }
 }

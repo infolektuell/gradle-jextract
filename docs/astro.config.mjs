@@ -2,7 +2,6 @@
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
 import starlightAutoImport from './src/plugins/starlight-auto-import'
-import starlightChangelogs from 'starlight-changelogs'
 
 // https://astro.build/config
 export default defineConfig({
@@ -11,7 +10,7 @@ export default defineConfig({
     trailingSlash: 'always',
     integrations: [
         starlight({
-            plugins: [starlightChangelogs(), starlightAutoImport()],
+            plugins: [starlightAutoImport()],
             title: 'Gradle Jextract Plugin',
             description: 'Generates Java bindings from native library headers using Jextract',
             logo: {
@@ -52,10 +51,6 @@ export default defineConfig({
                     label: 'API Docs',
                     link: 'https://infolektuell.github.io/gradle-jextract/reference/',
                     attrs: { target: '_blank' },
-                },
-                {
-                    label: 'Changelog',
-                    link: 'changelog/',
                 },
             ],
         }),
