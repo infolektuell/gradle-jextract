@@ -34,10 +34,6 @@ public abstract class LibraryHandler implements Named {
     /// @return A property to add more include directories
     public abstract ListProperty<@NonNull Directory> getIncludes();
 
-    /// Additional directories where Jmod should search for native runtime binaries
-    /// @return A property to add more library search directories
-    public abstract ListProperty<@NonNull Directory> getLibraryPath();
-
     /// Directories containing legal notice documents, to be included in the JMOD archive
     /// @return A property to add legal documents directories
     public abstract ListProperty<@NonNull Directory> getLegalNotices();
@@ -88,6 +84,18 @@ public abstract class LibraryHandler implements Named {
     /// The name of the task that dumps the includes for this library
     /// @return The task name
     public String getDumpIncludesTaskName() { return "dump" + capitalize(getName()) + "Includes"; }
+
+    /// The name of the configuration that resolves public headers from the library's native dependencies
+    /// @return The configuration name
+    public String getHeaderDirectoriesConfigurationName() { return getName() + "HeaderDirectories"; }
+
+    /// The name of the configuration that resolves include directories from the library's native dependencies
+    /// @return The configuration name
+    public String getIncludePathConfigurationName() { return getName() + "IncludePath"; }
+
+    /// The name of the configuration that resolves directories containing binaries from the library's native dependencies
+    /// @return The configuration name
+    public String getLibraryPathConfigurationName() { return getName() + "LibraryPath"; }
 
     private String capitalize(String input) { return Pattern.compile("^.").matcher(input).replaceFirst(m -> m.group().toUpperCase()); }
 }
