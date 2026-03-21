@@ -10,9 +10,11 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.services.ServiceReference;
 import org.gradle.api.tasks.*;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
+import org.gradle.work.DisableCachingByDefault;
 import org.jspecify.annotations.NonNull;
 
 /// Holds common properties for Jextract-related tasks, does nothing itself
+@DisableCachingByDefault(because = "Task is a base task and has no actions")
 public abstract class JextractBaseTask extends DefaultTask {
     /// Configuration of a Jextract installation that can be used by this task
     public sealed interface JextractInstallation permits RemoteJextractInstallation, LocalJextractInstallation {}

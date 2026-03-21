@@ -6,3 +6,4 @@ plugins {
 rootProject.name = "gradle-jextract"
 include("plugin")
 project(":plugin").name = "gradle-plugin-jextract"
+enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
