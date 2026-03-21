@@ -1,5 +1,6 @@
 plugins {
     id("de.infolektuell.jextract")
+    id("de.infolektuell.jmod")
     application
 }
 
@@ -38,6 +39,10 @@ jextract.libraries {
 
     sourceSets.main {
         jextract.libraries.addLater(hello)
+        jextract.libraries.all {
+            jmod.headers.srcDirs(configurations[name + "HeaderDirectories"])
+            jmod.binaries.srcDirs(configurations[name + "LibraryPath"])
+        }
     }
 }
 
