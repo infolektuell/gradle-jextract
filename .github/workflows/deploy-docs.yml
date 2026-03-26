@@ -33,28 +33,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
-          distribution: temurin
-          java-version-file: .tool-versions
+          distribution: oracle
+          java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
-          node-version-file: .tool-versions
+          node-version: 24
           cache: 'npm'
           cache-dependency-path: docs/package-lock.json
 
       - name: Setup Pages
         id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Install dependencies
         run: npm ci
@@ -89,4 +89,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
