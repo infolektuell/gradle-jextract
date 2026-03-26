@@ -128,7 +128,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     config.extendsFrom(headerScope.get(), includeScope.get(), runtimeOnlyScope.get());
                     config.attributes(a -> {
                         a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.NATIVE_RUNTIME));
-                        a.attribute(Attribute.of("org.gradle.native.optimized", Boolean.class), true);
+                        a.attribute(Attribute.of("org.gradle.native.optimized", Boolean.class), false);
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
