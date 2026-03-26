@@ -28,7 +28,7 @@ class GradleJextractPluginFunctionalTest {
         runner.withProjectDir(getProjectDir().toFile());
         runner.forwardOutput();
         runner.withPluginClasspath();
-        runner.withArguments("app:clean", "app:run", "--stacktrace");
+        runner.withArguments("app:clean", "app:run", "--info", "--stacktrace");
         var result = runner.build();
         assertTrue(result.getOutput().contains("BUILD SUCCESSFUL"));
     }
