@@ -51,3 +51,15 @@ application {
     mainClass = "de.infolektuell.hello.app.Main"
     applicationDefaultJvmArgs = listOf("--enable-native-access=de.infolektuell.hello.app")
 }
+
+tasks.withType(Test::class) {
+    doFirst {
+        println("Starting the $name test task")
+    }
+}
+
+tasks.named("run") {
+    doFirst {
+        println("Starting the $name task")
+    }
+}

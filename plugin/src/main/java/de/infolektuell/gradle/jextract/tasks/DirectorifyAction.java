@@ -10,12 +10,13 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.work.DisableCachingByDefault;
-import org.slf4j.LoggerFactory;
 import org.jspecify.annotations.NonNull;
 
 import javax.inject.Inject;
 
+import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.stream.Collectors;
 
 /// An artifact transform that wraps a file into a directory
@@ -32,19 +33,21 @@ public abstract class DirectorifyAction implements TransformAction<TransformPara
 
     @Override
     public void transform(@NonNull TransformOutputs outputs) {
-        final var logger = LoggerFactory.getLogger("Directorify Action");
-        if (getInput().get().getAsFile().isDirectory()) outputs.dir(getInput());
+        final File input = getInput().get().getAsFile();
+        if (input.isDirectory()) outputs.dir(input);
         else {
             final var dir = outputs.dir("libs");
+            System.out.printf("Copying %s into %s%n", input.getAbsolutePath(), dir.getAbsolutePath());
             getFileSystemOperations().copy(spec -> {
-                spec.from(getInput());
+                spec.from(input);
                 spec.into(dir);
             });
             try (var s = Files.list(dir.toPath())) {
-                final var content = s.collect(Collectors.toSet());
-                logger.debug("Directory contains {}", content);
+                final var content = s.map(Path::toString).collect(Collectors.toSet());
+                System.out.printf("Output directory %s contains these files:%n", dir.getAbsolutePath());
+                System.out.println(String.join("\n", content));
             } catch (Exception ignored) {
-                logger.error("Couldn't list content of transform directory");
+                System.err.println("Couldn't list content of transform directory");
             }
         }
     }
