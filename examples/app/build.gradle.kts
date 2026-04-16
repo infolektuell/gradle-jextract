@@ -14,6 +14,8 @@ java {
     }
 }
 
+val nativeApi = dependencies.project(":nativelib", "cppApiElements")
+val nativeRuntime = dependencies.project(":nativelib", "debugRuntimeElements")
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -29,7 +31,8 @@ jextract.libraries {
     // A library from a project dependency
     val hello by registering {
         dependencies {
-            header(project(":nativelib"))
+            headerOnly(nativeApi)
+            runtimeOnly(nativeRuntime)
         }
         headerClassName = "Hello"
         targetPackage = "de.infolektuell.hello.bindings"
