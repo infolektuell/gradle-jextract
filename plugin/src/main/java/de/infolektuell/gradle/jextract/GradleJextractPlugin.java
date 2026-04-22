@@ -16,6 +16,7 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaApplication;
@@ -58,7 +59,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
     public void apply(Project project) {
         final JextractExtension extension = getObjects().newInstance(JextractExtension.class);
         project.getExtensions().add(JextractExtension.EXTENSION_NAME, extension);
-        extension.getOutput().convention(project.getLayout().getBuildDirectory().dir("generated/sources/jextract/java"));
+        extension.getOutput().convention(getLayout().getBuildDirectory().dir("generated/sources/jextract/java"));
         extension.getGenerateSourceFiles().convention(false);
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
         final LibraryPathProvider libraryPathProvider = getObjects().newInstance(LibraryPathProvider.class);
@@ -100,7 +101,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
             final var localInstallationPath = project.getProviders().gradleProperty(JEXTRACT_LOCAL_INSTALLATION_PROPERTY);
             if (localInstallationPath.isPresent()) {
-                final Directory location = project.getLayout().getProjectDirectory().dir(localInstallationPath.get());
+                final Directory location = getLayout().getProjectDirectory().dir(localInstallationPath.get());
                 if (!location.getAsFile().isDirectory()) throw new GradleException(String.format("The path %s doesn't point to a directory.", location));
                 extension.getInstallation().getLocation().convention(location);
             }
@@ -151,16 +152,16 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
                 final Provider<@NonNull RegularFile> headerFile = headerDirectoriesConfig.zip(lib.getDependencies().getHeaderFilter(), (config, patterns) -> {
                     return config.resolve().stream()
-                        .map(d -> project.getLayout().getProjectDirectory().dir(d.getAbsolutePath()).getAsFileTree().matching(spec -> spec.include("**/*.h").include(patterns)).getFiles())
+                        .map(d -> getLayout().getProjectDirectory().dir(d.getAbsolutePath()).getAsFileTree().matching(spec -> spec.include("**/*.h").include(patterns)).getFiles())
                         .flatMap(Collection::stream)
-                        .map(f -> project.getLayout().getProjectDirectory().file(f.getAbsolutePath()))
+                        .map(f -> getLayout().getProjectDirectory().file(f.getAbsolutePath()))
                         .findFirst().orElse(null);
                 });
                 final Provider<@NonNull List<@NonNull Directory>> includeDirectories = includePathConfig.zip(lib.getIncludes(), (config, includes) -> {
                     return Stream.concat(
                         includes.stream(),
                             config.resolve().stream()
-                                .map(d -> project.getLayout().getProjectDirectory().dir(d.getAbsolutePath()))
+                                .map(d -> getLayout().getProjectDirectory().dir(d.getAbsolutePath()))
                     )
                         .collect(Collectors.toList());
                 });
@@ -188,7 +189,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.getUseSystemLoadLibrary().convention(lib.getUseSystemLoadLibrary());
                     task.getGenerateSourceFiles().convention(lib.getGenerateSourceFiles());
                     task.getSources().convention(lib.getOutput());
-                    task.getClasses().convention(project.getLayout().getBuildDirectory().dir("generated/classes/jextract/java/" + lib.getName()));
+                    task.getClasses().convention(getLayout().getBuildDirectory().dir("generated/classes/jextract/java/" + lib.getName()));
                 });
 
                 project.getTasks().register(lib.getDumpIncludesTaskName(), JextractDumpIncludesTask.class, task -> {
@@ -196,7 +197,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.getInstallation().convention(jextractInstallation);
                     task.getHeader().convention(lib.getHeader().orElse(headerFile));
                     task.getIncludes().convention(includeDirectories);
-                    task.getArgFile().convention(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
+                    task.getArgFile().convention(getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
                 });
             });
 
@@ -207,7 +208,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     final TaskProvider<@NonNull JextractGenerateTask> task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
                     s.getJava().srcDir(task.flatMap(JextractGenerateTask::getSources));
                     s.getResources().srcDir(task.flatMap(JextractGenerateTask::getSources));
-                    final FileCollection classes = project.getLayout().files(task.flatMap(JextractGenerateTask::getClasses));
+                    final FileCollection classes = getLayout().files(task.flatMap(JextractGenerateTask::getClasses));
                     s.setCompileClasspath(s.getCompileClasspath().plus(classes));
                     s.setRuntimeClasspath(s.getRuntimeClasspath().plus(classes));
                 });
@@ -232,6 +233,11 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
         });
     }
+
+    /// Injects the project layout factory for more concise path creation.
+    /// @return The injected factory
+    @Inject
+    protected abstract ProjectLayout getLayout();
 
     /// Injects the object factory for more concise object creation.
     /// @return The injected factory
