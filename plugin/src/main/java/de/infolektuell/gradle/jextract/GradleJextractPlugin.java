@@ -17,6 +17,7 @@ import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -55,12 +56,12 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
     /// Configures the plugin if it is applied
     public void apply(Project project) {
-        final JextractExtension extension = project.getObjects().newInstance(JextractExtension.class);
+        final JextractExtension extension = getObjects().newInstance(JextractExtension.class);
         project.getExtensions().add(JextractExtension.EXTENSION_NAME, extension);
         extension.getOutput().convention(project.getLayout().getBuildDirectory().dir("generated/sources/jextract/java"));
         extension.getGenerateSourceFiles().convention(false);
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
-        final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
+        final LibraryPathProvider libraryPathProvider = getObjects().newInstance(LibraryPathProvider.class);
         extension.getLibraries().configureEach(lib -> {
             lib.getDependencies().getHeaderFilter().convention(Set.of("**/" + lib.getName() + ".h"));
             lib.getLibraries().convention(List.of(lib.getName()));
@@ -104,12 +105,12 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 extension.getInstallation().getLocation().convention(location);
             }
             final Provider<@NonNull JextractInstallation> jextractInstallation = extension.getInstallation().getLocation().map(location -> {
-                    final var installation = project.getObjects().newInstance(LocalJextractInstallation.class);
+                    final var installation = getObjects().newInstance(LocalJextractInstallation.class);
                     installation.getLocation().convention(location);
                     return (JextractInstallation) installation;
                 })
                 .orElse(extension.getInstallation().getJavaLanguageVersion().map(version -> {
-                    final var installation = project.getObjects().newInstance(RemoteJextractInstallation.class);
+                    final var installation = getObjects().newInstance(RemoteJextractInstallation.class);
                     installation.getJavaLanguageVersion().convention(version);
                     return (JextractInstallation) installation;
                 }));
@@ -125,7 +126,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     config.setDescription(String.format("The directories to search the %s library's public header file", lib.getName()));
                     config.extendsFrom(headerOnlyScope.get(), headerScope.get());
                     config.attributes(a -> {
-                        a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
+                        a.attribute(Usage.USAGE_ATTRIBUTE, getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
@@ -133,7 +134,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     config.setDescription(String.format("The directories to be added to the %s library's include path", lib.getName()));
                     config.extendsFrom(includeOnlyScope.get(), includeScope.get());
                     config.attributes(a -> {
-                        a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
+                        a.attribute(Usage.USAGE_ATTRIBUTE, getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
@@ -141,7 +142,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     config.setDescription(String.format("The directories to be added to the %s library's library path", lib.getName()));
                     config.extendsFrom(headerScope.get(), includeScope.get(), runtimeOnlyScope.get());
                     config.attributes(a -> {
-                        a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.NATIVE_RUNTIME));
+                        a.attribute(Usage.USAGE_ATTRIBUTE, getObjects().named(Usage.class, Usage.NATIVE_RUNTIME));
                         a.attribute(Attribute.of("org.gradle.native.optimized", Boolean.class), true);
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
@@ -200,7 +201,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
 
             javaExtension.getSourceSets().configureEach(s -> {
-                final SourceSetExtension sourceSetExtension = project.getObjects().newInstance(SourceSetExtension.class);
+                final SourceSetExtension sourceSetExtension = getObjects().newInstance(SourceSetExtension.class);
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
                     final TaskProvider<@NonNull JextractGenerateTask> task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
@@ -232,8 +233,13 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         });
     }
 
-    ///  Injects the build service for Java toolchains
-    /// @return A property holding the injected build service
+    /// Injects the object factory for more concise object creation.
+    /// @return The injected factory
+    @Inject
+    protected abstract ObjectFactory getObjects();
+
+    /// Injects the build service for Java toolchains.
+    /// @return The injected build service
     @Inject
     protected abstract JavaToolchainService getJavaToolchainService();
 
@@ -256,14 +262,14 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         project.getConfigurations().named(sourceSet.getApiElementsConfigurationName(), config -> {
             config.getOutgoing().getVariants().register("jmod", jmod -> {
                 jmod.getDescription().set("A jmod file containing classes, resources, libs, headers, and legal notices if available.");
-                jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, "jmod"));
+                jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, getObjects().named(LibraryElements.class, "jmod"));
                 jmod.artifact(createJmodTask, artifact -> artifact.setType("jmod"));
             });
         });
         project.getConfigurations().named(sourceSet.getRuntimeElementsConfigurationName(), config -> {
             config.getOutgoing().getVariants().register("jmod", jmod -> {
                 jmod.getDescription().set("A jmod file containing classes, resources, libs, headers, and legal notices if available.");
-                jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, "jmod"));
+                jmod.getAttributes().attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, getObjects().named(LibraryElements.class, "jmod"));
                 jmod.artifact(createJmodTask, artifact -> artifact.setType("jmod"));
             });
         });
