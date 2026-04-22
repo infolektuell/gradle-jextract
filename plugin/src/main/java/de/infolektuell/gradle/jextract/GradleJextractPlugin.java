@@ -23,6 +23,7 @@ import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
@@ -99,7 +100,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     .orElse(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
             extension.getInstallation().getJavaLanguageVersion().convention(javaVersion);
 
-            final var localInstallationPath = project.getProviders().gradleProperty(JEXTRACT_LOCAL_INSTALLATION_PROPERTY);
+            final var localInstallationPath = getProviders().gradleProperty(JEXTRACT_LOCAL_INSTALLATION_PROPERTY);
             if (localInstallationPath.isPresent()) {
                 final Directory location = getLayout().getProjectDirectory().dir(localInstallationPath.get());
                 if (!location.getAsFile().isDirectory()) throw new GradleException(String.format("The path %s doesn't point to a directory.", location));
@@ -173,7 +174,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.getDefinedMacros().convention(lib.getDefinedMacros());
                     task.getHeaderClassName().convention(lib.getHeaderClassName());
                     task.getTargetPackage().convention(lib.getTargetPackage());
-                    final Provider<@NonNull Map<@NonNull String, @NonNull Set<@NonNull String>>> whitelist = project.getProviders().provider(() -> {
+                    final Provider<@NonNull Map<@NonNull String, @NonNull Set<@NonNull String>>> whitelist = getProviders().provider(() -> {
                         return Map.of(
                             "function", lib.getWhitelist().getFunctions().get(),
                             "constant", lib.getWhitelist().getConstants().get(),
@@ -243,6 +244,11 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
     /// @return The injected factory
     @Inject
     protected abstract ObjectFactory getObjects();
+
+    /// Injects the provider factory for more concise provider creation.
+    /// @return The injected factory
+    @Inject
+    protected abstract ProviderFactory getProviders();
 
     /// Injects the build service for Java toolchains.
     /// @return The injected build service
