@@ -3,9 +3,9 @@ plugins {
     id("com.gradle.plugin-publish") version "2.0.0"
 }
 
-val releaseVersion = releaseVersion()
-val releaseNotes = releaseNotes()
-version = releaseVersion.get()
+val releaseVersion = releaseVersion().get()
+val releaseNotes = releaseNotes().get()
+version = releaseVersion
 
 gradlePlugin {
     website = "https://infolektuell.github.io/gradle-jextract/"
@@ -13,9 +13,24 @@ gradlePlugin {
     plugins.create("jextractPlugin") {
         id = "de.infolektuell.jextract"
         displayName = "jextract gradle plugin"
-        description = releaseNotes.get()
+        description = releaseNotes
         tags = listOf("native", "FFM", "panama", "jextract")
         implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "release"
+            url = uri("https://nexus.infolektuell.de/repository/maven-releases/")
+            credentials(PasswordCredentials::class)
+        }
+        maven {
+            name = "snapshot"
+            url = uri("https://nexus.infolektuell.de/repository/maven-snapshots/")
+            credentials(PasswordCredentials::class)
+        }
     }
 }
 
@@ -27,9 +42,12 @@ signing {
     useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
 }
 
+tasks.withType<Sign>().configureEach {
+    val isReleaseVersion = !releaseVersion.endsWith("-SNAPSHOT")
+    onlyIf { isReleaseVersion }
+}
+
 java {
-    withSourcesJar()
-    withJavadocJar()
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
