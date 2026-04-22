@@ -17,15 +17,6 @@ public abstract class LibraryHandler implements Named {
     /// Used by Gradle
     public LibraryHandler() { super(); }
 
-    /// Configurable dependencies for this library
-    /// @return A DSL object where dependencies can be added
-    @Nested
-    public abstract JextractLibraryDependencies getDependencies();
-
-    /// Configurable dependencies block
-    /// @param action The action to be applied to the dependencies object
-    public void dependencies(Action<? super @NonNull JextractLibraryDependencies> action) { action.execute(getDependencies()); }
-
     /// The header file to generate bindings for
     /// @return A property to configure the header file
     public abstract RegularFileProperty getHeader();
@@ -33,10 +24,6 @@ public abstract class LibraryHandler implements Named {
     /// Additional directories where Jextract and Jmod should search for header files
     /// @return A property to add more include directories
     public abstract ListProperty<@NonNull Directory> getIncludes();
-
-    /// Additional directories where Jmod should search for native runtime binaries
-    /// @return A property to add more library search directories
-    public abstract ListProperty<@NonNull Directory> getLibraryPath();
 
     /// Directories containing legal notice documents, to be included in the JMOD archive
     /// @return A property to add legal documents directories

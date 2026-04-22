@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.4.0...HEAD
 
+### Removed
+
+- JMOD-specific parts and native dependency handling were removed from this plugin. These wer migrated to a dedicated JMOD plugin.
+
 ## [1.4.0] - 2026-03-07
 [1.4.0]: https://github.com/infolektuell/gradle-jextract/compare/v1.3.0...v1.4.0
 
