@@ -22,7 +22,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v6
         with:
-          distribution: oracle
+          distribution: oracle-openjdk
           java-version-file: .tool-versions
 
       - name: Setup Gradle
