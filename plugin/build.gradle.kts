@@ -3,9 +3,9 @@ plugins {
     id("com.gradle.plugin-publish") version "2.0.0"
 }
 
-val releaseVersion = releaseVersion().get()
-val releaseNotes = releaseNotes().get()
-version = releaseVersion
+val releaseVersion = releaseVersion()
+val releaseNotes = releaseNotes()
+version = releaseVersion.get()
 
 gradlePlugin {
     website = "https://infolektuell.github.io/gradle-jextract/"
@@ -13,7 +13,7 @@ gradlePlugin {
     plugins.create("jextractPlugin") {
         id = "de.infolektuell.jextract"
         displayName = "jextract gradle plugin"
-        description = releaseNotes
+        description = releaseNotes.get()
         tags = listOf("native", "FFM", "panama", "jextract")
         implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
     }
@@ -36,15 +36,15 @@ publishing {
 
 signing {
     // Get credentials from env variables for better CI compatibility
-    val signingKeyId: String? by project
-    val signingKey: String? by project
-    val signingPassword: String? by project
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    val signingKeyId = providers.gradleProperty("signingKeyId")
+    val signingKey = providers.gradleProperty("signingKey")
+    val signingPassword = providers.gradleProperty("signingPassword")
+    useInMemoryPgpKeys(signingKeyId.orNull, signingKey.orNull, signingPassword.orNull)
 }
 
 tasks.withType<Sign>().configureEach {
-    val isReleaseVersion = !releaseVersion.endsWith("-SNAPSHOT")
-    onlyIf { isReleaseVersion }
+    val isReleaseVersion = releaseVersion.map { !it.endsWith("-SNAPSHOT") }
+    onlyIf { isReleaseVersion.get() }
 }
 
 java {
@@ -78,7 +78,8 @@ configurations["functionalTestImplementation"].extendsFrom(configurations["testI
 configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
 
 // Add a task to run the functional tests
-val functionalTest by tasks.registering(Test::class) {
+val functionalTest = tasks.register("functionalTest", Test::class) {
+    description = "Runs the project's functional tests"
     testClassesDirs = functionalTestSourceSet.output.classesDirs
     classpath = functionalTestSourceSet.runtimeClasspath
     useJUnitPlatform()
