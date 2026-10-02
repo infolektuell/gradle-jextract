@@ -33,19 +33,19 @@ export default defineConfig({
             sidebar: [
                 {
                     label: 'Getting Started',
-                    autogenerate: { directory: 'start' },
+                    items: [{ autogenerate: { directory: 'start' } }],
                 },
                 {
                     label: 'Usage',
-                    autogenerate: { directory: 'usage' },
+                    items: [{ autogenerate: { directory: 'usage' } }],
                 },
                 {
                     label: 'Filtering',
-                    autogenerate: { directory: 'filtering' },
+                    items: [{ autogenerate: { directory: 'filtering' } }],
                 },
                 {
                     label: 'Jextract Installation',
-                    autogenerate: { directory: 'jextract-installation' },
+                    items: [{ autogenerate: { directory: 'jextract-installation' } }],
                 },
                 {
                     label: 'API Docs',
