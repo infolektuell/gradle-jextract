@@ -23,7 +23,7 @@ java {
 }
 
 jextract.libraries {
-  val greeting by registering {
+  val greeting = register("greeting") {
     header = layout.projectDirectory.file("src/main/public/greeting.h")
     headerClassName = "Greeting"
     targetPackage = "com.example.greeting"

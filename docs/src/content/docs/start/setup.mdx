@@ -104,7 +104,7 @@ Configure the plugin via DSL extension, so it can find the library files.
 ```kts title="Adding a Jextract library to a Java project"
 // build.gradle.kts
 jextract.libraries {
-    val greeting by registering {
+    val greeting = register("greeting") {
         header = layout.projectDirectory.file("src/main/public/greeting.h")
         headerClassName = "Greeting"
         targetPackage = "com.example.greeting"
@@ -205,7 +205,7 @@ This approach is activated in Jextract with the `--use-system-load-library` comm
 ```kts {4-5} title="Configuring a library to load its binaries from the library path"
 // build.gradle.kts
 jextract.libraries {
-    val greeting by registering {
+    val greeting = register("greeting") {
         useSystemLoadLibrary = true
         libraryPath.add(layout.projectDirectory.dir("src/main/lib/<os>/<arch>"))
     }
