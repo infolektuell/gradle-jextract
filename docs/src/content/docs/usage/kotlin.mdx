@@ -24,7 +24,7 @@ The bindings are added as follows:
 ```kts {6-8} title="Adding Jextract libraries to Kotlin Multiplatform projects"
 // build.gradle.kts
 jextract.libraries {
-    val greeting by registering {
+    val greeting = register("greeting") {
         // library config
     }
     sourceSets.named("jvmMain") {

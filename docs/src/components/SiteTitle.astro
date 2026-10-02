@@ -6,5 +6,9 @@ const version = await getLatestVersion()
 const href = 'https://plugins.gradle.org/plugin/de.infolektuell.jextract'
 ---
 
-<Default><slot /></Default>
-<a class="site-title sl-flex" {href} target="_blank"><Badge text={version} variant="success" size="large" /></a>
+<Default>
+    <slot />
+</Default>
+<a class="site-title sl-flex" {href} target="_blank">
+    <Badge text={version} variant="success" size="large" />
+</a>

@@ -20,10 +20,10 @@ A source set may depend on multiple libraries, and a library may be added to mul
 ```kts {10,13} title="Adding Jextract libraries to Java source sets"
 // build.gradle.kts
 jextract.libraries {
-    val greeting by registering {
+    val greeting = register("greeting") {
         // library config
     }
-    val cursing by registering {
+    val cursing = register("cursing") {
         // library config
     }
     sourceSets.main {
