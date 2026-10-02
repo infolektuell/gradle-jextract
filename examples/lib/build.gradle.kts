@@ -25,7 +25,7 @@ tasks.named<Test>("test") {
 
 jextract.libraries {
     // The native BASS audio library.
-    val bass by registering {
+    val bass = register("bass") {
         // output = layout.projectDirectory.dir("bassBindings")
         header = layout.projectDirectory.file("src/main/public/bass.h")
         headerClassName = "Bass"

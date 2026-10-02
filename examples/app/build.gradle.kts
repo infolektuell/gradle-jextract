@@ -26,7 +26,7 @@ tasks.named<Test>("test") {
 
 jextract.libraries {
     // A library from a project dependency
-    val hello by registering {
+    val hello = register("hello") {
         dependencies {
             header(project(":nativelib"))
         }
