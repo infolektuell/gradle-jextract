@@ -81,6 +81,7 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
     /// Task action that uses Jextract to generate Java bindings
     @TaskAction
     protected final void generateBindings() {
+        getFileSystemOperations().delete(spec -> spec.delete(getSources(), getClasses()));
         JextractStore jextract = getJextractStore().get();
         switch (getInstallation().get()) {
             case RemoteJextractInstallation config -> {
