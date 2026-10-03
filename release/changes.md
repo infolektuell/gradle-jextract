@@ -1,2 +1,2 @@
-- A local Jextract installation is also configurable via Gradle property instead of using the plugin DSL.
-- The plugin can consume dependencies that expose native headers and binaries.
+- Stale generated source files are not left in the build directory anymore.
+- Removed deprecated Gradle DSL syntax in readme and docs
