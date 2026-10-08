@@ -48,7 +48,7 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
     /// @return a property to configure the file
     @Optional
     @InputFile
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getArgFile();
 
     /// Native libraries to be loaded by generated code (either names or paths starting with colon)

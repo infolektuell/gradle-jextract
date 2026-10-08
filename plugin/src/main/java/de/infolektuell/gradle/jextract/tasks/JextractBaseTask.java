@@ -58,6 +58,6 @@ public abstract class JextractBaseTask extends DefaultTask {
     /// The library header file to generate bindings for
     /// @return A property to configure the header file
     @InputFile
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getHeader();
 }
