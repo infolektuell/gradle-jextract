@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 [unreleased]: https://github.com/infolektuell/gradle-jextract/compare/v1.4.1...HEAD
 
+### Added
+
+- Passing library path to test and run tasks can be disabled in the DSL extension. If other plugins set this property or if the user needs more customization, this can be necessary.
+
 ## [1.4.1] - 2026-10-03
 [1.4.1]: https://github.com/infolektuell/gradle-jextract/compare/v1.4.0...v1.4.1
 

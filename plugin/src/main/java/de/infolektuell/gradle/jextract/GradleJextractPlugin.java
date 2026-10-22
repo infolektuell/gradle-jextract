@@ -59,8 +59,10 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         project.getExtensions().add(JextractExtension.EXTENSION_NAME, extension);
         extension.getOutput().convention(project.getLayout().getBuildDirectory().dir("generated/sources/jextract/java"));
         extension.getGenerateSourceFiles().convention(false);
+        extension.getConfigureLibraryPath().convention(true);
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
         final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
+        libraryPathProvider.getIsEnabled().convention(extension.getConfigureLibraryPath());
         extension.getLibraries().configureEach(lib -> {
             lib.getDependencies().getHeaderFilter().convention(Set.of("**/" + lib.getName() + ".h"));
             lib.getLibraries().convention(List.of(lib.getName()));
@@ -146,7 +148,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                         a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
-                libraryPathProvider.getFiles().from(lib.getLibraryPath(), libraryPathConfig);
+                libraryPathProvider.getDirectories().from(lib.getLibraryPath(), libraryPathConfig);
 
                 final Provider<@NonNull RegularFile> headerFile = headerDirectoriesConfig.zip(lib.getDependencies().getHeaderFilter(), (config, patterns) -> {
                     return config.resolve().stream()
