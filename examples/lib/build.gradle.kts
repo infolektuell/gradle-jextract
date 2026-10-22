@@ -3,10 +3,6 @@ plugins {
     id("de.infolektuell.jextract")
 }
 
-repositories {
-    mavenCentral()
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
