@@ -19,62 +19,50 @@ import java.util.Set;
 /// Task that uses Jextract to generate Java bindings for given C headers
 @CacheableTask
 public abstract class JextractGenerateTask extends JextractBaseTask {
-    /// Used by Gradle
-    public JextractGenerateTask() { super(); }
     /// All macros defined for this library, conforming to the `name=value` pattern or `name` where `value` will be 1
-    /// @return A list property to add defined macros
     @Input
     public abstract ListProperty<@NonNull String> getDefinedMacros();
 
     /// The package name for the generated classes (`unnamed` if missing).
-    /// @return A property to configure the package name
     @Optional
     @Input
     public abstract Property<@NonNull String> getTargetPackage();
 
     /// Name of the generated header class (derived from header file name if missing)
-    /// @return a property to configure the header name
     @Optional
     @Input
     public abstract Property<@NonNull String> getHeaderClassName();
 
     /// All symbols to be included in the generated bindings, grouped by their category
     /// The key of each entry denotes a category, the value is a list of symbols.
-    /// @return A map property to add pairs of category and symbols
     @Input
     public abstract MapProperty<@NonNull String, @NonNull Set<String>> getWhitelist();
 
     /// An optional arg file for includes filtering
-    /// @return a property to configure the file
     @Optional
     @InputFile
     @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getArgFile();
 
     /// Native libraries to be loaded by generated code (either names or paths starting with colon)
-    /// @return A property to add library names
     @Input
     public abstract ListProperty<@NonNull String> getLibraries();
 
     /// Load libraries in the library symbol lookup, using either `System.load` or `System.loadLibrary`, useful for libraries in java.library.path
-    /// @return A boolean property
     @Optional
     @Input
     public abstract Property<@NonNull Boolean> getUseSystemLoadLibrary();
 
     /// Generate source files instead of class files (Jextract 21 and below)
-    /// @return a boolean property
     @Optional
     @Input
     public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
 
     /// The directory where to place the generated source files
-    /// @return a directory property
     @OutputDirectory
     public abstract DirectoryProperty getSources();
 
     /// The directory where to place generated compiled class files
-    /// @return a directory property
     @OutputDirectory
     public abstract DirectoryProperty getClasses();
 
@@ -104,12 +92,11 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
     }
 
     /// Inject the build service for file system operations.
-    /// @return The injected build service
     @Inject
     protected abstract FileSystemOperations getFileSystemOperations();
 
     private void commonExec(int version, ExecSpec spec) {
-        getIncludes().get().forEach(it -> spec.args("-I", it));
+        getIncludes().forEach(it -> spec.args("-I", it));
         spec.args("--output", getSources().get());
         if (getTargetPackage().isPresent()) spec.args("-t", getTargetPackage().get());
         if (getHeaderClassName().isPresent()) spec.args("--header-class-name", getHeaderClassName().get());

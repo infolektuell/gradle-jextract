@@ -8,8 +8,6 @@ import de.infolektuell.gradle.jextract.tasks.*;
 import static de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*;
 
 import org.gradle.api.*;
-import org.gradle.api.artifacts.DependencyScopeConfiguration;
-import org.gradle.api.artifacts.ResolvableConfiguration;
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.Attribute;
 import org.gradle.api.attributes.LibraryElements;
@@ -38,8 +36,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.PathMatcher;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /// A Gradle plugin to add Jextract to the build
 @SuppressWarnings("UnstableApiUsage")
@@ -94,8 +90,8 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
 
         project.getPlugins().apply(JavaPlugin.class);
         project.getPluginManager().withPlugin("java", javaPlugin -> {
-            final JavaPluginExtension javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
-            final Provider<@NonNull JavaLanguageVersion> javaVersion = javaExtension.getToolchain().getLanguageVersion()
+            final var javaExtension = project.getExtensions().getByType(JavaPluginExtension.class);
+            final var javaVersion = javaExtension.getToolchain().getLanguageVersion()
                     .orElse(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
             extension.getInstallation().getJavaLanguageVersion().convention(javaVersion);
 
@@ -117,29 +113,27 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 }));
 
             extension.getLibraries().configureEach(lib -> {
-                final NamedDomainObjectProvider<@NonNull DependencyScopeConfiguration> headerOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractHeaderOnly", config -> config.fromDependencyCollector(lib.getDependencies().getHeaderOnly()));
-                final NamedDomainObjectProvider<@NonNull DependencyScopeConfiguration> headerScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractHeader", config -> config.fromDependencyCollector(lib.getDependencies().getHeader()));
-                final NamedDomainObjectProvider<@NonNull DependencyScopeConfiguration> includeOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractIncludeOnly", config -> config.fromDependencyCollector(lib.getDependencies().getIncludeOnly()));
-                final NamedDomainObjectProvider<@NonNull DependencyScopeConfiguration> includeScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractInclude", config -> config.fromDependencyCollector(lib.getDependencies().getInclude()));
-                final NamedDomainObjectProvider<@NonNull DependencyScopeConfiguration> runtimeOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractRuntimeOnly", config -> config.fromDependencyCollector(lib.getDependencies().getRuntimeOnly()));
+                final var headerOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractHeaderOnly", config -> config.fromDependencyCollector(lib.getDependencies().getHeaderOnly()));
+                final var headerScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractHeader", config -> config.fromDependencyCollector(lib.getDependencies().getHeader()));
+                final var includeOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractIncludeOnly", config -> config.fromDependencyCollector(lib.getDependencies().getIncludeOnly()));
+                final var includeScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractInclude", config -> config.fromDependencyCollector(lib.getDependencies().getInclude()));
+                final var runtimeOnlyScope = project.getConfigurations().dependencyScope(lib.getName() + "JextractRuntimeOnly", config -> config.fromDependencyCollector(lib.getDependencies().getRuntimeOnly()));
 
-                final NamedDomainObjectProvider<@NonNull ResolvableConfiguration> headerDirectoriesConfig = project.getConfigurations().resolvable(lib.getName() + "HeaderDirectories", config -> {
+                final var headerDirectoriesConfig = project.getConfigurations().resolvable(lib.getName() + "HeaderDirectories", config -> {
                     config.setDescription(String.format("The directories to search the %s library's public header file", lib.getName()));
                     config.extendsFrom(headerOnlyScope.get(), headerScope.get());
                     config.attributes(a -> {
                         a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
-                        a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
-                final NamedDomainObjectProvider<@NonNull ResolvableConfiguration> includePathConfig = project.getConfigurations().resolvable(lib.getName() + "IncludePath", config -> {
+                final var includePathConfig = project.getConfigurations().resolvable(lib.getName() + "IncludePath", config -> {
                     config.setDescription(String.format("The directories to be added to the %s library's include path", lib.getName()));
                     config.extendsFrom(includeOnlyScope.get(), includeScope.get());
                     config.attributes(a -> {
                         a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
-                        a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
                     });
                 });
-                final NamedDomainObjectProvider<@NonNull ResolvableConfiguration> libraryPathConfig = project.getConfigurations().resolvable(lib.getName() + "LibraryPath", config -> {
+                final var libraryPathConfig = project.getConfigurations().resolvable(lib.getName() + "LibraryPath", config -> {
                     config.setDescription(String.format("The directories to be added to the %s library's library path", lib.getName()));
                     config.extendsFrom(headerScope.get(), includeScope.get(), runtimeOnlyScope.get());
                     config.attributes(a -> {
@@ -157,19 +151,11 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                         .map(f -> project.getLayout().getProjectDirectory().file(f.getAbsolutePath()))
                         .findFirst().orElse(null);
                 });
-                final Provider<@NonNull List<@NonNull Directory>> includeDirectories = includePathConfig.zip(lib.getIncludes(), (config, includes) -> {
-                    return Stream.concat(
-                        includes.stream(),
-                            config.resolve().stream()
-                                .map(d -> project.getLayout().getProjectDirectory().dir(d.getAbsolutePath()))
-                    )
-                        .collect(Collectors.toList());
-                });
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getInstallation().convention(jextractInstallation);
                     task.getHeader().convention(lib.getHeader().orElse(headerFile));
-                    task.getIncludes().convention(includeDirectories);
+                    task.getIncludes().from(lib.getIncludes(), includePathConfig);
                     task.getDefinedMacros().convention(lib.getDefinedMacros());
                     task.getHeaderClassName().convention(lib.getHeaderClassName());
                     task.getTargetPackage().convention(lib.getTargetPackage());
@@ -196,7 +182,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.setDescription("Uses Jextract to dump all includes of the " + lib.getName() + " native library into an arg file");
                     task.getInstallation().convention(jextractInstallation);
                     task.getHeader().convention(lib.getHeader().orElse(headerFile));
-                    task.getIncludes().convention(includeDirectories);
+                    task.getIncludes().from(lib.getIncludes(), includePathConfig);
                     task.getArgFile().convention(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
                 });
             });

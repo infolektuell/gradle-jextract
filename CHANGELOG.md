@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Passing library path to test and run tasks can be disabled in the DSL extension. If other plugins set this property or if the user needs more customization, this can be necessary.
 
+### Changed
+
+- Task API: The includes directories for the Jextract tasks are configured via file collection instead of directory list property. The DSL extension doesn't change, but file collections offer more flexibility for tasks, e.g., passing resolvable configurations.
+
 ## [1.4.1] - 2026-10-03
 [1.4.1]: https://github.com/infolektuell/gradle-jextract/compare/v1.4.0...v1.4.1
 
