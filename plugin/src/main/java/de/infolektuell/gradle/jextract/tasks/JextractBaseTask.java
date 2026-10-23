@@ -4,7 +4,6 @@ import de.infolektuell.gradle.jextract.service.JextractStore;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
-import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.services.ServiceReference;
 import org.gradle.api.tasks.*;
@@ -48,8 +47,8 @@ public abstract class JextractBaseTask extends DefaultTask {
     @PathSensitive(PathSensitivity.RELATIVE)
     public abstract ConfigurableFileCollection getIncludes();
 
-    /// The library header file to generate bindings for
-    @InputFile
+    /// The library header files to generate bindings for
+    @InputFiles
     @PathSensitive(PathSensitivity.NONE)
-    public abstract RegularFileProperty getHeader();
+    public abstract ConfigurableFileCollection getHeaders();
 }

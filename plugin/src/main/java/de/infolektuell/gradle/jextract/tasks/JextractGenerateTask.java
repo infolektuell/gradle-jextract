@@ -108,6 +108,6 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
         }
         if (getGenerateSourceFiles().getOrElse(false) && version <= 21) spec.args("--source");
         if (getArgFile().isPresent()) spec.args("@" + getArgFile().get());
-        spec.args(getHeader().get());
+        getHeaders().forEach(spec::args);
     }
 }
