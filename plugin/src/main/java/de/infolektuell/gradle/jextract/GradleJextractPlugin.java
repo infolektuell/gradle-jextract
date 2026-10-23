@@ -47,9 +47,6 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
     ///  The gradle property to set a local Jextract installation path
     public static final String JEXTRACT_LOCAL_INSTALLATION_PROPERTY = "org.openjdk.jextract.installation-path";
 
-    /// Used by Gradle
-    public GradleJextractPlugin() { super(); }
-
     /// Configures the plugin if it is applied
     public void apply(Project project) {
         final JextractExtension extension = project.getObjects().newInstance(JextractExtension.class);
@@ -61,7 +58,6 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         final LibraryPathProvider libraryPathProvider = project.getObjects().newInstance(LibraryPathProvider.class);
         libraryPathProvider.getIsEnabled().convention(extension.getConfigureLibraryPath());
         extension.getLibraries().configureEach(lib -> {
-            lib.getDependencies().getHeaderFilter().convention(Set.of("**/" + lib.getName() + ".h"));
             lib.getLibraries().convention(List.of(lib.getName()));
             lib.getUseSystemLoadLibrary().convention(false);
             lib.getOutput().convention(extension.getOutput().dir(lib.getName()));
@@ -76,21 +72,16 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
         });
 
+        final var nativeApi = project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API);
+        final var nativeRuntimeUsage = project.getObjects().named(Usage.class, Usage.NATIVE_RUNTIME);
+        final var javaRuntimeUsage = project.getObjects().named(Usage.class, Usage.JAVA_RUNTIME);
         project.getDependencies().registerTransform(ExtractHeaderAction.class, transform -> {
             transform.getFrom().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
             transform.getTo().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "h");
         });
         project.getDependencies().registerTransform(DirectorifyAction.class, transform -> {
-            transform.getFrom().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "dll");
-            transform.getTo().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
-        });
-        project.getDependencies().registerTransform(DirectorifyAction.class, transform -> {
-            transform.getFrom().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "dylib");
-            transform.getTo().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
-        });
-        project.getDependencies().registerTransform(DirectorifyAction.class, transform -> {
-            transform.getFrom().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "so");
-            transform.getTo().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
+            transform.getFrom().attribute(Usage.USAGE_ATTRIBUTE, nativeRuntimeUsage);
+            transform.getTo().attribute(Usage.USAGE_ATTRIBUTE, javaRuntimeUsage);
         });
 
         project.getPlugins().apply(JavaPlugin.class);
@@ -128,33 +119,23 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     config.setDescription(String.format("The directories to search the %s library's public header file", lib.getName()));
                     config.extendsFrom(headerOnlyScope.get(), headerScope.get());
                     config.attributes(a -> {
-                        a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
+                        a.attribute(Usage.USAGE_ATTRIBUTE, nativeApi);
                     });
                 });
                 final var includePathConfig = project.getConfigurations().resolvable(lib.getName() + "IncludePath", config -> {
                     config.setDescription(String.format("The directories to be added to the %s library's include path", lib.getName()));
                     config.extendsFrom(includeOnlyScope.get(), includeScope.get());
                     config.attributes(a -> {
-                        a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.C_PLUS_PLUS_API));
+                        a.attribute(Usage.USAGE_ATTRIBUTE, nativeApi);
                     });
                 });
-                final var libraryPathConfig = project.getConfigurations().resolvable(lib.getName() + "LibraryPath", config -> {
-                    config.setDescription(String.format("The directories to be added to the %s library's library path", lib.getName()));
-                    config.extendsFrom(headerScope.get(), includeScope.get(), runtimeOnlyScope.get());
-                    config.attributes(a -> {
-                        a.attribute(Usage.USAGE_ATTRIBUTE, project.getObjects().named(Usage.class, Usage.NATIVE_RUNTIME));
-                        a.attribute(Attribute.of("org.gradle.native.optimized", Boolean.class), true);
-                        a.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
-                    });
-                });
-                libraryPathProvider.getDirectories().from(lib.getLibraryPath(), libraryPathConfig);
 
                 final var headerFiles = headerDirectoriesConfig.map(
                     c -> c.getIncoming().artifactView(
                         v -> v.getAttributes().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "h")
                     ).getFiles().filter(f -> f.getName().equals(lib.getName() + ".h"))
                 );
-                final var headerFile = project.getLayout().file(headerFiles.map(h -> h.getSingleFile()));
+                final var headerFile = project.getLayout().file(headerFiles.map(FileCollection::getSingleFile));
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getInstallation().convention(jextractInstallation);
@@ -189,6 +170,21 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.getIncludes().from(lib.getIncludes(), includePathConfig);
                     task.getArgFile().convention(project.getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt"));
                 });
+
+                final var libraryPathConfig = project.getConfigurations().resolvable(lib.getName() + "LibraryPath", config -> {
+                    config.setDescription(String.format("The directories to be added to the %s library's library path", lib.getName()));
+                    config.extendsFrom(headerScope.get(), runtimeOnlyScope.get());
+                    config.attributes(a -> {
+                        a.attribute(Usage.USAGE_ATTRIBUTE, nativeRuntimeUsage);
+                        a.attribute(Attribute.of("org.gradle.native.optimized", Boolean.class), true);
+                    });
+                });
+                final var libraryPath = libraryPathConfig.map(
+                    c -> c.getIncoming().artifactView(
+                        v -> v.getAttributes().attribute(Usage.USAGE_ATTRIBUTE, javaRuntimeUsage)
+                    ).getFiles()
+                );
+                libraryPathProvider.getDirectories().from(lib.getLibraryPath(), libraryPath);
             });
 
             javaExtension.getSourceSets().configureEach(s -> {
@@ -204,6 +200,9 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 });
             });
             javaExtension.getSourceSets().named("main", s -> configureJmod(project, s));
+            project.getTasks().withType(JmodCreateTask.class, task -> {
+                task.getLibs().from(libraryPathProvider.getDirectories());
+            });
             project.getTasks().withType(Test.class, task -> {
                 task.getJvmArgumentProviders().add(libraryPathProvider);
             });
@@ -264,7 +263,6 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         sourceSetExtension.getLibraries().all(lib -> {
             createJmodTask.configure(task -> {
                 task.getHeaderFiles().from(lib.getIncludes(), project.getConfigurations().named(lib.getName() + "HeaderDirectories"));
-                task.getLibs().from(lib.getLibraryPath(), project.getConfigurations().named(lib.getName() + "LibraryPath"));
                 task.getLegalNotices().from(lib.getLegalNotices());
             });
         });
