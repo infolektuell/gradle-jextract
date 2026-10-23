@@ -49,9 +49,6 @@ public abstract class JextractExtension {
     /// This becomes the convention for all libraries.
     public abstract Property<@NonNull Boolean> getGenerateSourceFiles();
 
-    /// If true (default), the plugin passes directories containing native binaries to test and run tasks as `java.library.path` system property. Setting this to false deactivates this feature.
-    public abstract Property<Boolean> getConfigureLibraryPath();
-
     /// Inject an available instance of the object factory service
     @Inject
     protected abstract ObjectFactory getObjects();

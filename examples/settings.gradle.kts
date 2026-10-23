@@ -17,8 +17,6 @@ plugins {
 }
 
 rootProject.name = "jextract-example-project"
-include("app")
 include("lib")
-include("nativelib")
 includeBuild("../")
 enableFeaturePreview("STABLE_CONFIGURATION_CACHE")

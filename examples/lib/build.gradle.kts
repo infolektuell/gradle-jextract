@@ -23,12 +23,11 @@ jextract.libraries {
     // The native BASS audio library.
     val bass = register("bass") {
         // output = layout.projectDirectory.dir("bassBindings")
-        header = layout.projectDirectory.file("src/main/public/bass.h")
+        headers = listOf(layout.projectDirectory.file("src/main/public/bass.h"))
         headerClassName = "Bass"
         targetPackage = "com.un4seen.bass"
         // Make your public headers folder searchable for Jextract
         includes.add(layout.projectDirectory.dir("src/main/public"))
-        legalNotices.add(layout.projectDirectory.dir("src/main/lib/legal"))
         // For large headers it is good practice to generate only the symbols you need.
         whitelist {
             // We only want to access the BASS version
