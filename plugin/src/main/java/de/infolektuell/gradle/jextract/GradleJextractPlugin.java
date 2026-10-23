@@ -7,6 +7,8 @@ import de.infolektuell.gradle.jextract.tasks.*;
 
 import static de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*;
 
+import de.infolektuell.gradle.jextract.transforms.DirectorifyAction;
+import de.infolektuell.gradle.jextract.transforms.ExtractHeaderAction;
 import org.gradle.api.*;
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition;
 import org.gradle.api.attributes.Attribute;
@@ -14,7 +16,6 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.file.RegularFile;
 import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -75,6 +76,10 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
         });
 
+        project.getDependencies().registerTransform(ExtractHeaderAction.class, transform -> {
+            transform.getFrom().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
+            transform.getTo().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "h");
+        });
         project.getDependencies().registerTransform(DirectorifyAction.class, transform -> {
             transform.getFrom().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "dll");
             transform.getTo().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, ArtifactTypeDefinition.DIRECTORY_TYPE);
@@ -144,13 +149,12 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 });
                 libraryPathProvider.getDirectories().from(lib.getLibraryPath(), libraryPathConfig);
 
-                final Provider<@NonNull RegularFile> headerFile = headerDirectoriesConfig.zip(lib.getDependencies().getHeaderFilter(), (config, patterns) -> {
-                    return config.resolve().stream()
-                        .map(d -> project.getLayout().getProjectDirectory().dir(d.getAbsolutePath()).getAsFileTree().matching(spec -> spec.include("**/*.h").include(patterns)).getFiles())
-                        .flatMap(Collection::stream)
-                        .map(f -> project.getLayout().getProjectDirectory().file(f.getAbsolutePath()))
-                        .findFirst().orElse(null);
-                });
+                final var headerFiles = headerDirectoriesConfig.map(
+                    c -> c.getIncoming().artifactView(
+                        v -> v.getAttributes().attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "h")
+                    ).getFiles().filter(f -> f.getName().equals(lib.getName() + ".h"))
+                );
+                final var headerFile = project.getLayout().file(headerFiles.map(h -> h.getSingleFile()));
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription("Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getInstallation().convention(jextractInstallation);
