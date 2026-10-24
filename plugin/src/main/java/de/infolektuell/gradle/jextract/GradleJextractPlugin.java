@@ -14,6 +14,9 @@ import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.JavaExec;
+import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.api.tasks.testing.Test;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.jspecify.annotations.NonNull;
@@ -36,6 +39,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         extension.getOutput().convention(outputDir);
         extension.getGenerateSourceFiles().convention(false);
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
+        final var enablePreview = project.getObjects().newInstance(EnableJvmPreviewProvider.class);
         extension.getLibraries().configureEach(lib -> {
             lib.getLibraries().convention(List.of(lib.getName()));
             lib.getUseSystemLoadLibrary().convention(false);
@@ -58,6 +62,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             final var javaVersion = javaExtension.getToolchain().getLanguageVersion()
                 .orElse(JavaLanguageVersion.of(Objects.requireNonNullElse(Jvm.current().getJavaVersionMajor(), 25)));
             extension.getInstallation().getJavaLanguageVersion().convention(javaVersion);
+            enablePreview.getJavaVersion().convention(javaVersion);
 
             final var localInstallationPath = project.getProviders()
                 .gradleProperty(JEXTRACT_LOCAL_INSTALLATION_PROPERTY);
@@ -118,6 +123,9 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
 
             javaExtension.getSourceSets().configureEach(s -> {
+                project.getTasks().named(s.getCompileJavaTaskName(), JavaCompile.class, task -> {
+                    task.getOptions().getCompilerArgumentProviders().add(enablePreview);
+                });
                 final var sourceSetExtension = project.getObjects().newInstance(SourceSetExtension.class);
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
@@ -128,6 +136,14 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     project.getDependencies().add(s.getImplementationConfigurationName(), getLayout().files(classesDir));
                     s.getResources().srcDir(classesDir);
                 });
+            });
+            project.getTasks().withType(Test.class, task -> {
+                task.getJvmArgumentProviders().add(enablePreview);
+            });
+        });
+        project.getPluginManager().withPlugin("application", applicationPlugin -> {
+            project.getTasks().named("run", JavaExec.class, task -> {
+                task.getJvmArgumentProviders().add(enablePreview);
             });
         });
     }
