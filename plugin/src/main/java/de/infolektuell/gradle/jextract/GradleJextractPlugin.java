@@ -2,6 +2,9 @@ package de.infolektuell.gradle.jextract;
 
 import de.infolektuell.gradle.jextract.extensions.JextractExtension;
 import de.infolektuell.gradle.jextract.extensions.SourceSetExtension;
+import de.infolektuell.gradle.jextract.providers.EnableJvmPreviewProvider;
+import de.infolektuell.gradle.jextract.providers.EnableNativeAccessProvider;
+import de.infolektuell.gradle.jextract.providers.PatchModuleProvider;
 import de.infolektuell.gradle.jextract.service.JextractStore;
 import de.infolektuell.gradle.jextract.tasks.*;
 
@@ -40,6 +43,7 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
         extension.getGenerateSourceFiles().convention(false);
         extension.getInstallation().getDistributions().convention(extension.getDistributions());
         final var enablePreview = project.getObjects().newInstance(EnableJvmPreviewProvider.class);
+        final var enableNativeAccess = project.getObjects().newInstance(EnableNativeAccessProvider.class);
         extension.getLibraries().configureEach(lib -> {
             lib.getLibraries().convention(List.of(lib.getName()));
             lib.getUseSystemLoadLibrary().convention(false);
@@ -123,27 +127,37 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
             });
 
             javaExtension.getSourceSets().configureEach(s -> {
+                final var patchModules = project.getObjects().newInstance(PatchModuleProvider.class);
+                final var moduleFiles = s.getJava().matching(spec -> spec.include("**/module-info.java"));
+                patchModules.getSourceFiles().from(moduleFiles);
                 project.getTasks().named(s.getCompileJavaTaskName(), JavaCompile.class, task -> {
                     task.getOptions().getCompilerArgumentProviders().add(enablePreview);
+                    task.getOptions().getCompilerArgumentProviders().add(patchModules);
                 });
+                if (s.getName().equals("main")) {
+                    enableNativeAccess.getSourceFiles().from(moduleFiles);
+                }
                 final var sourceSetExtension = project.getObjects().newInstance(SourceSetExtension.class);
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
                     final var task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
                     final var sourcesDir = task.flatMap(JextractGenerateTask::getSources);
-                    s.getJava().srcDir(sourcesDir);
                     final var classesDir = task.flatMap(JextractGenerateTask::getClasses);
-                    project.getDependencies().add(s.getImplementationConfigurationName(), getLayout().files(classesDir));
+                    s.getJava().srcDir(sourcesDir);
+                    project.getDependencies().add(s.getCompileOnlyConfigurationName(), getLayout().files(classesDir));
                     s.getResources().srcDir(classesDir);
+                    patchModules.getClasspath().from(classesDir);
                 });
             });
             project.getTasks().withType(Test.class, task -> {
                 task.getJvmArgumentProviders().add(enablePreview);
+                task.jvmArgs("--enable-native-access=ALL-UNNAMED");
             });
         });
         project.getPluginManager().withPlugin("application", applicationPlugin -> {
             project.getTasks().named("run", JavaExec.class, task -> {
                 task.getJvmArgumentProviders().add(enablePreview);
+                task.getJvmArgumentProviders().add(enableNativeAccess);
             });
         });
     }

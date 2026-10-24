@@ -1,4 +1,4 @@
-package de.infolektuell.gradle.jextract.tasks;
+package de.infolektuell.gradle.jextract.providers;
 
 import java.util.ArrayList;
 import org.gradle.api.provider.Property;
