@@ -189,15 +189,25 @@ This will result in the following output file structure:
 There are mainly two approaches how the generated code can load and access the correct binaries.
 Please see this [stackoverflow question] for more details and explanation.
 
+### Manual Loading
+
+The native binaries are bundled as resources in the jar archive.
+The implementation has to extract and load them using `System.load`.
+The build doesn't need further configuration.
+
 :::tip[Sample Project]
-The [example project] demonstrates both approaches.
+The [example project] demonstrates this approach.
 :::
 
 ### Automatic Loading
 
 The code searches in the OS-specific paths for the binary files and tries to load them by their name via `system.loadLibrary`.
-The `java.library.path` property can be augmented to search in more paths or in the deployed app distribution.
 This approach is activated in Jextract with the `--use-system-load-library` command line option and can be configured in a library config in the plugin DSL.
+If this is enabled, the generated bindings will try to load their binaries from the system library path.
+
+:::tip
+The system property `java.library.path` can be set on Java execution to provide more directories to search for binaries, e.g., on `JavaExec` or test tasks.
+:::
 
 <Tabs syncKey="dsl">
 <TabItem label="Kotlin">
@@ -207,7 +217,6 @@ This approach is activated in Jextract with the `--use-system-load-library` comm
 jextract.libraries {
     val greeting = register("greeting") {
         useSystemLoadLibrary = true
-        libraryPath.add(layout.projectDirectory.dir("src/main/lib/<os>/<arch>"))
     }
 }
 ```
@@ -220,7 +229,6 @@ jextract.libraries {
 jextract.libraries {
     register('greeting') {
         useSystemLoadLibrary = true
-        libraryPath.add(layout.projectDirectory.dir("src/main/lib/<os>/<arch>"))
     }
 }
 ```
@@ -229,15 +237,8 @@ jextract.libraries {
 </Tabs>
 
 :::note
-The plugin uses the name of the registered library configuration as library namee per default.
+Jextract needs the library name to search for. Per convention, the plugin offers the name of the registered library configuration.
 :::
-
-### Manual Loading
-
-Instead of configuring the libraries in the DSL, custom logic for loading the files can be implemented.
-This is a typical approach for bundling natives as resources of a jar file for more portable deployment.
-The implementation has to extract and load the binary files using `System.load`.
-The build doesn't need further configuration.
 
 [stackoverflow question]: https://stackoverflow.com/questions/78528174/gradle-java-include-native-library-project-panama
 [example project]: https://github.com/infolektuell/gradle-jextract/tree/main/examples/

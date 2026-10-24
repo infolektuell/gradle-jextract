@@ -58,10 +58,6 @@ tasks.withType(Javadoc::class).named("javadoc") {
     options.destinationDirectory = rootProject.layout.projectDirectory.dir("docs/public/reference").asFile
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compileOnly("org.jspecify:jspecify:1.0.0")
     // Use JUnit Jupiter for testing.

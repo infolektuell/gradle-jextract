@@ -12,11 +12,7 @@ import java.nio.file.Path;
 /// Uses Jextract to dump all included symbols of a library header into an arg file
 @CacheableTask
 public abstract class JextractDumpIncludesTask extends JextractBaseTask {
-    /// Used by Gradle
-    public JextractDumpIncludesTask() { super(); }
-
     /// The location of the generated arg file
-    /// @return a property to configure the arg file location
     @OutputFile
     public abstract RegularFileProperty getArgFile();
 
@@ -37,5 +33,6 @@ public abstract class JextractDumpIncludesTask extends JextractBaseTask {
         getIncludes().get().forEach(it -> spec.args("-I", it));
         spec.args("--dump-includes", getArgFile().get());
         spec.args(getHeader().get());
+        getAdditionalHeaders().get().forEach(spec::args);
     }
 }

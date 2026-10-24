@@ -4,6 +4,7 @@ import de.infolektuell.gradle.jextract.service.JextractStore;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -22,7 +23,6 @@ public abstract class JextractBaseTask extends DefaultTask {
     /// Configuration of a downloadable Jextract version
     public non-sealed interface RemoteJextractInstallation extends JextractInstallation {
         /// The Java version the code should be generated for
-        /// @return A property to configure the Java version
         @Input
         Property<@NonNull JavaLanguageVersion> getJavaLanguageVersion();
     }
@@ -30,14 +30,10 @@ public abstract class JextractBaseTask extends DefaultTask {
     /// Configuration of a local Jextract installation
     public non-sealed interface LocalJextractInstallation extends JextractInstallation {
         /// A directory containing a JExtract installation
-        /// @return A property to configure the Jextract installation location
         @InputDirectory
         @PathSensitive(PathSensitivity.RELATIVE)
         DirectoryProperty getLocation();
     }
-
-    /// Used by Gradle
-    public JextractBaseTask() { super(); }
 
     /// A build service to run Jextract commands
     /// @return A property that holds the injected build service
@@ -50,14 +46,17 @@ public abstract class JextractBaseTask extends DefaultTask {
     public abstract Property<@NonNull JextractInstallation> getInstallation();
 
     /// All directories to append to the list of include search paths
-    /// @return A property to configure the include search path
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract ListProperty<@NonNull Directory> getIncludes();
+    public abstract ListProperty<Directory> getIncludes();
 
     /// The library header file to generate bindings for
-    /// @return A property to configure the header file
     @InputFile
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.NONE)
     public abstract RegularFileProperty getHeader();
+
+    /// Additional optional header files to generate bindings for
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    public abstract ListProperty<RegularFile> getAdditionalHeaders();
 }

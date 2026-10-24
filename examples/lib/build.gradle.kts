@@ -3,10 +3,6 @@ plugins {
     id("de.infolektuell.jextract")
 }
 
-repositories {
-    mavenCentral()
-}
-
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
@@ -32,7 +28,6 @@ jextract.libraries {
         targetPackage = "com.un4seen.bass"
         // Make your public headers folder searchable for Jextract
         includes.add(layout.projectDirectory.dir("src/main/public"))
-        legalNotices.add(layout.projectDirectory.dir("src/main/lib/legal"))
         // For large headers it is good practice to generate only the symbols you need.
         whitelist {
             // We only want to access the BASS version

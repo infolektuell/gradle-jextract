@@ -13,9 +13,9 @@
         "astro": "astro"
     },
     "devDependencies": {
-        "astro": "^7.3.5",
-        "prettier": "^3.9.9",
-        "prettier-plugin-astro": "^1.1.0",
+        "astro": "^7.4.2",
+        "prettier": "^3.9.10",
+        "prettier-plugin-astro": "^1.1.2",
         "sharp": "^0.35.5",
         "typescript": "^7.0.2"
     },
@@ -24,7 +24,7 @@
         "esbuild@0.28.2": true
     },
     "dependencies": {
-        "@astrojs/starlight": "^0.42.5",
+        "@astrojs/starlight": "^0.42.7",
         "astro-auto-import": "^0.6.0"
     }
 }
