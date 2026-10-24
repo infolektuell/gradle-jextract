@@ -10,7 +10,6 @@ import static de.infolektuell.gradle.jextract.tasks.JextractBaseTask.*;
 import javax.inject.Inject;
 import org.gradle.api.*;
 import org.gradle.api.file.Directory;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.plugins.JavaPluginExtension;
@@ -123,11 +122,11 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 s.getExtensions().add(SourceSetExtension.EXTENSION_NAME, sourceSetExtension);
                 sourceSetExtension.getLibraries().all(lib -> {
                     final var task = project.getTasks().named(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class);
-                    s.getJava().srcDir(task.flatMap(JextractGenerateTask::getSources));
-                    s.getResources().srcDir(task.flatMap(JextractGenerateTask::getSources));
-                    final FileCollection classes = getLayout().files(task.flatMap(JextractGenerateTask::getClasses));
-                    s.setCompileClasspath(s.getCompileClasspath().plus(classes));
-                    s.setRuntimeClasspath(s.getRuntimeClasspath().plus(classes));
+                    final var sourcesDir = task.flatMap(JextractGenerateTask::getSources);
+                    s.getJava().srcDir(sourcesDir);
+                    final var classesDir = task.flatMap(JextractGenerateTask::getClasses);
+                    project.getDependencies().add(s.getImplementationConfigurationName(), getLayout().files(classesDir));
+                    s.getResources().srcDir(classesDir);
                 });
             });
         });
