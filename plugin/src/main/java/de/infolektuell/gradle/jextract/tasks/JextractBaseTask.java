@@ -2,8 +2,11 @@ package de.infolektuell.gradle.jextract.tasks;
 
 import de.infolektuell.gradle.jextract.service.JextractStore;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.services.ServiceReference;
 import org.gradle.api.tasks.*;
@@ -45,10 +48,15 @@ public abstract class JextractBaseTask extends DefaultTask {
     /// All directories to append to the list of include search paths
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
-    public abstract ConfigurableFileCollection getIncludes();
+    public abstract ListProperty<Directory> getIncludes();
 
-    /// The library header files to generate bindings for
+    /// The library header file to generate bindings for
+    @InputFile
+    @PathSensitive(PathSensitivity.NONE)
+    public abstract RegularFileProperty getHeader();
+
+    /// Additional optional header files to generate bindings for
     @InputFiles
     @PathSensitive(PathSensitivity.NONE)
-    public abstract ConfigurableFileCollection getHeaders();
+    public abstract ListProperty<RegularFile> getAdditionalHeaders();
 }

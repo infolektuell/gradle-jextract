@@ -30,8 +30,9 @@ public abstract class JextractDumpIncludesTask extends JextractBaseTask {
     }
 
     private void commonExec(ExecSpec spec) {
-        getIncludes().forEach(it -> spec.args("-I", it));
+        getIncludes().get().forEach(it -> spec.args("-I", it));
         spec.args("--dump-includes", getArgFile().get());
-        getHeaders().forEach(spec::args);
+        spec.args(getHeader().get());
+        getAdditionalHeaders().get().forEach(spec::args);
     }
 }

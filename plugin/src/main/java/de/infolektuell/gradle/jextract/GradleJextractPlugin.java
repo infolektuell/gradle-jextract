@@ -81,13 +81,13 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                 }));
 
             extension.getLibraries().configureEach(lib -> {
-                final var localHeaders = lib.getHeader().map(List::of).orElse(lib.getHeaders());
                 project.getTasks().register(lib.getGenerateBindingsTaskName(), JextractGenerateTask.class, task -> {
                     task.setDescription(
                         "Uses Jextract to generate Java bindings for the " + lib.getName() + " native library");
                     task.getInstallation().convention(jextractInstallation);
-                    task.getHeaders().from(localHeaders);
-                    task.getIncludes().from(lib.getIncludes());
+                    task.getHeader().convention(lib.getHeader());
+                    task.getAdditionalHeaders().convention(lib.getAdditionalHeaders());
+                    task.getIncludes().convention(lib.getIncludes());
                     task.getDefinedMacros().convention(lib.getDefinedMacros());
                     task.getHeaderClassName().convention(lib.getHeaderClassName());
                     task.getTargetPackage().convention(lib.getTargetPackage());
@@ -110,8 +110,9 @@ public abstract class GradleJextractPlugin implements Plugin<@NonNull Project> {
                     task.setDescription("Uses Jextract to dump all includes of the " + lib.getName()
                         + " native library into an arg file");
                     task.getInstallation().convention(jextractInstallation);
-                    task.getHeaders().from(localHeaders);
-                    task.getIncludes().from(lib.getIncludes());
+                    task.getHeader().convention(lib.getHeader());
+                    task.getAdditionalHeaders().convention(lib.getAdditionalHeaders());
+                    task.getIncludes().convention(lib.getIncludes());
                     final var argFile = getLayout().getBuildDirectory().file("reports/jextract/" + lib.getName() + "-includes.txt");
                     task.getArgFile().convention(argFile);
                 });

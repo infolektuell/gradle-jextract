@@ -96,7 +96,7 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
     protected abstract FileSystemOperations getFileSystemOperations();
 
     private void commonExec(int version, ExecSpec spec) {
-        getIncludes().forEach(it -> spec.args("-I", it));
+        getIncludes().get().forEach(it -> spec.args("-I", it));
         spec.args("--output", getSources().get());
         if (getTargetPackage().isPresent()) spec.args("-t", getTargetPackage().get());
         if (getHeaderClassName().isPresent()) spec.args("--header-class-name", getHeaderClassName().get());
@@ -108,6 +108,7 @@ public abstract class JextractGenerateTask extends JextractBaseTask {
         }
         if (getGenerateSourceFiles().getOrElse(false) && version <= 21) spec.args("--source");
         if (getArgFile().isPresent()) spec.args("@" + getArgFile().get());
-        getHeaders().forEach(spec::args);
+        spec.args(getHeader().get());
+        getAdditionalHeaders().get().forEach(spec::args);
     }
 }
