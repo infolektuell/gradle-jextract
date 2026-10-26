@@ -1,6 +1,8 @@
+import org.gradle.plugin.compatibility.compatibility
+
 plugins {
     signing
-    id("com.gradle.plugin-publish") version "2.0.0"
+    id("com.gradle.plugin-publish") version "2.2.1"
 }
 
 val releaseVersion = releaseVersion()
@@ -16,6 +18,11 @@ gradlePlugin {
         description = releaseNotes.get()
         tags = listOf("native", "FFM", "panama", "jextract")
         implementationClass = "de.infolektuell.gradle.jextract.GradleJextractPlugin"
+        compatibility {
+            features {
+                configurationCache = true
+            }
+        }
     }
 }
 
@@ -56,6 +63,7 @@ java {
 tasks.withType(Javadoc::class).named("javadoc") {
     javadocTool = javaToolchains.javadocToolFor { languageVersion = JavaLanguageVersion.of(25) }
     options.destinationDirectory = rootProject.layout.projectDirectory.dir("docs/public/reference").asFile
+    options.quiet()
 }
 
 dependencies {
